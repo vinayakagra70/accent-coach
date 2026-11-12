@@ -26,6 +26,7 @@ import { align, judge, normalizeAll, type CheckResult } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
+import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking } from "./coach";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
 
@@ -339,6 +340,7 @@ function renderTodayCard() {
   finish.onclick = () => {
     if (!profile) return;
     saveProfile(completeDay(profile));
+    void coachSays(`Day ${profile.day} done. Same time tomorrow?`, "happy");
     renderList();
     renderPanel();
   };
@@ -352,7 +354,7 @@ function renderTodayCard() {
 }
 
 function renderPanel() {
-  const panel = $("panel");
+  const panel = $("panelBody");
   panel.replaceChildren();
   chart = null;
   mirrorUi = null;
@@ -429,6 +431,7 @@ function listenCard() {
           t.earAnswered++;
           if (ok) t.earRight++;
         });
+        react(ok ? "happy" : "curious", 1800);
         q.textContent = ok ? `Right, it was "${answer}".` : `It was "${answer}". Listen to both again.`;
         q.className = `quiz-q ${ok ? "right" : "wrong"}`;
         const p = progress.get(lesson.id);
@@ -511,6 +514,7 @@ function scoredCard() {
   const say = async (word: string, btn: HTMLButtonElement) => {
     if (recording || !engineReady) return;
     recording = true;
+    stopTalking(); // never record the coach's own voice
     btn.classList.add("live");
     status.textContent = `Say "${word}"…`;
     try {
@@ -539,6 +543,10 @@ function scoredCard() {
       while (results.children.length > 5) results.lastChild?.remove();
       status.textContent = "Press a word to go again.";
       if (habit) showWhatYouSaid(habit.res.heard, habit.sym, habit.res.habit ?? "");
+      // spoken feedback, kept short so it doesn't slow practice down
+      if (allGood) void coachSays(`Nice. That ${judged[0]?.sym === "θ" || judged[0]?.sym === "ð" ? "TH" : "sound"} was clean.`, "happy");
+      else if (habit) void coachSays(`Close. You said ${habit.res.habit}. Watch the mouth, then try "${word}" again.`, "curious");
+      else void coachSays(`I couldn't hear that clearly. Try "${word}" once more, a little slower.`, "curious");
     } catch (e) {
       status.textContent = `Couldn't check that: ${(e as Error).message}`;
     } finally {
@@ -662,6 +670,12 @@ function startTest(retake: boolean) {
           const previous = profile?.assessment?.overall;
           const p = profile && profile.course.length ? replan(profile, a) : newProfile(a, false);
           saveProfile(p);
+          const first = p.course[p.day];
+          const firstName = first?.kind === "lesson" ? LESSONS.find((l) => l.id === first.lesson)?.title : null;
+          void coachSays(
+            `Your score is ${a.overall} out of 100.${previous !== undefined ? ` That's ${a.overall >= previous ? "up" : "down"} ${Math.abs(a.overall - previous)} from last time.` : ""}${firstName ? ` We'll start with ${firstName.replace(/\s*\(.*\)/, "")}.` : ""}`,
+            a.overall >= 75 ? "happy" : "curious",
+          );
           showReport({
             assessment: a,
             course: p.course.slice(p.day),
@@ -677,7 +691,30 @@ function startTest(retake: boolean) {
   });
 }
 
+function setupCoach() {
+  const buttons = $("coachButtons");
+  const explain = h("button", { class: "btn small" }, "Explain this sound");
+  explain.onclick = () => void coachSays(`${lesson.mistake} ${lesson.steps[0]}`, "curious");
+  const voiceBtn = h("button", { class: "btn small icon-only" }) as HTMLButtonElement;
+  const paint = () => {
+    const on = coachVoiceOn();
+    voiceBtn.replaceChildren(on ? icons.listen() : icons.muted());
+    voiceBtn.title = on ? "Coach voice on (words always play)" : "Coach voice off (captions only)";
+    voiceBtn.setAttribute("aria-label", voiceBtn.title);
+  };
+  voiceBtn.onclick = () => {
+    setCoachVoice(!coachVoiceOn());
+    paint();
+  };
+  paint();
+  buttons.append(explain, voiceBtn);
+  void mountCoach($("coachStage"), $("coachCaption")).then((ok) => {
+    if (!ok) $("coachStage").classList.add("missing");
+  });
+}
+
 async function boot() {
+  setupCoach();
   // Prefer the server's copy if it's newer (e.g. progress made in another browser).
   const server = await api.getProfile();
   if (server && (!profile || server.updatedAt > profile.updatedAt)) {

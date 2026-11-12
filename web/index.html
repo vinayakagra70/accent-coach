@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Accent Coach</title>
     <link rel="stylesheet" href="/src/styles.css" />
+    <!-- Live2D Cubism Core: proprietary, put here by setup.ps1 (not in git). Loaded locally so it works offline. -->
+    <script src="./live2dcubismcore.min.js"></script>
   </head>
   <body>
     <header class="top">
@@ -47,7 +49,17 @@
         </div>
       </section>
 
-      <aside class="panel" id="panel"></aside>
+      <aside class="panel" id="panel">
+        <section class="coach" aria-label="Your coach">
+          <div class="coach-stage" id="coachStage"></div>
+          <div class="coach-side">
+            <p class="coach-name">Nova <span>your coach</span></p>
+            <p class="coach-caption" id="coachCaption" aria-live="polite"></p>
+            <div class="row" id="coachButtons"></div>
+          </div>
+        </section>
+        <div id="panelBody"></div>
+      </aside>
     </main>
     <div id="overlay" class="overlay" hidden></div>
     <script type="module" src="/src/main.ts"></script>

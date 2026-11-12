@@ -405,6 +405,8 @@ export class MouthScene {
       // Labels sit above or below their point with a leader line, so they don't cover the mouth.
       const dir = s.key === "tip" || s.key === "voiceBox" || lm?.below ? "down" : "up";
       el.className = `label3d ${dir}`;
+      el.dataset.key = s.key;
+      el.dataset.index = String(this.labels.length);
       const box = document.createElement("span");
       box.textContent = text;
       el.append(box);

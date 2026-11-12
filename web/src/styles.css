@@ -92,7 +92,8 @@ select { height: 32px; background: var(--raised); border: 1px solid var(--line-s
   display: flex; align-items: center; justify-content: space-between; height: 56px; flex-shrink: 0;
   padding: 0 16px 0 20px; border-bottom: 1px solid var(--line); background: var(--deep);
 }
-.brand { display: flex; gap: 12px; align-items: baseline; }
+.brand { display: flex; gap: 12px; align-items: baseline; white-space: nowrap; min-width: 0; }
+.btn { white-space: nowrap; }
 .logo { font: 500 14px/1 var(--mono); color: var(--accent); }
 .brand h1 { margin: 0; font-size: 16px; line-height: 1; font-weight: 600; }
 .brand p { margin: 0; color: var(--muted); font-size: 13px; }
@@ -299,4 +300,48 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 
 @media (prefers-reduced-motion: reduce) {
   .sheet, .spinner, .chip.say.live .icon, .engine.wait::before { animation: none; }
+}
+
+/* ---------- coach (NOVA's character, Kokoro voice) */
+.coach {
+  display: grid; grid-template-columns: 136px 1fr; gap: 16px; align-items: center;
+  padding: 12px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--card);
+}
+.coach-stage { position: relative; height: 152px; border-radius: var(--r-control); overflow: hidden; background: var(--deep); }
+.coach-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.coach-stage.missing::after { content: "Character not installed (run setup.ps1)"; position: absolute; inset: 12px; color: var(--muted); font-size: 12px; display: grid; place-items: center; text-align: center; }
+.coach-side { display: grid; gap: 8px; align-content: center; min-width: 0; }
+.coach-name { margin: 0; font-weight: 500; }
+.coach-name span { color: var(--muted); font-weight: 400; margin-left: 4px; font-size: 13px; }
+.coach-caption { margin: 0; color: var(--text-2); font-size: 13px; line-height: 20px; min-height: 40px; }
+.btn.icon-only { width: 32px; padding: 0; justify-content: center; }
+#panelBody { min-width: 0; }
+
+/* ---------- phone */
+@media (max-width: 720px) {
+  .top { padding: 0 12px; gap: 8px; }
+  .top-controls { gap: 8px; }
+  .top-controls .seg span { display: none; }
+  .top-controls select { max-width: 112px; }
+  .brand { gap: 8px; }
+  /* small screen: one label plus the tongue tip, so they don't stack on each other */
+  .label3d[data-index]:not([data-index="0"]):not([data-key="tip"]) { display: none; }
+  .label3d span { max-width: 160px; }
+  .layout { display: flex; flex-direction: column; overflow-y: auto; }
+  .lessons { order: 3; max-height: none; border-right: none; border-top: 1px solid var(--line); }
+  .stage { order: 1; height: 62vh; min-height: 380px; flex-shrink: 0; }
+  .panel { order: 2; border-left: none; overflow: visible; padding: 16px; }
+  .legend { display: none; }
+  .stage-bar { padding: 8px; }
+  .modes { width: 100%; }
+  .mode { flex: 1 1 auto; justify-content: center; }
+  .stage-right { width: 100%; justify-content: flex-end; }
+  .coach { grid-template-columns: 112px 1fr; }
+  .coach-stage { height: 128px; }
+  .sheet { padding: 24px 16px; }
+  .phrase { font-size: 32px; line-height: 36px; }
+  .report-top { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 440px) {
+  .brand h1 { display: none; }
 }

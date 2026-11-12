@@ -7,15 +7,37 @@ Tests: `cd web; npm test` and `.venv\Scripts\python.exe -m pytest server`.
 
 ## First-time setup
 
+Needs Python 3.12 and Node.js. Then run once:
+
 ```
-py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-.venv\Scripts\python.exe -m pip install "transformers>=4.44,<5" fastapi uvicorn soundfile numpy pytest httpx
-cd web && npm install
+powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
-The speech model (facebook/wav2vec2-lv-60-espeak-cv-ft, ~1.2 GB) downloads into `models/` on the first start.
-It goes there rather than the Hugging Face cache because Windows refuses the cache's symlinks without Developer Mode.
+It installs the Python and web packages and fetches what can't go in git:
+
+| Part | Licence | Where it comes from |
+|---|---|---|
+| Kokoro voice (`models/kokoro`) | Apache 2.0 | copied from NOVA if present, else downloaded from kokoro-onnx's releases |
+| Live2D Cubism Core (`web/public`) | Live2D Proprietary Software License | copied from JARVIS if present, else downloaded from Live2D |
+| Character (`web/public/models`) | Live2D Free Material License | the recoloured Hiyori from JARVIS if present, else Live2D's original Hiyori |
+| Speech model (`models/wav2vec2-…`, ~1.2 GB) | Apache 2.0 | downloads itself on the first start |
+
+The speech model goes into `models/` rather than the Hugging Face cache because Windows refuses the cache's symlinks without Developer Mode.
+
+Before publishing the app (a website, a store), read Live2D's terms: the Cubism SDK release licence and the Free Material License decide whether you may ship Cubism Core and Hiyori. Your own character avoids the question.
+
+## On a phone (same Wi-Fi)
+
+Double-click `start-phone.bat` on the laptop and scan the QR code it shows.
+
+- Phones only allow the microphone on HTTPS, so the laptop makes its own certificate (`certs/`). The phone warns once that the connection isn't private: tap Advanced, then Proceed (Chrome), or Show Details, then visit (Safari).
+- The link contains an access key (`data/phone_key.txt`). Devices without it get nothing, not even the page. Delete that file to make a new key.
+- If Windows asks whether Python may use the network, allow Private networks.
+- The laptop does the listening and talking, so it must be on, with the window open.
+
+## The coach
+
+Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks with Kokoro (af_heart). She explains the sound, says every model word with lip-sync, gives short spoken feedback after each scored word, and reads the report score. The speaker button turns her voice off (captions stay, model words still play). The engine is copied from JARVIS's GUI into `web/src/nova/`.
 
 ## How a learner uses it
 

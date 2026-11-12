@@ -1,4 +1,4 @@
-import { ArrowRight, Check, createElement, Mic, Play, RotateCcw, Square, Volume2, type IconNode } from "lucide";
+import { ArrowRight, Check, createElement, Mic, Play, RotateCcw, Square, Volume2, VolumeX, type IconNode } from "lucide";
 
 /** One icon set, one size, one stroke; icons take the color of their text. */
 function icon(node: IconNode, size = 16): SVGElement {
@@ -13,6 +13,7 @@ export const icons = {
   stop: () => icon(Square),
   check: (size = 16) => icon(Check, size),
   listen: () => icon(Volume2),
+  muted: () => icon(VolumeX),
   again: () => icon(RotateCcw),
   next: () => icon(ArrowRight),
 };

@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 data/
 models/
+web/public/live2dcubismcore.min.js
+web/public/models/
+certs/
