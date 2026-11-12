@@ -6,6 +6,7 @@ import { PASS_SCORE, type Assessment, type CourseDay } from "../course";
 import { normalizeAll } from "../scoring/align";
 import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
 import { $, h } from "./dom";
+import { icons } from "./icons";
 
 /** Full-screen steps over the app: welcome → voice test → report. */
 
@@ -31,7 +32,7 @@ function engineStatus(el: HTMLElement, onReady: (ready: boolean) => void): () =>
     const s = await api.health();
     if (stop) return;
     if (s.ready) {
-      el.textContent = "Speech engine ready.";
+      el.textContent = "Speech engine ready";
       el.className = "engine ok";
       onReady(true);
       return;
@@ -60,7 +61,7 @@ function engineStatus(el: HTMLElement, onReady: (ready: boolean) => void): () =>
 export function showWelcome(opts: { onStart: () => void; onSkip: () => void; retake?: boolean; onCancel?: () => void }) {
   const o = overlay();
   const status = h("p", { class: "engine wait" }, "Checking the speech engine…");
-  const start = h("button", { class: "btn primary big", disabled: "" }, "🎤 Start the voice test");
+  const start = h("button", { class: "btn primary big", disabled: "" }, icons.mic(), "Start the voice test");
   const stopPoll = engineStatus(status, (ready) => {
     if (ready) start.removeAttribute("disabled");
     else start.setAttribute("disabled", "");
@@ -106,9 +107,9 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
   const phrase = h("p", { class: "phrase" });
   const meter = h("i");
   const state = h("p", { class: "rec-state" });
-  const recBtn = h("button", { class: "btn primary big" }, "🎤 Record");
-  const redo = h("button", { class: "btn", hidden: "" }, "Say it again");
-  const next = h("button", { class: "btn", hidden: "" }, "Next →");
+  const recBtn = h("button", { class: "btn primary big" }, icons.mic(), "Record");
+  const redo = h("button", { class: "btn big", hidden: "" }, icons.again(), "Say it again");
+  const next = h("button", { class: "btn primary big", hidden: "" }, "Next");
   const skip = h("button", { class: "linklike" }, "Skip this phrase");
   const quit = h("button", { class: "linklike" }, "Quit test");
 
@@ -168,12 +169,12 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
       const i = index;
       // send now, judge at the end, so the test keeps moving
       results[i] = api.recognize(take.wav).catch(() => null);
-      state.textContent = "✓ Recorded.";
+      state.textContent = "Recorded";
       state.className = "rec-state ok";
       recBtn.hidden = true;
       redo.hidden = false;
       next.hidden = false;
-      next.textContent = index === ASSESSMENT.length - 1 ? "See my results →" : "Next →";
+      next.replaceChildren(index === ASSESSMENT.length - 1 ? "See my results" : "Next", icons.next());
     } catch (e) {
       if ((e as DOMException).name === "AbortError") return;
       state.textContent = "Microphone blocked. Allow it from the icon in the address bar, then try again.";
@@ -225,10 +226,10 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
   const flaws = rows.filter((r) => r.score < PASS_SCORE);
   const good = rows.filter((r) => r.score >= PASS_SCORE);
   const verdict =
-    a.overall >= 90 ? "Very close to General American." :
-    a.overall >= 75 ? "Clear, with a few sounds that give the accent away." :
-    a.overall >= 55 ? "Understandable, with several noticeable Indian-English sounds." :
-    "Strong Indian-English accent. Lots of room to improve quickly.";
+    a.overall >= 90 ? "Very close to General American" :
+    a.overall >= 75 ? "Clear, with a few sounds that give the accent away" :
+    a.overall >= 55 ? "Understandable, with several noticeable Indian-English sounds" :
+    "A strong Indian-English accent, with lots of room to improve quickly";
 
   const ring = h("div", { class: "ring", style: `--p:${a.overall}` }, h("b", {}, String(a.overall)), h("small", {}, "/ 100"));
   const delta = opts.previous !== undefined
@@ -236,12 +237,15 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
     : null;
 
   const flawList = h("div", { class: "flaws" }, ...flaws.slice(0, 8).map((f) => {
-    const ex = f.findings.slice(0, 2).map((x) => `in "${x.word}" you said ${x.habit}`).join("; ");
+    const first = f.findings[0];
     const go = h("button", { class: "btn small" }, "Practise");
     go.onclick = () => opts.onStart(f.id);
     return h("div", { class: "flaw" },
       h("div", { class: "flaw-head" }, h("b", {}, f.title), h("span", { class: `pill ${f.score < 50 ? "bad" : "mid"}` }, `${f.score}%`)),
-      h("p", { class: "muted" }, ex ? `${ex.charAt(0).toUpperCase()}${ex.slice(1)}.` : "Some sounds didn't come out clearly American."),
+      h("p", {}, first ? `In "${first.word}" you said ${first.habit}.` : "Some of these sounds didn't come out clearly American."),
+      f.findings.length && f.findings[0].target
+        ? h("div", { class: "flaw-said" }, ...f.findings.slice(0, 3).map((x) => h("span", {}, `${x.word}  /${x.heard}/ for /${x.target}/`)))
+        : null,
       go);
   }));
 
@@ -249,7 +253,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
   const courseList = h("ol", { class: "course-preview" }, ...opts.course.slice(0, 6).map((d) =>
     h("li", {}, d.kind === "checkup" ? "Check-up: voice test again" : lessonTitle(d.lesson!))));
 
-  const start = h("button", { class: "btn primary big" }, "Start Day 1 →");
+  const start = h("button", { class: "btn primary big" }, "Start day 1", icons.next());
   start.onclick = () => opts.onStart();
 
   o.append(
@@ -260,7 +264,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
       flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
       flawList,
       good.length ? h("h3", {}, "Already good") : null,
-      good.length ? h("div", { class: "chips" }, ...good.map((g) => h("span", { class: "chip static" }, `✓ ${g.title}`))) : null,
+      good.length ? h("div", { class: "chips" }, ...good.map((g) => h("span", { class: "chip static" }, icons.check(), g.title))) : null,
       h("h3", {}, `Your course: ${lessonDays.length} sounds, one a day`),
       courseList,
       h("div", { class: "row" }, start),

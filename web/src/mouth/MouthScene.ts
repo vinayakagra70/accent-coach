@@ -317,12 +317,12 @@ export class MouthScene {
     this.velum = new THREE.Mesh(new THREE.BufferGeometry(), mats(COLORS.velum[0], COLORS.velum[1]));
     this.ghostTongue = new THREE.Mesh(
       new THREE.BufferGeometry(),
-      new THREE.MeshBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.1, depthWrite: false, depthTest: false }),
+      new THREE.MeshBasicMaterial({ color: 0x8db87a, transparent: true, opacity: 0.1, depthWrite: false, depthTest: false }),
     );
     this.ghostTongue.renderOrder = 5;
     this.ghostLine = new THREE.LineLoop(
       new THREE.BufferGeometry(),
-      new THREE.LineBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.95, depthTest: false }),
+      new THREE.LineBasicMaterial({ color: 0x8db87a, transparent: true, opacity: 0.95, depthTest: false }),
     );
     this.ghostLine.renderOrder = 6;
     this.scene.add(this.tongue, this.upperLip, this.lowerLip, this.velum, this.ghostTongue, this.ghostLine);

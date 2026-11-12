@@ -25,6 +25,7 @@ import * as progress from "./progress";
 import { align, judge, normalizeAll, type CheckResult } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { $, h } from "./ui/dom";
+import { icons, ipa } from "./ui/icons";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
 
@@ -71,7 +72,18 @@ voiceSelect.onchange = () => {
 };
 $("viewSide").onclick = () => scene.sideView();
 $("view3d").onclick = () => scene.resetView();
+$("retakeTest").prepend(icons.mic());
 $("retakeTest").onclick = () => startTest(true);
+
+/** Replace a button's content with an icon and a label. */
+function label(btn: HTMLElement, icon: (() => SVGElement) | null, text: string) {
+  btn.replaceChildren(...(icon ? [icon()] : []), text);
+}
+
+/** IPA symbols a lesson teaches, from its target poses ("v", "w"; "eɪ"). */
+function lessonSymbols(l: Lesson): string[] {
+  return [...new Set(l.targets.map((t) => t.pose.replace(" (habit)", "")))];
+}
 
 // ------------------------------------------------------------------ course helpers
 
@@ -160,7 +172,7 @@ function renderModes() {
     };
     box.append(b);
   });
-  const hb = h("button", { class: "mode habit", role: "tab", "aria-selected": String(mode.kind === "habit"), title: "What Indian-English speakers often do. The teal outline is where it should be." },
+  const hb = h("button", { class: "mode habit", role: "tab", "aria-selected": String(mode.kind === "habit"), title: "What Indian-English speakers often do. The green outline is where it should be." },
     h("span", { class: "sw", style: "background: var(--habit)" }), lesson.habit.label);
   hb.onclick = () => {
     mode = { kind: "habit" };
@@ -169,7 +181,7 @@ function renderModes() {
   box.append(hb);
   if (lesson.vowel) {
     const mb = h("button", { class: "mode mirror", role: "tab", "aria-selected": String(mode.kind === "mirror"), title: "Say the vowel. The 3D tongue follows your voice." },
-      h("span", { class: "sw", style: "background: var(--air)" }), "Mirror my voice 🎤");
+      icons.mic(), "Mirror my voice");
     mb.onclick = () => {
       mode = { kind: "mirror" };
       applyMode();
@@ -224,7 +236,7 @@ async function startMirror() {
     return;
   }
   mirrorUi.status.textContent = `Say a long "${lesson.vowel}" (from the word "${lesson.words[0]}"), hold it for 2 s.`;
-  mirrorUi.btn.textContent = "Stop mirror";
+  label(mirrorUi.btn, icons.stop, "Stop mirror");
   smoother.clear();
   mirrorScores = [];
   const target = lesson.vowel;
@@ -259,7 +271,7 @@ function stopMirror() {
     renderList();
   }
   mirrorBest = 0;
-  if (mirrorUi) mirrorUi.btn.textContent = "Start mirror 🎤";
+  if (mirrorUi) label(mirrorUi.btn, icons.mic, "Start mirror");
 }
 
 // ------------------------------------------------------------------ sidebar
@@ -272,15 +284,15 @@ function renderList() {
     const total = profile.course.length;
     const d = profile.course[profile.day];
     const streak = currentStreak(profile);
-    const label = !d ? "Course complete 🎉" : d.kind === "checkup" ? "Check-up voice test" : LESSONS.find((l) => l.id === d.lesson)?.title ?? "";
-    const go = h("button", { class: "btn primary small" }, !d ? "Review" : finishedToday(profile) ? "Next day (early)" : "Go to today");
+    const name = !d ? "Course complete" : d.kind === "checkup" ? "Check-up voice test" : LESSONS.find((l) => l.id === d.lesson)?.title ?? "";
+    const go = h("button", { class: "btn primary small" }, !d ? "Review" : finishedToday(profile) ? "Start next day early" : "Go to today");
     go.onclick = () => goToday();
     nav.append(h("div", { class: "course-card" },
-      h("div", { class: "row spread" }, h("b", {}, `Day ${Math.min(profile.day + 1, total)} of ${total}`), streak ? h("span", { class: "streak", title: "Days in a row" }, `🔥 ${streak}`) : null),
+      h("div", { class: "row spread" }, h("b", {}, `Day ${Math.min(profile.day + 1, total)} of ${total}`), streak ? h("span", { class: "streak" }, `${streak}-day streak`) : null),
       h("div", { class: "course-bar" }, h("i", { style: `width:${(profile.day / Math.max(1, total)) * 100}%` })),
-      h("p", { class: "muted small" }, finishedToday(profile) ? "Today's done. Next:" : "Today:"),
-      h("p", { class: "today-name" }, label),
-      profile.assessment ? h("p", { class: "muted small" }, `Voice score ${profile.assessment.overall}/100`) : null,
+      h("p", { class: "muted small" }, finishedToday(profile) ? "Done for today. Next" : "Today"),
+      h("p", { class: "today-name" }, name),
+      profile.assessment ? h("p", { class: "muted small" }, `Voice score ${profile.assessment.overall} of 100`) : null,
       go));
   } else {
     const start = h("button", { class: "btn primary small" }, "Take the voice test");
@@ -296,9 +308,10 @@ function renderList() {
       const testScore = profile?.assessment?.lessons[l.id]?.score;
       const m = progress.mastery(l.id);
       const shown = testScore ?? m;
-      const b = h("button", { class: `lesson-btn${l.id === todayId ? " today" : ""}${profile && !courseIds.has(l.id) ? " passed" : ""}`, "aria-current": String(l.id === lesson.id) },
-        h("span", {}, l.title, h("small", {}, l.id === todayId ? "★ today" : l.sound)),
-        h("span", { class: `badge${shown !== null && shown !== undefined && shown >= 85 ? " good" : ""}` }, shown === null || shown === undefined ? "new" : `${shown}%`));
+      const known = shown !== null && shown !== undefined;
+      const b = h("button", { class: `lesson-btn${l.id === todayId ? " today" : ""}${profile && !courseIds.has(l.id) ? " passed" : ""}`, "aria-current": String(l.id === lesson.id), title: l.sound },
+        h("span", {}, h("span", { class: "name" }, l.title), h("span", { class: "tags" }, ...lessonSymbols(l).map(ipa))),
+        h("span", { class: `badge${known && shown! >= 85 ? " good" : known && shown! < 60 ? " low" : ""}` }, known ? `${shown}%` : "–"));
       b.onclick = () => openLesson(l);
       nav.append(b);
     }
@@ -320,7 +333,7 @@ function renderTodayCard() {
   const t = profile.today;
   const req = dayRequirements(lesson.id);
   const step = (done: boolean, text: string, detail?: string) =>
-    h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? "✓" : ""), h("span", {}, text, detail ? h("small", {}, ` ${detail}`) : null));
+    h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
   const finish = h("button", { class: "btn primary" }, `Finish day ${profile.day + 1}`) as HTMLButtonElement;
   if (!dayReady(profile)) finish.disabled = true;
   finish.onclick = () => {
@@ -331,8 +344,8 @@ function renderTodayCard() {
   };
   todaySlot.append(card(`Today · Day ${profile.day + 1}`, "today-card",
     h("ol", { class: "steps" },
-      step(t.learnedTarget, "Watch the American way", "(teal tab below the mouth)"),
-      step(t.learnedHabit, "See your Indian habit", "(orange tab)"),
+      step(t.learnedTarget, "Watch the American way"),
+      step(t.learnedHabit, "See your Indian habit"),
       req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
       step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`)),
     h("div", { class: "row" }, finish)));
@@ -344,14 +357,14 @@ function renderPanel() {
   chart = null;
   mirrorUi = null;
 
-  panel.append(h("h2", {}, lesson.title), h("p", { class: "sub" }, lesson.sound));
+  panel.append(h("h2", {}, lesson.title), h("p", { class: "sub" }, ...lessonSymbols(lesson).map(ipa), `as in ${lesson.words.slice(0, 3).join(", ")}`));
 
   // finished today → friendly "come back tomorrow"
   if (profile && finishedToday(profile) && profile.course[profile.day - 1]?.lesson === lesson.id) {
     const next = profile.course[profile.day];
     const early = h("button", { class: "btn" }, "Start it now anyway");
     early.onclick = () => goToday();
-    panel.append(card("Day done ✓", "today-card",
+    panel.append(card("Day done", "today-card",
       h("p", {}, next ? `Nice work. Tomorrow: ${next.kind === "checkup" ? "a check-up voice test" : LESSONS.find((l) => l.id === next.lesson)?.title}.` : "That was the last day. Take the voice test to see your progress."),
       next ? h("div", { class: "row" }, early) : null));
   }
@@ -361,7 +374,11 @@ function renderPanel() {
   renderTodayCard();
 
   const finding = profile?.assessment?.lessons[lesson.id]?.findings[0];
-  if (finding) panel.append(card("From your voice test", "mistake", h("p", { style: "margin:0" }, `In "${finding.word}" you said ${finding.habit}.`)));
+  if (finding) {
+    panel.append(card("From your voice test", "mistake",
+      h("p", {}, `In "${finding.word}" you said ${finding.habit}.`),
+      finding.target ? h("p", { class: "ipa-tag", style: "margin-top:4px" }, `/${finding.heard}/ instead of /${finding.target}/`) : null));
+  }
   panel.append(card("The usual mistake", "mistake", h("p", { style: "margin:0" }, lesson.mistake)));
   panel.append(card("How to make it", "", h("ol", {}, ...lesson.steps.map((s) => h("li", {}, s)))));
 
@@ -394,7 +411,7 @@ function listenCard() {
   const p0 = progress.get(lesson.id);
   score.textContent = p0.listenTotal ? `all-time ${p0.listenRight}/${p0.listenTotal}` : "";
 
-  const play = h("button", { class: "btn primary" }, "▶ Play a word");
+  const play = h("button", { class: "btn primary" }, icons.play(), "Play a word");
   play.onclick = async () => {
     const pair = lesson.pairs[Math.floor(Math.random() * lesson.pairs.length)];
     answer = pair[Math.random() < 0.5 ? 0 : 1];
@@ -423,7 +440,7 @@ function listenCard() {
     }));
     await speak(answer, 0.85);
   };
-  const both = h("button", { class: "btn" }, "Hear both");
+  const both = h("button", { class: "btn" }, icons.listen(), "Hear both");
   both.onclick = async () => {
     const pair = lesson.pairs[Math.floor(Math.random() * lesson.pairs.length)];
     q.textContent = `"${pair[0]}" … then "${pair[1]}"`;
@@ -514,10 +531,10 @@ function scoredCard() {
         if (allGood) t.speakGood++;
       });
       let msg: string;
-      if (allGood) msg = `✓ "${word}": clean American ${judged.map((j) => j.sym).join(", ")}.`;
-      else if (habit) msg = `✗ "${word}": you said ${habit.res.habit}. The mouth now shows what you did; the teal outline is the target.`;
-      else msg = `~ "${word}": the ${off?.sym} didn't come out clearly (heard "${off?.res.heard}"). Try again slower.`;
-      const row = h("div", { class: `result ${allGood ? "good" : habit ? "bad" : "mid"}` }, h("span", {}, msg), h("small", { class: "muted" }, ` heard /${heard.join("")}/`));
+      if (allGood) msg = `"${word}": a clean American ${judged.map((j) => `/${j.sym}/`).join(" and ")}`;
+      else if (habit) msg = `"${word}": you said ${habit.res.habit}. The mouth shows what you did, and the green outline is the target.`;
+      else msg = `"${word}": the /${off?.sym}/ didn't come out clearly. Try it again, slower.`;
+      const row = h("div", { class: `result ${allGood ? "good" : habit ? "bad" : "mid"}` }, h("span", {}, msg), h("span", { class: "ipa-tag" }, `heard /${heard.join("")}/`));
       results.prepend(row);
       while (results.children.length > 5) results.lastChild?.remove();
       status.textContent = "Press a word to go again.";
@@ -533,7 +550,7 @@ function scoredCard() {
   return card("Say it · scored", "",
     status,
     h("div", { class: "chips" }, ...words.map((w) => {
-      const b = h("button", { class: "chip say" }, `🎤 ${w}`) as HTMLButtonElement;
+      const b = h("button", { class: "chip say" }, icons.mic(), w) as HTMLButtonElement;
       b.onclick = () => void say(w, b);
       return b;
     })),
@@ -544,8 +561,8 @@ function mirrorCard() {
   const canvas = h("canvas", { class: "chart", "aria-label": "Vowel map with your live voice" });
   const meter = h("i");
   const hint = h("p", { class: "hint" });
-  const status = h("p", { class: "note" }, "The 3D tongue will follow your voice. The teal outline is the target.");
-  const btn = h("button", { class: "btn primary" }, "Start mirror 🎤") as HTMLButtonElement;
+  const status = h("p", { class: "note" }, "The 3D tongue follows your voice. The green outline is the target.");
+  const btn = h("button", { class: "btn primary" }, icons.mic(), "Start mirror") as HTMLButtonElement;
   btn.onclick = () => {
     mode = mode.kind === "mirror" ? { kind: "target", i: 0 } : { kind: "mirror" };
     applyMode();
@@ -565,9 +582,9 @@ function mirrorCard() {
 /** For sounds the speech model can't judge (dark L, aspiration): record and compare by ear. */
 function recordCard() {
   const status = h("span", { class: "score" });
-  const rec = h("button", { class: "btn rec" }, "● Record yourself") as HTMLButtonElement;
-  const mine = h("button", { class: "btn", disabled: "" }, "▶ Mine") as HTMLButtonElement;
-  const model = h("button", { class: "btn" }, "▶ American model");
+  const rec = h("button", { class: "btn rec" }, icons.mic(), "Record yourself") as HTMLButtonElement;
+  const mine = h("button", { class: "btn", disabled: "" }, icons.play(), "Mine") as HTMLButtonElement;
+  const model = h("button", { class: "btn" }, icons.listen(), "American model");
   const word = lesson.words[0];
   let url: string | null = null;
   let stopper: { stop: () => Promise<string> } | null = null;
@@ -575,7 +592,7 @@ function recordCard() {
     if (stopper) {
       url = await stopper.stop();
       stopper = null;
-      rec.textContent = "● Record again";
+      label(rec, icons.again, "Record again");
       mine.disabled = false;
       status.textContent = "Compare: play yours, then the model.";
       bumpToday((t) => t.speakTries++);
@@ -583,7 +600,7 @@ function recordCard() {
     }
     try {
       stopper = await mic.record();
-      rec.textContent = "■ Stop";
+      label(rec, icons.stop, "Stop");
       status.textContent = `Say "${word}"…`;
     } catch {
       status.textContent = "Microphone blocked.";

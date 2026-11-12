@@ -11,11 +11,11 @@ export interface ItemResult {
 }
 
 /** Judge every checked sound in one phrase. */
-export function judgeItem(item: TestItem, heard: string[]): (CheckResult & { lesson: string; word: string })[] {
+export function judgeItem(item: TestItem, heard: string[]): (CheckResult & { lesson: string; word: string; sym: string })[] {
   const pairs = align(item.expected, heard);
   return item.checks.map((c) => {
     const check = LESSON_CHECKS[c.lesson].sounds[c.sym];
-    return { ...judge(item.expected, heard, pairs, c.i, check), lesson: c.lesson, word: c.word };
+    return { ...judge(item.expected, heard, pairs, c.i, check), lesson: c.lesson, word: c.word, sym: c.sym };
   });
 }
 
@@ -31,7 +31,7 @@ export function buildAssessment(results: ItemResult[]): Assessment {
       // "off" = the model heard something we have no rule for; give half credit
       // rather than blaming a habit the learner may not have.
       lr.good += j.verdict === "good" ? 1 : j.verdict === "off" ? 0.5 : 0;
-      if (j.verdict === "habit" && j.habit) lr.findings.push({ word: j.word, heard: j.heard, habit: j.habit });
+      if (j.verdict === "habit" && j.habit) lr.findings.push({ word: j.word, target: j.sym, heard: j.heard, habit: j.habit });
     }
   }
 

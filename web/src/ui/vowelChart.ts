@@ -50,19 +50,19 @@ export class VowelChart {
     g.lineWidth = 1;
     g.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
     g.fillStyle = muted;
-    g.font = "11px system-ui, sans-serif";
+    g.font = "12px 'Instrument Sans', system-ui, sans-serif";
     g.textAlign = "left";
-    g.fillText("front", pad + 2, pad - 7);
+    g.fillText("Front", pad + 2, pad - 8);
     g.textAlign = "right";
-    g.fillText("back", w - pad - 2, pad - 7);
+    g.fillText("Back", w - pad - 2, pad - 8);
     g.save();
     g.translate(10, h / 2);
     g.rotate(-Math.PI / 2);
     g.textAlign = "center";
-    g.fillText("tongue high → low", 0, 0);
+    g.fillText("Tongue high to low", 0, 0);
     g.restore();
 
-    g.font = "15px system-ui, sans-serif";
+    g.font = "15px 'IBM Plex Mono', ui-monospace, monospace";
     g.textAlign = "center";
     g.textBaseline = "middle";
     for (const k of Object.keys(VOWEL_FORMANTS)) {
@@ -72,14 +72,14 @@ export class VowelChart {
       if (isT || isH) {
         g.beginPath();
         g.arc(X(p), Y(p), isT ? 22 : 16, 0, Math.PI * 2);
-        g.fillStyle = isT ? "rgba(94, 234, 212, 0.18)" : "rgba(251, 146, 60, 0.16)";
+        g.fillStyle = isT ? "rgba(141, 184, 122, 0.16)" : "rgba(217, 163, 91, 0.12)";
         g.fill();
-        g.strokeStyle = isT ? "#5eead4" : "#fb923c";
+        g.strokeStyle = isT ? "#8db87a" : "#d9a35b";
         g.setLineDash(isT ? [] : [4, 3]);
         g.stroke();
         g.setLineDash([]);
       }
-      g.fillStyle = isT ? "#5eead4" : isH ? "#fb923c" : muted;
+      g.fillStyle = isT ? "#8db87a" : isH ? "#d9a35b" : muted;
       g.fillText(k, X(p), Y(p));
     }
 
@@ -89,7 +89,8 @@ export class VowelChart {
       const a = (i + 1) / this.trail.length;
       g.beginPath();
       g.arc(X(p), Y(p), i === this.trail.length - 1 ? 7 : 3, 0, Math.PI * 2);
-      g.fillStyle = `rgba(125, 211, 252, ${a})`;
+      // your voice: the one bright thing on the chart
+      g.fillStyle = `rgba(237, 237, 237, ${a})`;
       g.fill();
     }
   }

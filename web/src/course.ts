@@ -9,6 +9,8 @@ import { LESSON_CHECKS } from "./scoring/checks";
 
 export interface Finding {
   word: string;
+  /** The American sound that was expected, e.g. "θ". */
+  target?: string;
   heard: string;
   habit: string;
 }
