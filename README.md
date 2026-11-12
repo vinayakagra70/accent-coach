@@ -2,8 +2,29 @@
 
 General American pronunciation for Indian English speakers, with a 3D cut-away mouth.
 
-Run: double-click `start.bat` (or `cd web; npm install; npm run dev`), then open http://127.0.0.1:5180.
-Tests: `cd web; npm test`.
+Run: double-click `start.bat`. It starts the speech engine (port 5181) and the app (http://127.0.0.1:5180).
+Tests: `cd web; npm test` and `.venv\Scripts\python.exe -m pytest server`.
+
+## First-time setup
+
+```
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv\Scripts\python.exe -m pip install "transformers>=4.44,<5" fastapi uvicorn soundfile numpy pytest httpx
+cd web && npm install
+```
+
+The speech model (facebook/wav2vec2-lv-60-espeak-cv-ft, ~1.2 GB) downloads into `models/` on the first start.
+It goes there rather than the Hugging Face cache because Windows refuses the cache's symlinks without Developer Mode.
+
+## How a learner uses it
+
+1. Voice test: 13 short phrases, about 3 minutes, or skip it for the standard course.
+2. Report: a score out of 100, each flaw with the exact word ("think /t/ for /θ/"), and what's already good.
+3. Daily course: one sound a day, worst and most noticeable first. Each day: watch the American way,
+   see your habit, train your ear, then say 4 words and get them scored. Every 5 days a check-up re-test re-plans the rest.
+
+JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
 ## What makes it different
 
