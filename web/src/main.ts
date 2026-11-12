@@ -26,6 +26,8 @@ import { align, judge, normalizeAll, type CheckResult } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
+import { mountEngineGate } from "./ui/engineGate";
+import { lines } from "./speech/lines";
 import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking } from "./coach";
 import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
@@ -100,7 +102,7 @@ accentPick.onchange = () => {
     saveProfile({ ...fresh, streak: profile.streak, history: profile.history });
   }
   openLesson(LESSONS.find((l) => l.id === lesson.id) ?? LESSONS[0]);
-  void coachSays(`Now practising ${ACCENTS[next].long}. Take the voice test again so your course fits it.`, "happy");
+  void coachSays(lines.switched(ACCENTS[next].long), "happy");
 };
 
 $("viewSide").onclick = () => scene.sideView();
@@ -372,7 +374,7 @@ function renderTodayCard() {
   finish.onclick = () => {
     if (!profile) return;
     saveProfile(completeDay(profile));
-    void coachSays(`Day ${profile.day} done. Same time tomorrow?`, "happy");
+    void coachSays(lines.dayDone(profile.day), "happy");
     renderList();
     renderPanel();
   };
@@ -534,14 +536,12 @@ function scoredCard() {
   const words = lesson.words.filter((w) => judgeWord(w, []).length > 0);
   let recording = false;
 
-  const setEngine = async () => {
-    const s = await api.health();
-    engineReady = s.ready;
-    status.textContent = s.ready ? "Press a word, say it, then pause. It's checked sound by sound."
-      : s.reachable ? "Speech engine is loading… (about 30 s the first time)" : "Speech engine isn't running. Start the app with start.bat to get scored.";
-    if (!s.ready && s.reachable) setTimeout(setEngine, 2500);
-  };
-  void setEngine();
+  const gate = h("div");
+  mountEngineGate(gate, (ready) => {
+    engineReady = ready;
+    gate.hidden = ready;
+    status.textContent = ready ? "Press a word, say it, then pause. It's checked sound by sound." : "";
+  });
 
   const say = async (word: string, btn: HTMLButtonElement) => {
     if (recording || !engineReady) return;
@@ -557,7 +557,7 @@ function scoredCard() {
         return;
       }
       status.textContent = "Checking…";
-      const heard = normalizeAll(await api.recognize(take.wav));
+      const heard = normalizeAll(await api.recognize(take));
       const judged = judgeWord(word, heard);
       const allGood = judged.every((j) => j.res.verdict === "good");
       const habit = judged.find((j) => j.res.verdict === "habit");
@@ -576,9 +576,9 @@ function scoredCard() {
       status.textContent = "Press a word to go again.";
       if (habit) showWhatYouSaid(habit.res.heard, habit.sym, habit.res.habit ?? "");
       // spoken feedback, kept short so it doesn't slow practice down
-      if (allGood) void coachSays(`Nice. That ${judged[0]?.sym === "θ" || judged[0]?.sym === "ð" ? "TH" : "sound"} was clean.`, "happy");
-      else if (habit) void coachSays(`Close. You said ${habit.res.habit}. Watch the mouth, then try "${word}" again.`, "curious");
-      else void coachSays(`I couldn't hear that clearly. Try "${word}" once more, a little slower.`, "curious");
+      if (allGood) void coachSays(lines.good(judged[0]?.sym ?? ""), "happy");
+      else if (habit) void coachSays(lines.habit(habit.res.habit ?? ""), "curious");
+      else void coachSays(lines.unclear(), "curious");
     } catch (e) {
       status.textContent = `Couldn't check that: ${(e as Error).message}`;
     } finally {
@@ -588,6 +588,7 @@ function scoredCard() {
   };
 
   return card("Say it · scored", "",
+    gate,
     status,
     h("div", { class: "chips" }, ...words.map((w) => {
       const b = h("button", { class: "chip say" }, icons.mic(), w) as HTMLButtonElement;
@@ -710,7 +711,7 @@ function startTest(retake: boolean) {
           const first = p.course[p.day];
           const firstName = first?.kind === "lesson" ? LESSONS.find((l) => l.id === first.lesson)?.title : null;
           void coachSays(
-            `Your score is ${a.overall} out of 100.${previous !== undefined ? ` That's ${a.overall >= previous ? "up" : "down"} ${Math.abs(a.overall - previous)} from last time.` : ""}${firstName ? ` We'll start with ${firstName.replace(/\s*\(.*\)/, "")}.` : ""}`,
+            lines.report(a.overall, previous, firstName ?? undefined),
             a.overall >= 75 ? "happy" : "curious",
           );
           showReport({
@@ -731,7 +732,7 @@ function startTest(retake: boolean) {
 function setupCoach() {
   const buttons = $("coachButtons");
   const explain = h("button", { class: "btn small" }, "Explain this sound");
-  explain.onclick = () => void coachSays(`${lesson.mistake} ${lesson.steps[0]}`, "curious");
+  explain.onclick = () => void coachSays(lines.explain(lesson), "curious");
   const voiceBtn = h("button", { class: "btn small icon-only" }) as HTMLButtonElement;
   const paint = () => {
     const on = coachVoiceOn();
@@ -780,3 +781,13 @@ async function boot() {
 }
 
 void boot();
+
+// phone build: work offline after the first visit, and let phones install it
+if (api.STATIC && "serviceWorker" in navigator && !import.meta.env.DEV) {
+  void navigator.serviceWorker.register("./sw.js").catch(() => undefined);
+}
+
+// test hook (this computer only): lets the browser tests drive the on-device speech model
+void import("./listen/engine").then(({ engine, isLocalTest }) => {
+  if (isLocalTest()) (window as unknown as { __engine: unknown }).__engine = engine;
+});

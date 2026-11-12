@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "voices": "esbuild tools/utterances.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/utterances.mjs --log-level=warning && node node_modules/.cache/utterances.mjs ../data/utterances.json && cd .. && .venv\\Scripts\\python.exe -m tools.render_voice data/utterances.json",
+    "build:phone": "tsc && vite build --mode phone --outDir dist-phone --emptyOutDir && node tools/trim-phone-build.mjs",
+    "preview:phone": "vite preview --mode phone --outDir dist-phone",
     "typecheck": "tsc",
     "test": "esbuild tests/formants.test.ts tests/scoring.test.ts tests/british.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/tests --log-level=warning && node node_modules/.cache/tests/formants.test.js && node node_modules/.cache/tests/scoring.test.js && node node_modules/.cache/tests/british.test.js"
   },
@@ -14,6 +17,7 @@
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/instrument-sans": "^5.3.0",
     "lucide": "^1.72.0",
+    "onnxruntime-web": "^1.31.1",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
     "three": "0.170.0"

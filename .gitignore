@@ -8,3 +8,5 @@ models/
 web/public/live2dcubismcore.min.js
 web/public/models/
 certs/
+web/public/audio/
+web/dist-phone/

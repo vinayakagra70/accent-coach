@@ -1,4 +1,6 @@
-import { accentInfo } from "./content/accent";
+import { accent, accentInfo } from "./content/accent";
+import { STATIC } from "./api";
+import { clip, SPEEDS, speedBucket, splitSentences, type Speed } from "./speech/clips";
 import { Nova } from "./nova/core/Nova";
 import { idleGlances } from "./nova/plugins/idleGlances";
 import { tapReactions } from "./nova/plugins/tapReactions";
@@ -78,6 +80,15 @@ function showCaption(text: string | null, ms = 0) {
   if (text && ms) captionTimer = window.setTimeout(() => captionEl && (captionEl.textContent = ""), ms);
 }
 
+/** Pre-rendered clip first; then the laptop's live Kokoro (not in the phone build). */
+async function voiceFor(text: string, kind: "word" | "line", speed: number): Promise<ArrayBuffer | null> {
+  const bucket: Speed = kind === "line" ? "normal" : speedBucket(speed);
+  const pre = await clip(accent(), kind, bucket, text);
+  if (pre) return pre;
+  if (STATIC) return null;
+  return kokoro(text, kind === "line" ? 1.0 : SPEEDS[bucket]);
+}
+
 async function kokoro(text: string, speed: number): Promise<ArrayBuffer | null> {
   if (kokoroOk === false) return null;
   try {
@@ -120,7 +131,7 @@ async function playBuffer(buf: ArrayBuffer): Promise<void> {
     await nova.speak(buf, { after: "idle" });
     return;
   }
-  const url = URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  const url = URL.createObjectURL(new Blob([buf]));
   const a = new Audio(url);
   await new Promise<void>((res) => {
     a.onended = a.onerror = () => res();
@@ -135,7 +146,7 @@ async function playBuffer(buf: ArrayBuffer): Promise<void> {
  */
 export async function sayWord(text: string, speed = 0.95): Promise<void> {
   const my = ++seq;
-  const buf = await kokoro(text, speed);
+  const buf = await voiceFor(text, "word", speed);
   if (my !== seq) return;
   if (buf) return playBuffer(buf);
   return browserSay(text, speed * 0.9);
@@ -149,17 +160,18 @@ export async function coachSays(text: string, mood: Mood = null): Promise<void> 
   if (!coachVoiceOn()) return;
   // Sentence by sentence: the first one starts in under a second, and the next
   // is synthesized while the current one plays.
-  const parts = text.match(/[^.!?]+[.!?]+["')]*\s*|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) ?? [text];
-  let next = kokoro(parts[0], 1.0);
+  const parts = splitSentences(text);
+  let next = voiceFor(parts[0], "line", 1.0);
   for (let i = 0; i < parts.length; i++) {
     const buf = await next;
     if (my !== seq) return;
-    if (i + 1 < parts.length) next = kokoro(parts[i + 1], 1.0);
+    if (i + 1 < parts.length) next = voiceFor(parts[i + 1], "line", 1.0);
     if (buf) await playBuffer(buf);
-    else {
+    else if (!STATIC) {
       await browserSay(parts.slice(i).join(" "), 1.0);
       break;
     }
+    // phone build: a sentence that wasn't pre-rendered is shown as a caption only
     if (my !== seq) return;
   }
   if (my === seq) showCaption(text, 2500);

@@ -1,0 +1,16 @@
+{
+  "name": "Accent Coach",
+  "short_name": "Accent Coach",
+  "description": "American or British pronunciation for Indian English speakers, with a 3D mouth and a coach.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141415",
+  "theme_color": "#0f0f10",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

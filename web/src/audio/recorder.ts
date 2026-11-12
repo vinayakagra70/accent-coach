@@ -4,6 +4,8 @@
  */
 export interface Take {
   wav: Blob;
+  /** The same audio as 16 kHz mono samples (for the on-device model). */
+  pcm: Float32Array;
   seconds: number;
   /** False when nothing louder than the room was heard. */
   speech: boolean;
@@ -47,7 +49,8 @@ export async function recordPhrase(opts: RecordOptions = {}): Promise<Take> {
       const rate = ctx.sampleRate;
       void ctx.close();
       const pcm = concat(chunks);
-      resolve({ wav: encodeWav(resample(pcm, rate, OUT_RATE), OUT_RATE), seconds: pcm.length / rate, speech: spoke });
+      const pcm16 = resample(pcm, rate, OUT_RATE);
+      resolve({ wav: encodeWav(pcm16, OUT_RATE), pcm: pcm16, seconds: pcm.length / rate, speech: spoke });
     };
     opts.signal?.addEventListener("abort", () => {
       if (done) return;

@@ -1,0 +1,8 @@
+# Read by Netlify and Cloudflare Pages. Cross-origin isolation lets the
+# on-device speech model use several CPU threads (about 4x faster).
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Permissions-Policy: microphone=(self)
+/audio/*
+  Cache-Control: public, max-age=604800

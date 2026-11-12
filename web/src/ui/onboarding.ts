@@ -7,6 +7,7 @@ import { normalizeAll } from "../scoring/align";
 import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
 import { $, h } from "./dom";
 import { icons } from "./icons";
+import { mountEngineGate } from "./engineGate";
 import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
 
 /** Full-screen steps over the app: welcome → voice test → report. */
@@ -22,39 +23,6 @@ export function closeOverlay() {
   const o = $("overlay");
   o.hidden = true;
   o.replaceChildren();
-}
-
-// ------------------------------------------------------------------ engine status
-
-function engineStatus(el: HTMLElement, onReady: (ready: boolean) => void): () => void {
-  let stop = false;
-  const tick = async () => {
-    if (stop) return;
-    const s = await api.health();
-    if (stop) return;
-    if (s.ready) {
-      el.textContent = "Speech engine ready";
-      el.className = "engine ok";
-      onReady(true);
-      return;
-    }
-    onReady(false);
-    if (!s.reachable) {
-      el.textContent = "Speech engine isn't running. Start the app with start.bat (it starts both parts).";
-      el.className = "engine bad";
-    } else if (s.error) {
-      el.textContent = `Speech engine failed to load: ${s.error}`;
-      el.className = "engine bad";
-    } else {
-      el.textContent = "Speech engine is loading (about 30 seconds the first time)…";
-      el.className = "engine wait";
-    }
-    setTimeout(tick, 2000);
-  };
-  void tick();
-  return () => {
-    stop = true;
-  };
 }
 
 // ------------------------------------------------------------------ welcome
@@ -83,9 +51,9 @@ export function showWelcome(opts: {
         return b;
       }));
   }
-  const status = h("p", { class: "engine wait" }, "Checking the speech engine…");
+  const status = h("div");
   const start = h("button", { class: "btn primary big", disabled: "" }, icons.mic(), "Start the voice test");
-  const stopPoll = engineStatus(status, (ready) => {
+  const stopPoll = mountEngineGate(status, (ready) => {
     if (ready) start.removeAttribute("disabled");
     else start.setAttribute("disabled", "");
   });
@@ -112,7 +80,7 @@ export function showWelcome(opts: {
         h("li", {}, "Use a quiet room. Headphones help."),
         h("li", {}, "Speak naturally, the way you normally would. Don't perform."),
         h("li", {}, "Recording stops by itself when you pause."),
-        h("li", {}, "Audio stays on this laptop and isn't saved.")),
+        h("li", {}, `Your recordings stay on this ${api.STATIC ? "device" : "laptop"} and aren't saved.`)),
       status,
       h("div", { class: "row" }, start, skip),
     ),
@@ -193,7 +161,7 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
       }
       const i = index;
       // send now, judge at the end, so the test keeps moving
-      results[i] = api.recognize(take.wav).catch(() => null);
+      results[i] = api.recognize(take).catch(() => null);
       state.textContent = "Recorded";
       state.className = "rec-state ok";
       recBtn.hidden = true;
