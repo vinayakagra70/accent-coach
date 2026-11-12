@@ -1,3 +1,4 @@
+import { accentInfo } from "./content/accent";
 import { Nova } from "./nova/core/Nova";
 import { idleGlances } from "./nova/plugins/idleGlances";
 import { tapReactions } from "./nova/plugins/tapReactions";
@@ -83,7 +84,7 @@ async function kokoro(text: string, speed: number): Promise<ArrayBuffer | null> 
     const r = await fetch("/api/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: "af_heart", speed }),
+      body: JSON.stringify({ text, voice: accentInfo().voice, lang: accentInfo().lang, speed }),
     });
     if (!r.ok) {
       // 503 = still loading: try again next time; anything else: give up for this session
@@ -103,9 +104,10 @@ function browserSay(text: string, rate: number): Promise<void> {
     if (!("speechSynthesis" in window)) return resolve();
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const v = speechSynthesis.getVoices().find((x) => x.lang === "en-US");
+    const lang = accentInfo().lang === "en-gb" ? "en-GB" : "en-US";
+    const v = speechSynthesis.getVoices().find((x) => x.lang.replace("_", "-") === lang);
     if (v) u.voice = v;
-    u.lang = "en-US";
+    u.lang = lang;
     u.rate = rate;
     u.onend = u.onerror = () => resolve();
     speechSynthesis.speak(u);

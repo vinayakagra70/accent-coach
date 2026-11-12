@@ -47,6 +47,8 @@ export interface TodayProgress {
 export interface Profile {
   version: 1;
   updatedAt: string;
+  /** Target accent; missing in profiles from before British existed = American. */
+  accent?: "us" | "uk";
   skippedTest: boolean;
   assessment: Assessment | null;
   history: { date: string; overall: number }[];
@@ -92,10 +94,11 @@ export function buildCourse(a: Assessment | null): CourseDay[] {
   return days;
 }
 
-export function newProfile(a: Assessment | null, skipped: boolean): Profile {
+export function newProfile(a: Assessment | null, skipped: boolean, accent: "us" | "uk" = "us"): Profile {
   return {
     version: 1,
     updatedAt: new Date().toISOString(),
+    accent,
     skippedTest: skipped,
     assessment: a,
     history: a ? [{ date: a.date, overall: a.overall }] : [],

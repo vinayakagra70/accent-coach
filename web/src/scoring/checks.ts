@@ -21,7 +21,7 @@ export interface LessonChecks {
 
 const DROPPED_R = "no R sound (\"caa\" for car)";
 
-export const LESSON_CHECKS: Record<string, LessonChecks> = {
+export const US_CHECKS: Record<string, LessonChecks> = {
   "alveolar-td": {
     impact: 10,
     voiceTested: true,
@@ -127,6 +127,13 @@ export const LESSON_CHECKS: Record<string, LessonChecks> = {
     },
   },
 };
+
+/** The active accent's checks (a live binding, swapped by content/accent.ts). */
+export let LESSON_CHECKS: Record<string, LessonChecks> = US_CHECKS;
+
+export function _setChecks(c: Record<string, LessonChecks>) {
+  LESSON_CHECKS = c;
+}
 
 /** Which lesson owns a target symbol in practice words, for the lesson being studied. */
 export function checkFor(lessonId: string, symbol: string): SoundCheck | undefined {

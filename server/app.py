@@ -121,7 +121,8 @@ def create_app(
         if not text:
             raise HTTPException(400, "nothing to say")
         try:
-            wav = voice.speak(text, str(body.get("voice", "af_heart")), float(body.get("speed", 1.0)))
+            lang = body.get("lang")
+            wav = voice.speak(text, str(body.get("voice", "af_heart")), float(body.get("speed", 1.0)), str(lang) if lang else None)
         except TtsNotReady as exc:
             raise HTTPException(503, f"voice not ready: {exc}")
         return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})

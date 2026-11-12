@@ -12,7 +12,7 @@ export interface TestItem {
 
 const T = (s: string) => s.split(" ");
 
-export const ASSESSMENT: TestItem[] = [
+export const US_ASSESSMENT: TestItem[] = [
   {
     text: "Very well.",
     expected: T("v ɛ ɹ i w ɛ l"),
@@ -138,3 +138,10 @@ export const ASSESSMENT: TestItem[] = [
     ],
   },
 ];
+
+/** The active accent's test (a live binding, swapped by content/accent.ts). */
+export let ASSESSMENT: TestItem[] = US_ASSESSMENT;
+
+export function _setAssessment(a: TestItem[]) {
+  ASSESSMENT = a;
+}

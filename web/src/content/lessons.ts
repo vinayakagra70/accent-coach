@@ -2,7 +2,7 @@ import type { Vec2 } from "../mouth/pose";
 import { v } from "../mouth/pose";
 
 /** General American pronunciations (IPA phonemes; ɝ also stands for unstressed ɚ). */
-export const LEXICON: Record<string, string[]> = {
+export const US_LEXICON: Record<string, string[]> = {
   very: ["v", "ɛ", "ɹ", "i"], voice: ["v", "ɔɪ", "s"], video: ["v", "ɪ", "d", "i", "oʊ"],
   vine: ["v", "aɪ", "n"], wine: ["w", "aɪ", "n"], vest: ["v", "ɛ", "s", "t"], west: ["w", "ɛ", "s", "t"],
   vet: ["v", "ɛ", "t"], wet: ["w", "ɛ", "t"], veil: ["v", "eɪ", "ɫ"], whale: ["w", "eɪ", "ɫ"],
@@ -45,7 +45,9 @@ export const LEXICON: Record<string, string[]> = {
 };
 
 /** Typical General American formants (Hz), Peterson & Barney / Hillenbrand averages. */
-export const VOWEL_FORMANTS: Record<string, { low: [number, number]; high: [number, number] }> = {
+export type Formants = Record<string, { low: [number, number]; high: [number, number] }>;
+
+export const US_FORMANTS: Formants = {
   i: { low: [270, 2290], high: [310, 2790] },
   ɪ: { low: [390, 1990], high: [430, 2480] },
   e: { low: [476, 2089], high: [536, 2530] },
@@ -85,7 +87,7 @@ export interface Lesson {
   habitVowel?: string;
 }
 
-export const LESSONS: Lesson[] = [
+export const US_LESSONS: Lesson[] = [
   {
     id: "v-w",
     title: "V vs W",
@@ -384,3 +386,16 @@ export const LESSONS: Lesson[] = [
     pairs: [["fan", "pan"], ["fair", "pair"], ["fine", "pine"], ["fast", "past"]],
   },
 ];
+
+// ------------------------------------------------------------------ the active accent
+// These are live ES-module bindings: content/accent.ts swaps them between
+// American and British, and every importer sees the new value.
+export let LESSONS: Lesson[] = US_LESSONS;
+export let LEXICON: Record<string, string[]> = US_LEXICON;
+export let VOWEL_FORMANTS: Formants = US_FORMANTS;
+
+export function _setLessonContent(lessons: Lesson[], lexicon: Record<string, string[]>, formants: Formants) {
+  LESSONS = lessons;
+  LEXICON = lexicon;
+  VOWEL_FORMANTS = formants;
+}

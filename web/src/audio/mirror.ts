@@ -28,12 +28,13 @@ export function vowelPoint(vowel: string, voice: VoiceType): ChartPoint | null {
   return toChart(f1, f2, voice);
 }
 
-const ANCHORS = Object.keys(VOWEL_FORMANTS).filter((k) => PHONEME_POSES[k] && k !== "ɝ");
+/** Vowels with both formants and a pose, for the active accent. */
+const anchors = () => Object.keys(VOWEL_FORMANTS).filter((k) => PHONEME_POSES[k] && k !== "ɝ");
 
 /** Guess the mouth pose that produced this vowel, by blending the nearest known vowels. */
 export function poseFromFormants(f1: number, f2: number, voice: VoiceType): Pose {
   const p = toChart(f1, f2, voice);
-  const near = ANCHORS.map((k) => {
+  const near = anchors().map((k) => {
     const q = vowelPoint(k, voice)!;
     return { k, d: Math.hypot(p.x - q.x, p.y - q.y) };
   })

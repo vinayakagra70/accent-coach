@@ -4,13 +4,15 @@
  * `rate` keeps the old browser-TTS meaning (0.7 slow … 0.9 natural).
  */
 import { sayWord } from "../coach";
+import { accentInfo } from "../content/accent";
 
 export function hasVoice(): boolean {
   return true;
 }
 
 export function voiceName(): string {
-  return "Kokoro (American, af_heart), or the browser voice if the server is off";
+  const a = accentInfo();
+  return `Kokoro (${a.name}, ${a.voice}), or the browser voice if the server is off`;
 }
 
 export function speak(text: string, rate = 0.9): Promise<void> {

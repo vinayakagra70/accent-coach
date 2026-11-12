@@ -72,6 +72,11 @@ export const PHONEME_POSES: Record<string, Pose> = {
   ə: makePose({ jaw: 0.25, tip: TIP_LOW, body: v(-3.0, 0.5), airflow: "vowel", voiced: true }),
   ɝ: C({ jaw: 0.2, tip: v(-1.25, 0.82), curl: 0.35, body: v(-3.4, 0.95), lipRound: 0.45, airflow: "vowel", voiced: true }),
   a: makePose({ jaw: 0.62, tip: TIP_LOW, body: v(-3.0, -0.05), airflow: "vowel", voiced: true }),
+  // British (RP)
+  /** Short rounded "o" of hot, job: open jaw, lips a little round, tongue low and back. */
+  ɒ: makePose({ jaw: 0.6, lipRound: 0.4, tip: v(-0.5, -0.85), body: v(-3.95, -0.05), airflow: "vowel", voiced: true }),
+  /** NURSE vowel without R: bird, word — relaxed, mid, tongue tip down. */
+  ɜ: makePose({ jaw: 0.24, tip: TIP_LOW, body: v(-2.9, 0.62), airflow: "vowel", voiced: true }),
 
   // ---- Indian-English habits (what we help people move away from)
   /** Retroflex t: tip curled back onto the roof. */
@@ -98,6 +103,7 @@ export const PHONEME_POSES: Record<string, Pose> = {
 export const SEQUENCES: Record<string, string[]> = {
   eɪ: ["e", "ɪ"],
   oʊ: ["o", "ʊ"],
+  əʊ: ["ə", "ʊ"],
   aɪ: ["a", "ɪ"],
   aʊ: ["a", "ʊ"],
   ɔɪ: ["ɔ", "ɪ"],

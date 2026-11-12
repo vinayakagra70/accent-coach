@@ -12,8 +12,10 @@ from pathlib import Path
 KOKORO_DIR = Path(__file__).resolve().parent.parent / "models" / "kokoro"
 MODEL_FILE = "kokoro-v1.0.onnx"
 VOICES_FILE = "voices-v1.0.bin"
-# American English voices only: the app teaches General American.
-VOICES = {"af_heart", "af_bella", "am_michael", "am_adam"}
+# English voices for the two target accents. The language decides pronunciation
+# (en-gb: water = wˈɔːtə, car = kˈɑː); it follows the voice unless given.
+VOICES = {"af_heart", "af_bella", "am_michael", "am_adam", "bf_emma", "bf_isabella", "bm_george", "bm_lewis"}
+LANGS = {"en-us", "en-gb"}
 DEFAULT_VOICE = "af_heart"
 MAX_CHARS = 400
 
@@ -27,7 +29,7 @@ class KokoroTTS:
         self.model_dir = model_dir
         self._kokoro = None
         self._lock = threading.Lock()
-        self._cache: OrderedDict[tuple[str, str, float], bytes] = OrderedDict()
+        self._cache: OrderedDict[tuple[str, str, float, str], bytes] = OrderedDict()
         self._cache_size = cache_size
         self.loading = False
         self.error: str | None = None
@@ -65,20 +67,21 @@ class KokoroTTS:
         finally:
             self.loading = False
 
-    def speak(self, text: str, voice: str = DEFAULT_VOICE, speed: float = 1.0) -> bytes:
+    def speak(self, text: str, voice: str = DEFAULT_VOICE, speed: float = 1.0, lang: str | None = None) -> bytes:
         """Returns 16-bit WAV bytes."""
         if not self.ready:
             raise TtsNotReady(self.error or "voice is still loading")
         text = " ".join(text.split())[:MAX_CHARS]
         voice = voice if voice in VOICES else DEFAULT_VOICE
+        lang = lang if lang in LANGS else ("en-gb" if voice.startswith("b") else "en-us")
         speed = min(1.4, max(0.6, speed))
-        key = (text, voice, round(speed, 2))
+        key = (text, voice, round(speed, 2), lang)
         with self._lock:
             hit = self._cache.get(key)
             if hit:
                 self._cache.move_to_end(key)
                 return hit
-            audio, rate = self._kokoro.create(text, voice=voice, speed=speed, lang="en-us")
+            audio, rate = self._kokoro.create(text, voice=voice, speed=speed, lang=lang)
         import soundfile as sf
 
         buf = io.BytesIO()

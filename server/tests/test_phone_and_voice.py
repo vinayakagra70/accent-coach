@@ -20,10 +20,10 @@ class FakeTTS(KokoroTTS):
     def ready(self):
         return self._ok
 
-    def speak(self, text, voice="af_heart", speed=1.0):
+    def speak(self, text, voice="af_heart", speed=1.0, lang=None):
         if not self._ok:
             raise TtsNotReady("loading")
-        self.calls.append((text, voice, speed))
+        self.calls.append((text, voice, speed) if lang is None else (text, voice, speed, lang))
         return b"RIFF....WAVE"
 
 
@@ -38,6 +38,12 @@ def test_speak_returns_wav(tmp_path):
     r = c.post("/api/speak", json={"text": "think", "voice": "am_michael", "speed": 0.9})
     assert r.status_code == 200 and r.headers["content-type"] == "audio/wav"
     assert tts.calls == [("think", "am_michael", 0.9)]
+
+
+def test_speak_passes_british_language(tmp_path):
+    tts = FakeTTS()
+    make(tmp_path, tts=tts).post("/api/speak", json={"text": "water", "voice": "bf_emma", "lang": "en-gb"})
+    assert tts.calls == [("water", "bf_emma", 1.0, "en-gb")]
 
 
 def test_speak_errors(tmp_path):

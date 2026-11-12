@@ -27,6 +27,7 @@ import { LESSON_CHECKS } from "./scoring/checks";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
 import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking } from "./coach";
+import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
 
@@ -71,6 +72,37 @@ voiceSelect.onchange = () => {
     chart.clear();
   }
 };
+// ------------------------------------------------------------------ target accent
+
+const accentPick = $<HTMLSelectElement>("accentPick");
+
+function applyAccent(a: Accent) {
+  setAccent(a);
+  accentPick.value = a;
+  $("tagline").textContent = `${ACCENTS[a].long} for Indian English speakers`;
+  try {
+    localStorage.setItem("accentCoach.accent", a);
+  } catch {
+    /* ignore */
+  }
+}
+
+accentPick.onchange = () => {
+  const next = accentPick.value as Accent;
+  if (next === accent()) return;
+  if (profile && profile.course.length && !confirm(`Switch to ${ACCENTS[next].long}? Your course will be rebuilt for it. Your streak is kept.`)) {
+    accentPick.value = accent();
+    return;
+  }
+  applyAccent(next);
+  if (profile) {
+    const fresh = newProfile(null, true, next);
+    saveProfile({ ...fresh, streak: profile.streak, history: profile.history });
+  }
+  openLesson(LESSONS.find((l) => l.id === lesson.id) ?? LESSONS[0]);
+  void coachSays(`Now practising ${ACCENTS[next].long}. Take the voice test again so your course fits it.`, "happy");
+};
+
 $("viewSide").onclick = () => scene.sideView();
 $("view3d").onclick = () => scene.resetView();
 $("retakeTest").prepend(icons.mic());
@@ -165,7 +197,7 @@ function renderModes() {
   const box = $("modes");
   box.replaceChildren();
   lesson.targets.forEach((t, i) => {
-    const b = h("button", { class: "mode target", role: "tab", "aria-selected": String(mode.kind === "target" && mode.i === i), title: "Show the American target" },
+    const b = h("button", { class: "mode target", role: "tab", "aria-selected": String(mode.kind === "target" && mode.i === i), title: `Show the ${accentInfo().name} target` },
       h("span", { class: "sw", style: "background: var(--accent)" }), t.label);
     b.onclick = () => {
       mode = { kind: "target", i };
@@ -346,7 +378,7 @@ function renderTodayCard() {
   };
   todaySlot.append(card(`Today · Day ${profile.day + 1}`, "today-card",
     h("ol", { class: "steps" },
-      step(t.learnedTarget, "Watch the American way"),
+      step(t.learnedTarget, `Watch the ${accentInfo().name} way`),
       step(t.learnedHabit, "See your Indian habit"),
       req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
       step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`)),
@@ -535,7 +567,7 @@ function scoredCard() {
         if (allGood) t.speakGood++;
       });
       let msg: string;
-      if (allGood) msg = `"${word}": a clean American ${judged.map((j) => `/${j.sym}/`).join(" and ")}`;
+      if (allGood) msg = `"${word}": a clean ${accentInfo().name} ${judged.map((j) => `/${j.sym}/`).join(" and ")}`;
       else if (habit) msg = `"${word}": you said ${habit.res.habit}. The mouth shows what you did, and the green outline is the target.`;
       else msg = `"${word}": the /${off?.sym}/ didn't come out clearly. Try it again, slower.`;
       const row = h("div", { class: `result ${allGood ? "good" : habit ? "bad" : "mid"}` }, h("span", {}, msg), h("span", { class: "ipa-tag" }, `heard /${heard.join("")}/`));
@@ -592,7 +624,7 @@ function recordCard() {
   const status = h("span", { class: "score" });
   const rec = h("button", { class: "btn rec" }, icons.mic(), "Record yourself") as HTMLButtonElement;
   const mine = h("button", { class: "btn", disabled: "" }, icons.play(), "Mine") as HTMLButtonElement;
-  const model = h("button", { class: "btn" }, icons.listen(), "American model");
+  const model = h("button", { class: "btn" }, icons.listen(), `${accentInfo().name} model`);
   const word = lesson.words[0];
   let url: string | null = null;
   let stopper: { stop: () => Promise<string> } | null = null;
@@ -654,10 +686,15 @@ function goToday() {
 function startTest(retake: boolean) {
   showWelcome({
     retake,
+    accent: accent(),
+    onAccent: (a) => {
+      applyAccent(a);
+      openLesson(LESSONS.find((l) => l.id === lesson.id) ?? LESSONS[0]);
+    },
     onCancel: closeOverlay,
     onSkip: () => {
       closeOverlay();
-      if (!profile) saveProfile(newProfile(null, true));
+      if (!profile) saveProfile(newProfile(null, true, accent()));
       goToday();
     },
     onStart: () =>
@@ -668,7 +705,7 @@ function startTest(retake: boolean) {
         },
         onDone: (a: Assessment) => {
           const previous = profile?.assessment?.overall;
-          const p = profile && profile.course.length ? replan(profile, a) : newProfile(a, false);
+          const p = profile && profile.course.length ? replan(profile, a) : newProfile(a, false, accent());
           saveProfile(p);
           const first = p.course[p.day];
           const firstName = first?.kind === "lesson" ? LESSONS.find((l) => l.id === first.lesson)?.title : null;
@@ -721,6 +758,13 @@ async function boot() {
     profile = server;
     saveLocal(server);
   }
+  let stored: Accent | null = null;
+  try {
+    stored = localStorage.getItem("accentCoach.accent") as Accent | null;
+  } catch {
+    /* ignore */
+  }
+  applyAccent(profile?.accent ?? stored ?? "us");
   let startId: string | null = null;
   try {
     startId = new URLSearchParams(location.search).get("lesson");

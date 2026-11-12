@@ -13,10 +13,17 @@
       <div class="brand">
         <span class="logo" aria-hidden="true">/æ/</span>
         <h1>Accent Coach</h1>
-        <p>General American for Indian English speakers</p>
+        <p id="tagline">General American for Indian English speakers</p>
       </div>
       <div class="top-controls">
         <button class="btn small" id="retakeTest" title="Take the voice test again and update your course">Voice test</button>
+        <label class="seg" title="The accent you're learning">
+          <span>Accent</span>
+          <select id="accentPick">
+            <option value="us">American</option>
+            <option value="uk">British</option>
+          </select>
+        </label>
         <label class="seg" title="Used for the vowel mirror; picks the right reference vowels for your voice">
           <span>My voice</span>
           <select id="voiceType">

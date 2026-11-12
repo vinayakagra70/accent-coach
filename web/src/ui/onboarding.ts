@@ -7,6 +7,7 @@ import { normalizeAll } from "../scoring/align";
 import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
 import { $, h } from "./dom";
 import { icons } from "./icons";
+import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
 
 /** Full-screen steps over the app: welcome → voice test → report. */
 
@@ -58,8 +59,30 @@ function engineStatus(el: HTMLElement, onReady: (ready: boolean) => void): () =>
 
 // ------------------------------------------------------------------ welcome
 
-export function showWelcome(opts: { onStart: () => void; onSkip: () => void; retake?: boolean; onCancel?: () => void }) {
+export function showWelcome(opts: {
+  onStart: () => void;
+  onSkip: () => void;
+  retake?: boolean;
+  onCancel?: () => void;
+  accent?: Accent;
+  onAccent?: (a: Accent) => void;
+}) {
   const o = overlay();
+  // First visit: choose the accent to learn. (Later it's in the header.)
+  let picker: HTMLElement | null = null;
+  if (!opts.retake && opts.onAccent) {
+    const pick = (a: Accent) => {
+      opts.onAccent!(a);
+      for (const b of picker!.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.accent === a));
+    };
+    picker = h("div", { class: "accent-pick", role: "group", "aria-label": "Accent to learn" },
+      ...(["us", "uk"] as Accent[]).map((a) => {
+        const b = h("button", { class: "accent-opt", "data-accent": a, "aria-pressed": String(opts.accent === a) },
+          h("b", {}, ACCENTS[a].long), h("small", {}, a === "us" ? "as in the US: water = \"wadder\", car with an R" : "as in the UK: water = \"waw-tuh\", car = \"caa\""));
+        b.onclick = () => pick(a);
+        return b;
+      }));
+  }
   const status = h("p", { class: "engine wait" }, "Checking the speech engine…");
   const start = h("button", { class: "btn primary big", disabled: "" }, icons.mic(), "Start the voice test");
   const stopPoll = engineStatus(status, (ready) => {
@@ -83,6 +106,8 @@ export function showWelcome(opts: { onStart: () => void; onSkip: () => void; ret
         opts.retake
           ? "Read the same 13 short phrases again. Your course will adjust to what's improved and what still needs work."
           : "Read 13 short phrases out loud (about 3 minutes). Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around your flaws."),
+      picker ? h("h3", { style: "margin-top:0" }, "Which accent do you want to learn?") : null,
+      picker,
       h("ul", { class: "ticks" },
         h("li", {}, "Use a quiet room. Headphones help."),
         h("li", {}, "Speak naturally, the way you normally would. Don't perform."),
@@ -226,7 +251,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
   const flaws = rows.filter((r) => r.score < PASS_SCORE);
   const good = rows.filter((r) => r.score >= PASS_SCORE);
   const verdict =
-    a.overall >= 90 ? "Very close to General American" :
+    a.overall >= 90 ? `Very close to ${accentInfo().long}` :
     a.overall >= 75 ? "Clear, with a few sounds that give the accent away" :
     a.overall >= 55 ? "Understandable, with several noticeable Indian-English sounds" :
     "A strong Indian-English accent, with lots of room to improve quickly";
@@ -242,7 +267,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
     go.onclick = () => opts.onStart(f.id);
     return h("div", { class: "flaw" },
       h("div", { class: "flaw-head" }, h("b", {}, f.title), h("span", { class: `pill ${f.score < 50 ? "bad" : "mid"}` }, `${f.score}%`)),
-      h("p", {}, first ? `In "${first.word}" you said ${first.habit}.` : "Some of these sounds didn't come out clearly American."),
+      h("p", {}, first ? `In "${first.word}" you said ${first.habit}.` : `Some of these sounds didn't come out clearly ${accentInfo().name}.`),
       f.findings.length && f.findings[0].target
         ? h("div", { class: "flaw-said" }, ...f.findings.slice(0, 3).map((x) => h("span", {}, `${x.word}  /${x.heard}/ for /${x.target}/`)))
         : null,
@@ -260,7 +285,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
     h("div", { class: "sheet report" },
       h("p", { class: "eyebrow" }, "Your accent report"),
       h("div", { class: "report-top" }, ring, h("div", {}, h("h2", {}, verdict), delta,
-        h("p", { class: "muted" }, "Based on 13 phrases, judged sound by sound against General American. Dark L and the puff on P/T/K can't be heard reliably yet, so they're taught but not scored."))),
+        h("p", { class: "muted" }, `Based on 13 phrases, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`))),
       flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
       flawList,
       good.length ? h("h3", {}, "Already good") : null,
