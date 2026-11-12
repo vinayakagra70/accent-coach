@@ -21,7 +21,9 @@ export type FromWorker =
   | { type: "progress"; loaded: number; total: number }
   | { type: "ready"; ms: number }
   | { type: "error"; message: string; id?: number }
-  | { type: "result"; id: number; phonemes: string[]; ms: number };
+  | { type: "result"; id: number; phonemes: string[]; ms: number }
+  /** A recording has started being checked (keeps the main thread's watchdog quiet). */
+  | { type: "started"; id: number };
 
 const post = (m: FromWorker) => (self as unknown as { postMessage(m: FromWorker): void }).postMessage(m);
 
@@ -125,6 +127,7 @@ export function prepare(a: Float32Array): Float32Array {
 
 async function recognize(id: number, pcm: Float32Array) {
   await load();
+  post({ type: "started", id });
   const t = performance.now();
   const x = prepare(pcm.subarray(0, 16000 * 15));
   const feeds: Record<string, ort.Tensor> = { input_values: new ort.Tensor("float32", x, [1, x.length]) };
@@ -134,7 +137,10 @@ async function recognize(id: number, pcm: Float32Array) {
   const out = await session!.run(feeds);
   const logits = out[session!.outputNames[0]];
   const [, frames, classes] = logits.dims as number[];
-  const data = logits.data as Float32Array;
+  // copy what we need, then free the tensors right away: phones have little memory to spare
+  const data = (logits.data as Float32Array).slice();
+  for (const t of Object.values(out)) t.dispose();
+  for (const t of Object.values(feeds)) t.dispose();
   const phonemes: string[] = [];
   let prev = -1;
   for (let f = 0; f < frames; f++) {
@@ -160,5 +166,10 @@ self.onmessage = (e: MessageEvent<ToWorker>) => {
   else if (m.type === "load") {
     if (m.url) modelUrl = m.url; // dev/test override only (engine.load passes it in dev builds)
     load().catch((err) => post({ type: "error", message: String(err?.message ?? err) }));
-  } else if (m.type === "recognize") recognize(m.id, m.pcm).catch((err) => post({ type: "error", id: m.id, message: String(err?.message ?? err) }));
+  } else if (m.type === "recognize") {
+    // One recording at a time: running several at once multiplies memory use.
+    queue = queue.then(() => recognize(m.id, m.pcm)).catch((err) => post({ type: "error", id: m.id, message: String(err?.message ?? err) }));
+  }
 };
+
+let queue: Promise<void> = Promise.resolve();

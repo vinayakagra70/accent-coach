@@ -8,6 +8,8 @@ import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
 import { $, h } from "./dom";
 import { icons } from "./icons";
 import { mountEngineGate } from "./engineGate";
+import { ENGINE_STOPPED } from "../listen/engine";
+import type { Take } from "../audio/recorder";
 import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
 
 /** Full-screen steps over the app: welcome → voice test → report. */
@@ -91,7 +93,11 @@ export function showWelcome(opts: {
 
 export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () => void }) {
   const o = overlay();
-  const results: (Promise<string[] | null> | null)[] = ASSESSMENT.map(() => null);
+  /** A recording the engine couldn't check (it stopped), as opposed to a skipped phrase (null). */
+  const FAILED = "failed" as const;
+  const results: (Promise<string[] | typeof FAILED> | null)[] = ASSESSMENT.map(() => null);
+  const takes: (Take | null)[] = ASSESSMENT.map(() => null);
+  const check = (take: Take) => api.recognize(take).catch(() => FAILED);
   let index = 0;
   let abort: AbortController | null = null;
 
@@ -161,7 +167,8 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
       }
       const i = index;
       // send now, judge at the end, so the test keeps moving
-      results[i] = api.recognize(take).catch(() => null);
+      takes[i] = take;
+      results[i] = check(take);
       state.textContent = "Recorded";
       state.className = "rec-state ok";
       recBtn.hidden = true;
@@ -177,8 +184,53 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
   };
 
   const finish = async () => {
-    o.replaceChildren(h("div", { class: "sheet" }, h("p", { class: "eyebrow" }, "Voice test"), h("h2", {}, "Listening to your recordings…"), h("div", { class: "spinner" })));
-    const heard = await Promise.all(results.map((r) => r ?? Promise.resolve(null)));
+    const total = takes.filter(Boolean).length;
+    const progressLine = h("p", { class: "lead" }, "");
+    const progressBar = h("i");
+    o.replaceChildren(h("div", { class: "sheet" },
+      h("p", { class: "eyebrow" }, "Voice test"),
+      h("h2", {}, "Listening to your recordings…"),
+      progressLine,
+      h("div", { class: "progress" }, progressBar),
+      h("p", { class: "note" }, "This runs on your device and usually takes under a minute.")));
+    let done = 0;
+    const tick = () => {
+      progressLine.textContent = `${done} of ${total} checked`;
+      progressBar.style.width = `${total ? (done / total) * 100 : 100}%`;
+    };
+    tick();
+    const settled = await Promise.all(results.map((r) => (r ?? Promise.resolve(null)).then((v) => {
+      if (r) {
+        done++;
+        tick();
+      }
+      return v;
+    })));
+
+    // Some recordings couldn't be checked (the engine stopped): offer to retry just those.
+    const failed = settled.map((v, i) => (v === FAILED ? i : -1)).filter((i) => i >= 0);
+    if (failed.length) {
+      const retry = h("button", { class: "btn primary big" }, icons.again(), `Retry ${failed.length === 1 ? "1 recording" : `${failed.length} recordings`}`);
+      retry.onclick = () => {
+        for (const i of failed) results[i] = check(takes[i]!);
+        void finish();
+      };
+      const usable = settled.filter((v) => Array.isArray(v)).length;
+      const carryOn = h("button", { class: "btn" }, "Continue without them");
+      carryOn.onclick = () => {
+        for (const i of failed) results[i] = null;
+        void finish();
+      };
+      o.replaceChildren(h("div", { class: "sheet" },
+        h("p", { class: "eyebrow" }, "Voice test"),
+        h("h2", {}, failed.length === total ? "Your recordings couldn't be checked" : `${failed.length} of ${total} recordings couldn't be checked`),
+        h("p", { class: "lead" }, api.STATIC ? ENGINE_STOPPED : "The speech engine on this laptop didn't answer. Make sure start.bat is still running, then retry."),
+        h("p", { class: "note" }, "Your recordings are kept, so you won't have to read the phrases again."),
+        h("div", { class: "row" }, retry, usable >= 4 ? carryOn : null)));
+      return;
+    }
+
+    const heard = settled.map((v) => (Array.isArray(v) ? v : null));
     const items: ItemResult[] = ASSESSMENT.map((item, i) => ({ item, heard: heard[i] ? normalizeAll(heard[i]!) : null }));
     const recorded = items.filter((x) => x.heard).length;
     if (recorded < 4) {
@@ -199,6 +251,7 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
   skip.onclick = () => {
     abort?.abort();
     results[index] = null;
+    takes[index] = null;
     advance();
   };
   quit.onclick = () => {
