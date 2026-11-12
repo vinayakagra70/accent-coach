@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,7 +23,7 @@ import numpy as np
 MODEL_ID = "facebook/wav2vec2-lv-60-espeak-cv-ft"
 # A plain folder, not the Hugging Face cache: the cache needs symlinks, which
 # Windows refuses without Developer Mode (WinError 1314).
-MODEL_DIR = Path(__file__).resolve().parent.parent / "models" / "wav2vec2-lv-60-espeak-cv-ft"
+MODEL_DIR = Path(os.environ.get("ACCENT_COACH_MODEL_DIR") or Path(__file__).resolve().parent.parent / "models" / "wav2vec2-lv-60-espeak-cv-ft")
 SAMPLE_RATE = 16000
 MAX_SECONDS = 15
 

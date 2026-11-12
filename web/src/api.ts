@@ -10,6 +10,52 @@ import { engine } from "./listen/engine";
  */
 export const STATIC = import.meta.env.VITE_STATIC === "1";
 
+/**
+ * Phone build only: the online listener (space/, a Hugging Face Space) for phones
+ * that don't have the memory to run the speech model themselves. Empty = not offered.
+ */
+export const ONLINE_URL = (import.meta.env.VITE_LISTEN_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
+export type ListenMode = "device" | "online";
+const MODE_KEY = "accentCoach.listenMode";
+
+/** Where this phone checks recordings. Saved per device. */
+export function listenMode(): ListenMode {
+  if (!STATIC || !ONLINE_URL) return "device";
+  try {
+    return localStorage.getItem(MODE_KEY) === "online" ? "online" : "device";
+  } catch {
+    return "device";
+  }
+}
+
+const modeListeners = new Set<() => void>();
+
+export function setListenMode(m: ListenMode) {
+  try {
+    localStorage.setItem(MODE_KEY, m);
+  } catch {
+    /* ignore */
+  }
+  modeListeners.forEach((f) => f());
+}
+
+export function onListenModeChange(f: () => void): () => void {
+  modeListeners.add(f);
+  return () => modeListeners.delete(f);
+}
+
+async function onlineHealth(): Promise<Health> {
+  try {
+    const r = await fetch(`${ONLINE_URL}/health`, { cache: "no-store" });
+    if (!r.ok) return { reachable: r.status !== 404, ready: false, loading: true, error: null };
+    const j = await r.json();
+    return { reachable: true, ready: !!j.ready, loading: !!j.loading, error: j.error ?? null };
+  } catch {
+    return { reachable: false, ready: false, loading: false, error: null };
+  }
+}
+
 export interface Health {
   reachable: boolean;
   ready: boolean;
@@ -22,6 +68,7 @@ export interface Health {
 }
 
 export async function health(): Promise<Health> {
+  if (STATIC && listenMode() === "online") return onlineHealth();
   if (STATIC) {
     const s = engine.state;
     return { reachable: true, ready: s.ready, loading: s.loading, error: s.error, needsDownload: !s.ready && !s.loading, progress: s.progress };
@@ -38,6 +85,11 @@ export async function health(): Promise<Health> {
 
 /** Phonemes the model heard, as written by the model (not yet normalized). */
 export async function recognize(take: Take): Promise<string[]> {
+  if (STATIC && listenMode() === "online") {
+    const r = await fetch(`${ONLINE_URL}/recognize`, { method: "POST", body: take.wav, headers: { "Content-Type": "audio/wav" } });
+    if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail ?? `online checker error ${r.status}`);
+    return (await r.json()).phonemes as string[];
+  }
   if (STATIC) return engine.recognize(take.pcm);
   const r = await fetch("/api/recognize", { method: "POST", body: take.wav, headers: { "Content-Type": "audio/wav" } });
   if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail ?? `server error ${r.status}`);

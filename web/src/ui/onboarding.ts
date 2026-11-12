@@ -215,6 +215,18 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
         for (const i of failed) results[i] = check(takes[i]!);
         void finish();
       };
+      // Phones that ran out of memory: check the same recordings online instead.
+      const goOnline = api.STATIC && api.ONLINE_URL && api.listenMode() === "device"
+        ? h("button", { class: "btn primary big" }, `Check ${failed.length === 1 ? "it" : "them"} online`)
+        : null;
+      if (goOnline) {
+        retry.className = "btn big";
+        goOnline.onclick = () => {
+          api.setListenMode("online");
+          for (const i of failed) results[i] = check(takes[i]!);
+          void finish();
+        };
+      }
       const usable = settled.filter((v) => Array.isArray(v)).length;
       const carryOn = h("button", { class: "btn" }, "Continue without them");
       carryOn.onclick = () => {
@@ -226,7 +238,8 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
         h("h2", {}, failed.length === total ? "Your recordings couldn't be checked" : `${failed.length} of ${total} recordings couldn't be checked`),
         h("p", { class: "lead" }, api.STATIC ? ENGINE_STOPPED : "The speech engine on this laptop didn't answer. Make sure start.bat is still running, then retry."),
         h("p", { class: "note" }, "Your recordings are kept, so you won't have to read the phrases again."),
-        h("div", { class: "row" }, retry, usable >= 4 ? carryOn : null)));
+        goOnline ? h("p", { class: "note" }, "Checking online sends these recordings to Accent Coach's checker. They're used once and not stored.") : null,
+        h("div", { class: "row" }, goOnline, retry, usable >= 4 ? carryOn : null)));
       return;
     }
 
