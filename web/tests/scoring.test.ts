@@ -11,7 +11,7 @@ import { align, judge, normalizeAll } from "../src/scoring/align";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { buildAssessment, judgeItem } from "../src/scoring/report";
 
-const heard: Record<string, string[]> = JSON.parse(readFileSync("tests/fixtures/kokoro-heard.json", "utf-8"));
+const heard: Record<string, string[]> = JSON.parse(readFileSync(process.env.HEARD ?? "tests/fixtures/kokoro-heard.json", "utf-8"));
 
 let failed = 0;
 function check(ok: boolean, msg: string) {
