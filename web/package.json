@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc",
-    "test": "esbuild tests/formants.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/formants.test.mjs --log-level=warning && node node_modules/.cache/formants.test.mjs"
+    "test": "esbuild tests/formants.test.ts tests/scoring.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/tests --log-level=warning && node node_modules/.cache/tests/formants.test.js && node node_modules/.cache/tests/scoring.test.js"
   },
   "dependencies": {
     "three": "0.170.0"

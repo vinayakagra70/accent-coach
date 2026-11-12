@@ -1,6 +1,13 @@
 @echo off
-rem Accent Coach: starts the local web app and opens it in the browser.
-cd /d "%~dp0web"
+rem Accent Coach: starts the speech engine (Python, port 5181) and the app (port 5180).
+cd /d "%~dp0"
+if not exist .venv\Scripts\python.exe (
+  echo The speech engine isn't installed. See README.md, "First-time setup".
+  pause
+  goto :eof
+)
+start "Accent Coach - speech engine" /min .venv\Scripts\python.exe -m uvicorn server.app:app --host 127.0.0.1 --port 5181
+cd web
 if not exist node_modules (
   echo Installing once...
   call npm install --no-fund --no-audit || goto :fail

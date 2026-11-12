@@ -1,0 +1,269 @@
+import * as api from "../api";
+import { recordPhrase } from "../audio/recorder";
+import { ASSESSMENT } from "../content/assessment";
+import { LESSONS } from "../content/lessons";
+import { PASS_SCORE, type Assessment, type CourseDay } from "../course";
+import { normalizeAll } from "../scoring/align";
+import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
+import { $, h } from "./dom";
+
+/** Full-screen steps over the app: welcome → voice test → report. */
+
+function overlay(): HTMLElement {
+  const o = $("overlay");
+  o.hidden = false;
+  o.replaceChildren();
+  return o;
+}
+
+export function closeOverlay() {
+  const o = $("overlay");
+  o.hidden = true;
+  o.replaceChildren();
+}
+
+// ------------------------------------------------------------------ engine status
+
+function engineStatus(el: HTMLElement, onReady: (ready: boolean) => void): () => void {
+  let stop = false;
+  const tick = async () => {
+    if (stop) return;
+    const s = await api.health();
+    if (stop) return;
+    if (s.ready) {
+      el.textContent = "Speech engine ready.";
+      el.className = "engine ok";
+      onReady(true);
+      return;
+    }
+    onReady(false);
+    if (!s.reachable) {
+      el.textContent = "Speech engine isn't running. Start the app with start.bat (it starts both parts).";
+      el.className = "engine bad";
+    } else if (s.error) {
+      el.textContent = `Speech engine failed to load: ${s.error}`;
+      el.className = "engine bad";
+    } else {
+      el.textContent = "Speech engine is loading (about 30 seconds the first time)…";
+      el.className = "engine wait";
+    }
+    setTimeout(tick, 2000);
+  };
+  void tick();
+  return () => {
+    stop = true;
+  };
+}
+
+// ------------------------------------------------------------------ welcome
+
+export function showWelcome(opts: { onStart: () => void; onSkip: () => void; retake?: boolean; onCancel?: () => void }) {
+  const o = overlay();
+  const status = h("p", { class: "engine wait" }, "Checking the speech engine…");
+  const start = h("button", { class: "btn primary big", disabled: "" }, "🎤 Start the voice test");
+  const stopPoll = engineStatus(status, (ready) => {
+    if (ready) start.removeAttribute("disabled");
+    else start.setAttribute("disabled", "");
+  });
+  start.onclick = () => {
+    stopPoll();
+    opts.onStart();
+  };
+  const skip = h("button", { class: "btn" }, opts.retake ? "Not now" : "Skip — give me the standard course");
+  skip.onclick = () => {
+    stopPoll();
+    (opts.retake ? opts.onCancel ?? opts.onSkip : opts.onSkip)();
+  };
+  o.append(
+    h("div", { class: "sheet" },
+      h("p", { class: "eyebrow" }, opts.retake ? "Check-up" : "Welcome"),
+      h("h2", {}, opts.retake ? "Let's see how far you've come" : "First, let's hear how you speak"),
+      h("p", { class: "lead" },
+        opts.retake
+          ? "Read the same 13 short phrases again. Your course will adjust to what's improved and what still needs work."
+          : "Read 13 short phrases out loud (about 3 minutes). Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around your flaws."),
+      h("ul", { class: "ticks" },
+        h("li", {}, "Use a quiet room. Headphones help."),
+        h("li", {}, "Speak naturally, the way you normally would. Don't perform."),
+        h("li", {}, "Recording stops by itself when you pause."),
+        h("li", {}, "Audio stays on this laptop and isn't saved.")),
+      status,
+      h("div", { class: "row" }, start, skip),
+    ),
+  );
+}
+
+// ------------------------------------------------------------------ the test
+
+export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () => void }) {
+  const o = overlay();
+  const results: (Promise<string[] | null> | null)[] = ASSESSMENT.map(() => null);
+  let index = 0;
+  let abort: AbortController | null = null;
+
+  const bar = h("i");
+  const counter = h("span", { class: "score" });
+  const phrase = h("p", { class: "phrase" });
+  const meter = h("i");
+  const state = h("p", { class: "rec-state" });
+  const recBtn = h("button", { class: "btn primary big" }, "🎤 Record");
+  const redo = h("button", { class: "btn", hidden: "" }, "Say it again");
+  const next = h("button", { class: "btn", hidden: "" }, "Next →");
+  const skip = h("button", { class: "linklike" }, "Skip this phrase");
+  const quit = h("button", { class: "linklike" }, "Quit test");
+
+  o.append(
+    h("div", { class: "sheet test" },
+      h("div", { class: "progress" }, bar),
+      h("div", { class: "row spread" }, h("p", { class: "eyebrow" }, "Voice test"), counter),
+      h("p", { class: "muted" }, "Read this out loud:"),
+      phrase,
+      h("div", { class: "meter tall" }, meter),
+      state,
+      h("div", { class: "row" }, recBtn, redo, next),
+      h("div", { class: "row spread" }, skip, quit),
+    ),
+  );
+
+  const show = () => {
+    const item = ASSESSMENT[index];
+    phrase.textContent = item.text;
+    counter.textContent = `${index + 1} / ${ASSESSMENT.length}`;
+    bar.style.width = `${(index / ASSESSMENT.length) * 100}%`;
+    state.textContent = "Press Record, then read the phrase.";
+    state.className = "rec-state";
+    recBtn.hidden = false;
+    recBtn.removeAttribute("disabled");
+    redo.hidden = true;
+    next.hidden = true;
+    meter.style.width = "0";
+  };
+
+  const advance = () => {
+    index++;
+    if (index < ASSESSMENT.length) show();
+    else void finish();
+  };
+
+  const record = async () => {
+    recBtn.setAttribute("disabled", "");
+    redo.hidden = true;
+    next.hidden = true;
+    state.textContent = "Listening… read the phrase now.";
+    state.className = "rec-state live";
+    abort = new AbortController();
+    try {
+      const take = await recordPhrase({
+        onLevel: (l) => (meter.style.width = `${Math.round(l * 100)}%`),
+        onSpeech: () => (state.textContent = "Got you… pause when you're done."),
+        signal: abort.signal,
+      });
+      meter.style.width = "0";
+      if (!take.speech) {
+        state.textContent = "I didn't hear anything. Check your mic and try again.";
+        state.className = "rec-state warn";
+        recBtn.removeAttribute("disabled");
+        return;
+      }
+      const i = index;
+      // send now, judge at the end, so the test keeps moving
+      results[i] = api.recognize(take.wav).catch(() => null);
+      state.textContent = "✓ Recorded.";
+      state.className = "rec-state ok";
+      recBtn.hidden = true;
+      redo.hidden = false;
+      next.hidden = false;
+      next.textContent = index === ASSESSMENT.length - 1 ? "See my results →" : "Next →";
+    } catch (e) {
+      if ((e as DOMException).name === "AbortError") return;
+      state.textContent = "Microphone blocked. Allow it from the icon in the address bar, then try again.";
+      state.className = "rec-state warn";
+      recBtn.removeAttribute("disabled");
+    }
+  };
+
+  const finish = async () => {
+    o.replaceChildren(h("div", { class: "sheet" }, h("p", { class: "eyebrow" }, "Voice test"), h("h2", {}, "Listening to your recordings…"), h("div", { class: "spinner" })));
+    const heard = await Promise.all(results.map((r) => r ?? Promise.resolve(null)));
+    const items: ItemResult[] = ASSESSMENT.map((item, i) => ({ item, heard: heard[i] ? normalizeAll(heard[i]!) : null }));
+    const recorded = items.filter((x) => x.heard).length;
+    if (recorded < 4) {
+      o.replaceChildren(h("div", { class: "sheet" },
+        h("h2", {}, "Not enough recordings"),
+        h("p", { class: "lead" }, `Only ${recorded} of ${ASSESSMENT.length} phrases came through, which isn't enough to judge fairly.`),
+        h("div", { class: "row" },
+          Object.assign(h("button", { class: "btn primary" }, "Try again"), { onclick: () => runTest(opts) }),
+          Object.assign(h("button", { class: "btn" }, "Cancel"), { onclick: opts.onCancel }))));
+      return;
+    }
+    opts.onDone(buildAssessment(items));
+  };
+
+  recBtn.onclick = () => void record();
+  redo.onclick = () => void record();
+  next.onclick = advance;
+  skip.onclick = () => {
+    abort?.abort();
+    results[index] = null;
+    advance();
+  };
+  quit.onclick = () => {
+    abort?.abort();
+    opts.onCancel();
+  };
+  show();
+}
+
+// ------------------------------------------------------------------ report
+
+const lessonTitle = (id: string) => LESSONS.find((l) => l.id === id)?.title ?? id;
+
+export function showReport(opts: { assessment: Assessment; course: CourseDay[]; previous?: number; onStart: (lessonId?: string) => void }) {
+  const a = opts.assessment;
+  const o = overlay();
+  const rows = weakest(a);
+  const flaws = rows.filter((r) => r.score < PASS_SCORE);
+  const good = rows.filter((r) => r.score >= PASS_SCORE);
+  const verdict =
+    a.overall >= 90 ? "Very close to General American." :
+    a.overall >= 75 ? "Clear, with a few sounds that give the accent away." :
+    a.overall >= 55 ? "Understandable, with several noticeable Indian-English sounds." :
+    "Strong Indian-English accent. Lots of room to improve quickly.";
+
+  const ring = h("div", { class: "ring", style: `--p:${a.overall}` }, h("b", {}, String(a.overall)), h("small", {}, "/ 100"));
+  const delta = opts.previous !== undefined
+    ? h("p", { class: `delta ${a.overall >= opts.previous ? "up" : "down"}` }, `${a.overall - opts.previous >= 0 ? "+" : ""}${a.overall - opts.previous} since last test`)
+    : null;
+
+  const flawList = h("div", { class: "flaws" }, ...flaws.slice(0, 8).map((f) => {
+    const ex = f.findings.slice(0, 2).map((x) => `in "${x.word}" you said ${x.habit}`).join("; ");
+    const go = h("button", { class: "btn small" }, "Practise");
+    go.onclick = () => opts.onStart(f.id);
+    return h("div", { class: "flaw" },
+      h("div", { class: "flaw-head" }, h("b", {}, f.title), h("span", { class: `pill ${f.score < 50 ? "bad" : "mid"}` }, `${f.score}%`)),
+      h("p", { class: "muted" }, ex ? `${ex.charAt(0).toUpperCase()}${ex.slice(1)}.` : "Some sounds didn't come out clearly American."),
+      go);
+  }));
+
+  const lessonDays = opts.course.filter((d) => d.kind === "lesson");
+  const courseList = h("ol", { class: "course-preview" }, ...opts.course.slice(0, 6).map((d) =>
+    h("li", {}, d.kind === "checkup" ? "Check-up: voice test again" : lessonTitle(d.lesson!))));
+
+  const start = h("button", { class: "btn primary big" }, "Start Day 1 →");
+  start.onclick = () => opts.onStart();
+
+  o.append(
+    h("div", { class: "sheet report" },
+      h("p", { class: "eyebrow" }, "Your accent report"),
+      h("div", { class: "report-top" }, ring, h("div", {}, h("h2", {}, verdict), delta,
+        h("p", { class: "muted" }, "Based on 13 phrases, judged sound by sound against General American. Dark L and the puff on P/T/K can't be heard reliably yet, so they're taught but not scored."))),
+      flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
+      flawList,
+      good.length ? h("h3", {}, "Already good") : null,
+      good.length ? h("div", { class: "chips" }, ...good.map((g) => h("span", { class: "chip static" }, `✓ ${g.title}`))) : null,
+      h("h3", {}, `Your course: ${lessonDays.length} sounds, one a day`),
+      courseList,
+      h("div", { class: "row" }, start),
+    ),
+  );
+}
