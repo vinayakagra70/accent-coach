@@ -39,7 +39,9 @@ let modelUrl = MODEL_URL;
 let loading: Promise<void> | null = null;
 
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`;
-ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 2) : 1;
+/** Phones get fewer threads: each one costs memory, and memory is what phones run out of. */
+const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(MOBILE ? 2 : 4, navigator.hardwareConcurrency || 2) : 1;
 
 async function cached(): Promise<boolean> {
   try {
@@ -77,15 +79,26 @@ async function download(): Promise<ArrayBuffer> {
   } catch {
     /* storage full or blocked: it just downloads again next time */
   }
-  return data.buffer.slice(0, loaded);
+  // no copy: a second 242 MB buffer is exactly what pushes phones over
+  return loaded === buf.length ? buf.buffer : buf.buffer.slice(0, loaded);
 }
 
 async function load(): Promise<void> {
   if (session) return;
   loading ??= (async () => {
     const t = performance.now();
-    const bytes = await download();
-    session = await ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: ["wasm"], graphOptimizationLevel: "all" });
+    let bytes: ArrayBuffer | null = await download();
+    session = await ort.InferenceSession.create(new Uint8Array(bytes), {
+      executionProviders: ["wasm"],
+      graphOptimizationLevel: "all",
+      // Every recording has a different length; with these on, the engine keeps a
+      // separate memory plan per length, so memory grows phrase after phrase until
+      // a phone kills it. Off, memory stays flat.
+      enableMemPattern: false,
+      enableCpuMemArena: false,
+      executionMode: "sequential",
+    });
+    bytes = null; // the engine has its own copy now; let the 242 MB download go
     post({ type: "ready", ms: Math.round(performance.now() - t) });
   })().catch((e) => {
     loading = null;
