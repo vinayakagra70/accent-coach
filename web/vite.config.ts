@@ -9,8 +9,10 @@ import { defineConfig, type Plugin } from "vite";
  * Never part of a build; the app only uses it when a test asks for it on localhost.
  */
 function devModel(): Plugin {
-  const file = resolve(__dirname, "../models/onnx-candidates/onnx-community/onnx/model_q4.onnx");
-  const serve = (_req: IncomingMessage, res: ServerResponse) => {
+  const dir = resolve(__dirname, "../models/onnx-candidates/onnx-community/onnx");
+  const serve = (req: IncomingMessage, res: ServerResponse) => {
+    // /__dev-model = q4; /__dev-model?v=int8 = the 8-bit export (memory experiments)
+    const file = resolve(dir, /[?&]v=int8/.test(req.url ?? "") ? "model_int8.onnx" : "model_q4.onnx");
     if (!existsSync(file)) {
       res.statusCode = 404;
       res.end("no local model");

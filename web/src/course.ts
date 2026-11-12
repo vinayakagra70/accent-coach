@@ -26,6 +26,8 @@ export interface LessonResult {
 export interface Assessment {
   date: string;
   overall: number;
+  /** How many phrases were judged (13 for the full test, 2 for the short phone test). */
+  phrases?: number;
   lessons: Record<string, LessonResult>;
 }
 

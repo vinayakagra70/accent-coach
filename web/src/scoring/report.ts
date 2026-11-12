@@ -44,7 +44,7 @@ export function buildAssessment(results: ItemResult[]): Assessment {
     wsum += w;
     acc += lr.score * w;
   }
-  return { date: new Date().toISOString(), overall: wsum ? Math.round(acc / wsum) : 0, lessons };
+  return { date: new Date().toISOString(), overall: wsum ? Math.round(acc / wsum) : 0, phrases: results.filter((r) => r.heard).length, lessons };
 }
 
 /** Lessons sorted worst first, for the report. */

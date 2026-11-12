@@ -12,6 +12,22 @@ import { ENGINE_STOPPED } from "../listen/engine";
 import type { Take } from "../audio/recorder";
 import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
 
+/**
+ * Phones checking on the device get a short test: the model is heavy for a phone
+ * browser, and a phone (2026-11-12, the user's) managed 4 recordings before running
+ * out of memory. These two phrases cover the most sounds: TH (the, think, three,
+ * things), W, the T between vowels, R after vowels and Z.
+ */
+const QUICK_PHRASES = ["The water is better.", "I think three things."];
+
+export function isQuickTest(): boolean {
+  return api.STATIC && api.listenMode() === "device";
+}
+
+function testItems() {
+  return isQuickTest() ? ASSESSMENT.filter((i) => QUICK_PHRASES.includes(i.text)) : ASSESSMENT;
+}
+
 /** Full-screen steps over the app: welcome → voice test → report. */
 
 function overlay(): HTMLElement {
@@ -74,8 +90,10 @@ export function showWelcome(opts: {
       h("h2", {}, opts.retake ? "Let's see how far you've come" : "First, let's hear how you speak"),
       h("p", { class: "lead" },
         opts.retake
-          ? "Read the same 13 short phrases again. Your course will adjust to what's improved and what still needs work."
-          : "Read 13 short phrases out loud (about 3 minutes). Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around your flaws."),
+          ? `Read the same ${testItems().length} short phrases again. Your course will adjust to what's improved and what still needs work.`
+          : isQuickTest()
+            ? "Read 2 short phrases out loud (under a minute). This is the short version for phones. Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around them."
+            : "Read 13 short phrases out loud (about 3 minutes). Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around your flaws."),
       picker ? h("h3", { style: "margin-top:0" }, "Which accent do you want to learn?") : null,
       picker,
       h("ul", { class: "ticks" },
@@ -92,11 +110,12 @@ export function showWelcome(opts: {
 // ------------------------------------------------------------------ the test
 
 export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () => void }) {
+  const TEST = testItems();
   const o = overlay();
   /** A recording the engine couldn't check (it stopped), as opposed to a skipped phrase (null). */
   const FAILED = "failed" as const;
-  const results: (Promise<string[] | typeof FAILED> | null)[] = ASSESSMENT.map(() => null);
-  const takes: (Take | null)[] = ASSESSMENT.map(() => null);
+  const results: (Promise<string[] | typeof FAILED> | null)[] = TEST.map(() => null);
+  const takes: (Take | null)[] = TEST.map(() => null);
   const check = (take: Take) => api.recognize(take).catch(() => FAILED);
   let index = 0;
   let abort: AbortController | null = null;
@@ -126,10 +145,10 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
   );
 
   const show = () => {
-    const item = ASSESSMENT[index];
+    const item = TEST[index];
     phrase.textContent = item.text;
-    counter.textContent = `${index + 1} / ${ASSESSMENT.length}`;
-    bar.style.width = `${(index / ASSESSMENT.length) * 100}%`;
+    counter.textContent = `${index + 1} / ${TEST.length}`;
+    bar.style.width = `${(index / TEST.length) * 100}%`;
     state.textContent = "Press Record, then read the phrase.";
     state.className = "rec-state";
     recBtn.hidden = false;
@@ -141,7 +160,7 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
 
   const advance = () => {
     index++;
-    if (index < ASSESSMENT.length) show();
+    if (index < TEST.length) show();
     else void finish();
   };
 
@@ -174,7 +193,7 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
       recBtn.hidden = true;
       redo.hidden = false;
       next.hidden = false;
-      next.replaceChildren(index === ASSESSMENT.length - 1 ? "See my results" : "Next", icons.next());
+      next.replaceChildren(index === TEST.length - 1 ? "See my results" : "Next", icons.next());
     } catch (e) {
       if ((e as DOMException).name === "AbortError") return;
       state.textContent = "Microphone blocked. Allow it from the icon in the address bar, then try again.";
@@ -244,12 +263,12 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
     }
 
     const heard = settled.map((v) => (Array.isArray(v) ? v : null));
-    const items: ItemResult[] = ASSESSMENT.map((item, i) => ({ item, heard: heard[i] ? normalizeAll(heard[i]!) : null }));
+    const items: ItemResult[] = TEST.map((item, i) => ({ item, heard: heard[i] ? normalizeAll(heard[i]!) : null }));
     const recorded = items.filter((x) => x.heard).length;
-    if (recorded < 4) {
+    if (recorded < Math.min(4, TEST.length)) {
       o.replaceChildren(h("div", { class: "sheet" },
         h("h2", {}, "Not enough recordings"),
-        h("p", { class: "lead" }, `Only ${recorded} of ${ASSESSMENT.length} phrases came through, which isn't enough to judge fairly.`),
+        h("p", { class: "lead" }, `Only ${recorded} of ${TEST.length} phrases came through, which isn't enough to judge fairly.`),
         h("div", { class: "row" },
           Object.assign(h("button", { class: "btn primary" }, "Try again"), { onclick: () => runTest(opts) }),
           Object.assign(h("button", { class: "btn" }, "Cancel"), { onclick: opts.onCancel }))));
@@ -319,7 +338,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
     h("div", { class: "sheet report" },
       h("p", { class: "eyebrow" }, "Your accent report"),
       h("div", { class: "report-top" }, ring, h("div", {}, h("h2", {}, verdict), delta,
-        h("p", { class: "muted" }, `Based on 13 phrases, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`))),
+        h("p", { class: "muted" }, `Based on ${a.phrases ?? 13} phrase${a.phrases === 1 ? "" : "s"}${(a.phrases ?? 13) < 13 ? " (the short phone version: sounds it didn't cover are still in your course)" : ""}, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`))),
       flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
       flawList,
       good.length ? h("h3", {}, "Already good") : null,
