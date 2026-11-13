@@ -36,6 +36,8 @@ import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking 
 import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
+import { friendlyTime } from "./reminder";
+import { reminderTime, showReminder } from "./ui/reminder";
 
 // ------------------------------------------------------------------ state
 
@@ -369,6 +371,9 @@ function renderList() {
     const dueN = reviewsDue().length;
     const go = h("button", { class: "btn primary small" }, !d ? "Review" : finishedToday(profile) ? "Start next day early" : "Go to today");
     go.onclick = () => goToday();
+    const at = reminderTime();
+    const remind = h("button", { class: "linklike small remind" }, icons.bell(), at ? `Reminder at ${friendlyTime(at)}` : "Remind me every day");
+    remind.onclick = () => showReminder(renderList);
     nav.append(h("div", { class: "course-card" },
       h("div", { class: "row spread" }, h("b", {}, `Day ${Math.min(profile.day + 1, total)} of ${total}`), streak ? h("span", { class: "streak" }, `${streak}-day streak`) : null),
       h("div", { class: "course-bar" }, h("i", { style: `width:${(profile.day / Math.max(1, total)) * 100}%` })),
@@ -376,7 +381,8 @@ function renderList() {
       h("p", { class: "today-name" }, name),
       profile.assessment ? h("p", { class: "muted small" }, `Voice score ${profile.assessment.overall} of 100`) : null,
       dueN ? h("p", { class: "muted small" }, `${dueN} word${dueN === 1 ? "" : "s"} to review today`) : null,
-      go));
+      go,
+      remind));
   } else {
     const start = h("button", { class: "btn primary small" }, "Take the voice test");
     start.onclick = () => startTest(false);

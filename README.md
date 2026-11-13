@@ -82,6 +82,8 @@ web/src/content/     lessons.ts (16 sounds, words, minimal pairs, vowel targets)
                      british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases),
                      sentences.ts (one practice sentence per lesson)
 web/src/review.ts    words to come back to, and when
+web/src/reminder.ts  the daily reminder: a repeating calendar event (.ics or Google Calendar), since a
+                     static site can't send notifications while it's closed
 web/src/scoring/     align.ts (what was heard vs what was expected), checks.ts (the habits looked for
                      per sound), report.ts (voice test -> score and findings)
 web/src/course.ts    the profile: voice-test results, the daily course, streak
@@ -101,7 +103,8 @@ tools/               render_voice.py (pre-render Nova's lines for the phone buil
 
 **Done:** 3D mouth, 16 lessons in General American and British, listening drills, live vowel
 mirror, voice test and personal daily course, sound-by-sound scoring with the wav2vec2
-recognizer, a scored sentence per lesson, spaced review of missed words, Kokoro voices, Nova, phone use (same Wi-Fi, and a hosted build that runs offline),
+recognizer, a sentence per lesson with model-then-you playback, spaced review of missed words,
+a daily calendar reminder, Kokoro voices, Nova, phone use (same Wi-Fi, and a hosted build that runs offline),
 progress shared between devices, JARVIS summary.
 
 **Not yet:**

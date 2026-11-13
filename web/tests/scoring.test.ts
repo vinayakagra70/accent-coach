@@ -9,6 +9,7 @@ import { ASSESSMENT } from "../src/content/assessment";
 import { LESSONS } from "../src/content/lessons";
 import { buildCourse, completeDay, currentStreak, dayKey, dayReady, dayRequirements, finishedToday, newProfile, planLessons, replan } from "../src/course";
 import { mergeLesson } from "../src/progress";
+import { buildIcs, friendlyTime, googleCalendarUrl, parseTime } from "../src/reminder";
 import { REVIEW_PER_DAY, dueReviews, recordAttempt } from "../src/review";
 import { layout } from "../src/ui/scoreChart";
 import { align, judge, normalizeAll } from "../src/scoring/align";
@@ -153,6 +154,28 @@ check(p2.history.length === 2 && p2.course[0].completedAt !== undefined, "re-tes
   check(req.sentence === 1 && !dayReady(s), `day 1 (${id}) needs its sentence, also for a profile saved before sentences existed`);
   check(dayReady({ ...s, today: { ...s.today, sentenceTries: 1 } }), "one try at the sentence completes the day");
   check(LESSONS.every((l) => dayRequirements(l.id).sentence === 1), "every lesson has a sentence to say, scored or by ear");
+}
+
+// ---- daily reminder: a calendar file every phone can read
+{
+  const now = new Date(2026, 10, 13, 15, 4, 5);
+  const ics = buildIcs({ time: "20:00", url: "https://example.test/app/" }, now);
+  const lines = ics.split("\r\n");
+  check(ics.endsWith("\r\n") && !/[^\r]\n/.test(ics), "ics: every line ends CRLF");
+  check(lines[0] === "BEGIN:VCALENDAR" && lines[lines.length - 2] === "END:VCALENDAR", "ics: wrapped in VCALENDAR");
+  check(lines.includes("DTSTART:20261113T200000") && lines.includes("DTEND:20261113T201000"), "ics: starts today at the chosen local time, with no time zone, for 10 minutes");
+  check(lines.includes("RRULE:FREQ=DAILY") && lines.includes("TRIGGER:PT0M") && lines.includes("ACTION:DISPLAY"), "ics: repeats daily and alerts at the start");
+  check(lines.includes("SUMMARY:Accent Coach: today's sound") && lines.includes("URL:https://example.test/app/"), "ics: titled, and links back to the app");
+  check(lines.some((l) => l.startsWith("DESCRIPTION:") && l.includes("\\, four words")), "ics: commas in text are escaped");
+  check(lines.every((l) => new TextEncoder().encode(l).length <= 75), "ics: no line is longer than 75 bytes");
+  const long = buildIcs({ time: "06:30", url: `https://example.test/${"a".repeat(200)}` }, now);
+  check(long.replace(/\r\n /g, "").includes(`URL:https://example.test/${"a".repeat(200)}`) && long.split("\r\n").every((l) => new TextEncoder().encode(l).length <= 75), "ics: a long link is folded and unfolds intact");
+  check(buildIcs({ time: "23:55", url: "x" }, now).includes("DTEND:20261114T000500"), "ics: an event near midnight ends on the next day");
+  check(buildIcs({ time: "20:00", url: "x" }, now).match(/UID:.*/)![0] === buildIcs({ time: "07:15", url: "x" }, new Date(2027, 0, 1)).match(/UID:.*/)![0], "ics: the same UID every time, so a new time replaces the old event");
+  check(parseTime("7:05")?.h === 7 && parseTime("24:00") === null && parseTime("12:60") === null && parseTime("soon") === null, "reminder: only real times are accepted");
+  check(friendlyTime("20:00") === "8:00 pm" && friendlyTime("00:05") === "12:05 am" && friendlyTime("12:00") === "12:00 pm" && friendlyTime("07:30") === "7:30 am", "reminder: times read naturally");
+  const g = new URL(googleCalendarUrl({ time: "20:00", url: "https://example.test/app/" }, now));
+  check(g.hostname === "calendar.google.com" && g.searchParams.get("dates") === "20261113T200000/20261113T201000" && g.searchParams.get("recur") === "RRULE:FREQ=DAILY" && g.searchParams.get("details")!.includes("https://example.test/app/"), "Google Calendar link carries the same daily event");
 }
 
 // ---- score-history chart geometry
