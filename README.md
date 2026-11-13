@@ -45,7 +45,7 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
 2. Report: a score out of 100, each flaw with the exact word ("think /t/ for /θ/"), and what's already good.
 3. Daily course: one sound a day, worst and most noticeable first. Each day: watch the American way,
    see your habit, train your ear, say 4 words and get them scored, then say the sound in a short
-   sentence. Every 5 days a check-up re-test re-plans the rest.
+   sentence and hear the model and yourself back to back. Every 5 days a check-up re-test re-plans the rest.
 4. Review: a word said with a habit comes back the next day, then 2 and 4 days later, until it has
    been clean on three different days.
 

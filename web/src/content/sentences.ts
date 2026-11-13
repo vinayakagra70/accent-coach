@@ -35,6 +35,9 @@ export const SENTENCES: Record<string, Sentence> = {
   ou: { text: "Both go on the low road.", focus: ["both", "go", "low", "road"] },
   "i-ih": { text: "The sheep leave the ship.", focus: ["sheep", "leave", "ship"] },
   f: { text: "First, the fan is fine.", focus: ["first", "fan", "fine"] },
+  // never scored (the model can't hear these sounds): said and compared by ear
+  aspiration: { text: "Time to pin the paper.", focus: ["time", "pin", "paper"] },
+  "dark-l": { text: "People feel full at school.", focus: ["people", "feel", "full", "school"] },
 };
 
 // Wordings were chosen by ear of the speech model (2026-11-13, two American and two
@@ -55,11 +58,16 @@ export function sentenceWords(text: string): string[] {
   return text.toLowerCase().split(/[^a-z']+/).filter(Boolean);
 }
 
+/** The lesson's sentence to say, scored or not. Every lesson has one. */
+export function sentenceText(lessonId: string): string | null {
+  return SENTENCES[lessonId]?.text ?? null;
+}
+
 /**
  * The lesson's sentence as something the scorer can judge (same shape as a
  * voice-test phrase), in the active accent. null when the lesson has no
  * sentence or the speech model can't hear its sound (dark L, aspiration,
- * British R-dropping).
+ * British R-dropping and short O); those are said and compared by ear instead.
  */
 export function sentenceItem(lessonId: string): TestItem | null {
   const s = SENTENCES[lessonId];

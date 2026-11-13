@@ -6,7 +6,7 @@
 import { writeFileSync } from "node:fs";
 import { ACCENTS, setAccent, type Accent } from "../src/content/accent";
 import { LESSONS, LEXICON } from "../src/content/lessons";
-import { sentenceItem } from "../src/content/sentences";
+import { sentenceText } from "../src/content/sentences";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { clipKey, splitSentences, type Speed } from "../src/speech/clips";
 import { lines } from "../src/speech/lines";
@@ -31,8 +31,8 @@ for (const accent of ["us", "uk"] as Accent[]) {
   for (const w of Object.keys(LEXICON)) for (const sp of ["normal", "slow"] as Speed[]) add(accent, "word", sp, w);
   // the practice sentences' "Hear it" button (spoken like a model word, at normal speed)
   for (const l of LESSONS) {
-    const s = sentenceItem(l.id);
-    if (s) add(accent, "word", "normal", s.text);
+    const s = sentenceText(l.id);
+    if (s) add(accent, "word", "normal", s);
   }
 
   for (const sym of ["θ", "t"]) say(accent, lines.good(sym));

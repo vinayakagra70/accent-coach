@@ -2,7 +2,7 @@ import * as api from "./api";
 import { FormantSmoother, analyzeFrame } from "./audio/formants";
 import { Mic } from "./audio/mic";
 import { poseFromFormants, toChart, vowelHint, vowelScore, type VoiceType } from "./audio/mirror";
-import { recordPhrase } from "./audio/recorder";
+import { recordPhrase, type Take } from "./audio/recorder";
 import { hasVoice, speak, voiceName } from "./audio/speak";
 import { LESSONS, LEXICON, type Lesson } from "./content/lessons";
 import {
@@ -26,7 +26,7 @@ import { align, judge, normalizeAll, type CheckResult, type Verdict } from "./sc
 import { LESSON_CHECKS } from "./scoring/checks";
 import { judgeItem } from "./scoring/report";
 import type { TestItem } from "./content/assessment";
-import { sentenceItem } from "./content/sentences";
+import { sentenceItem, sentenceText } from "./content/sentences";
 import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
@@ -488,9 +488,11 @@ function renderPanel() {
   if (lesson.pairs.length) panel.append(listenCard());
   if (LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(scoredCard());
   const sentence = sentenceItem(lesson.id);
+  const byEar = sentence ? null : sentenceText(lesson.id);
   if (sentence) panel.append(sentenceCard(sentence));
   if (lesson.vowel) panel.append(mirrorCard());
   if (!LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(recordCard());
+  if (byEar) panel.append(sentenceByEarCard(byEar));
   panel.append(h("p", { class: "note" }, `Model voice: ${hasVoice() ? voiceName() : "none"}. Drag the 3D view to rotate, scroll to zoom.`));
 }
 
@@ -617,33 +619,82 @@ function engineGate(onReady: (ready: boolean) => void): HTMLElement | null {
 
 let recording = false;
 
-/** Record until the learner pauses and return the sounds heard, or null (with the reason in `status`). */
-async function hear(btn: HTMLElement, status: HTMLElement, prompt: string, opts: { maxSeconds: number; silenceToStop: number }): Promise<string[] | null> {
+type RecordOpts = { maxSeconds: number; silenceToStop: number };
+
+/** Record until the learner pauses. null (with the reason in `status`) when nothing was said or the mic is blocked. */
+async function capture(btn: HTMLElement, status: HTMLElement, prompt: string, opts: RecordOpts): Promise<Take | null> {
   if (recording) return null;
-  if (!engineReady) {
-    status.textContent = "The speech engine isn't ready yet.";
-    return null;
-  }
   recording = true;
   stopTalking(); // never record the coach's own voice
   btn.classList.add("live");
   status.textContent = prompt;
   try {
     const take = await recordPhrase(opts);
-    btn.classList.remove("live");
     if (!take.speech) {
       status.textContent = "I didn't hear anything. Try again a little louder.";
       return null;
     }
-    status.textContent = "Checking…";
-    return normalizeAll(await api.recognize(take));
-  } catch (e) {
-    status.textContent = `Couldn't check that: ${(e as Error).message}`;
+    return take;
+  } catch {
+    status.textContent = "Microphone blocked. Allow it in the browser's address bar, then try again.";
     return null;
   } finally {
     recording = false;
     btn.classList.remove("live");
   }
+}
+
+/** Record, then ask the speech engine what it heard. Returns the sounds, or null (with the reason in `status`). */
+async function hear(btn: HTMLElement, status: HTMLElement, prompt: string, opts: RecordOpts, keep?: (take: Take) => void): Promise<string[] | null> {
+  if (!engineReady) {
+    status.textContent = "The speech engine isn't ready yet.";
+    return null;
+  }
+  const take = await capture(btn, status, prompt, opts);
+  if (!take) return null;
+  keep?.(take);
+  status.textContent = "Checking…";
+  try {
+    return normalizeAll(await api.recognize(take));
+  } catch (e) {
+    status.textContent = `Couldn't check that: ${(e as Error).message}`;
+    return null;
+  }
+}
+
+/**
+ * Shadowing: the model sentence, then the learner's own recording, back to back.
+ * Hearing the two side by side trains rhythm and melody, which no score covers.
+ */
+function shadowing(text: string) {
+  let mine: string | null = null;
+  let playing = false;
+  const both = h("button", { class: "btn", disabled: "", title: "The model, then your recording" }, icons.play(), "Hear both") as HTMLButtonElement;
+  both.onclick = async () => {
+    if (!mine || playing || recording) return;
+    playing = true;
+    try {
+      await speak(text, 0.85).catch(() => undefined);
+      await new Promise((r) => setTimeout(r, 250));
+      const url = mine;
+      await new Promise<void>((res) => {
+        const a = new Audio(url);
+        a.onended = a.onerror = () => res();
+        void a.play().catch(() => res());
+      });
+    } finally {
+      playing = false;
+    }
+  };
+  return {
+    both,
+    /** Keep the newest take (and free the one before it). */
+    keep(take: Take) {
+      if (mine) URL.revokeObjectURL(mine);
+      mine = URL.createObjectURL(new Blob([take.wav], { type: "audio/wav" }));
+      both.disabled = false;
+    },
+  };
 }
 
 /** One word's sounds judged against a lesson's checks, boiled down to a single verdict. */
@@ -726,9 +777,10 @@ function sentenceCard(item: TestItem) {
 
   const listen = h("button", { class: "btn" }, icons.listen(), "Hear it");
   listen.onclick = () => void speak(item.text, 0.85);
+  const shadow = shadowing(item.text);
   const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
   sayBtn.onclick = async () => {
-    const heard = await hear(sayBtn, status, "Listening… say the sentence, then pause.", { maxSeconds: 9, silenceToStop: 1.1 });
+    const heard = await hear(sayBtn, status, "Listening… say the sentence, then pause.", { maxSeconds: 9, silenceToStop: 1.1 }, shadow.keep);
     if (!heard) return;
     const judged = judgeItem(item, heard);
     // one verdict per focus word: a habit outweighs an unclear sound, which outweighs a clean one
@@ -756,7 +808,7 @@ function sentenceCard(item: TestItem) {
     else if (habits.length) msg = `In "${habits[0].word}" you said ${habits[0].habit?.habit}.${habits.length > 1 ? ` Also in ${habits.slice(1).map((w) => `"${w.word}"`).join(", ")}.` : ""} ${habits.length > 1 ? "They come" : "It comes"} back for review tomorrow.`;
     else msg = `${unclear.map((w) => `"${w.word}"`).join(", ")} didn't come out clearly. Try once more, a little slower.`;
     addResult(results, verdict, msg, heard);
-    status.textContent = "Press Say it to go again.";
+    status.textContent = "Press Hear both to compare your rhythm with the model, or Say it to go again.";
     const first = habits[0]?.habit;
     if (first) showWhatYouSaid(first.heard, first.sym, first.habit ?? "");
     speakFeedback(verdict, item.checks[0]?.sym ?? "", first?.habit);
@@ -766,8 +818,30 @@ function sentenceCard(item: TestItem) {
   return card("Now in a sentence", "",
     gate,
     h("p", { class: "sentence" }, item.text),
-    h("div", { class: "row" }, listen, sayBtn),
+    h("div", { class: "row" }, listen, sayBtn, shadow.both),
     status, marks, results);
+}
+
+/** The sentence for sounds the speech model can't judge: record, then compare with the model by ear. */
+function sentenceByEarCard(text: string) {
+  const status = h("p", { class: "note" }, "Listen first. Then say the sentence, pause, and compare the two by ear.");
+  const listen = h("button", { class: "btn" }, icons.listen(), "Hear it");
+  listen.onclick = () => void speak(text, 0.85);
+  const shadow = shadowing(text);
+  const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
+  sayBtn.onclick = async () => {
+    const take = await capture(sayBtn, status, "Listening… say the sentence, then pause.", { maxSeconds: 9, silenceToStop: 1.1 });
+    if (!take) return;
+    shadow.keep(take);
+    bumpToday((t) => (t.sentenceTries = (t.sentenceTries ?? 0) + 1));
+    status.textContent = "Here is the model, then you.";
+    shadow.both.click();
+  };
+  return card("Now in a sentence", "",
+    h("p", { class: "sentence" }, text),
+    h("div", { class: "row" }, listen, sayBtn, shadow.both),
+    status,
+    h("p", { class: "note" }, "This sound can't be scored automatically yet, so compare by ear."));
 }
 
 // ------------------------------------------------------------------ review

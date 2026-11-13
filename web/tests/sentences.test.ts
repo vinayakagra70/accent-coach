@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { setAccent, type Accent } from "../src/content/accent";
 import { LESSONS, LEXICON } from "../src/content/lessons";
-import { SENTENCES, sentenceItem, sentenceWords } from "../src/content/sentences";
+import { SENTENCES, sentenceItem, sentenceText, sentenceWords } from "../src/content/sentences";
 import { normalizeAll } from "../src/scoring/align";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { judgeItem } from "../src/scoring/report";
@@ -31,6 +31,9 @@ for (const accent of ["us", "uk"] as Accent[]) {
   check(missing.length === 0, `${accent}: every scored lesson has a sentence ${missing.length ? `(missing ${missing.join(", ")})` : ""}`);
   const unscored = LESSONS.filter((l) => !LESSON_CHECKS[l.id]?.voiceTested && sentenceItem(l.id)).map((l) => l.id);
   check(unscored.length === 0, `${accent}: lessons the model can't hear have no scored sentence ${unscored.join(", ")}`);
+
+  const none = LESSONS.filter((l) => !sentenceText(l.id)).map((l) => l.id);
+  check(none.length === 0, `${accent}: every lesson has a sentence to say ${none.join(", ")}`);
 
   for (const [id, s] of Object.entries(SENTENCES)) {
     const words = sentenceWords(s.text);

@@ -1,5 +1,5 @@
 import { LESSONS } from "./content/lessons";
-import { sentenceItem } from "./content/sentences";
+import { sentenceText } from "./content/sentences";
 import type { LessonProgress } from "./progress";
 import type { Reviews } from "./review";
 import { LESSON_CHECKS } from "./scoring/checks";
@@ -166,7 +166,7 @@ export function todayKey() {
 /** What the current day needs before it can be finished. */
 export function dayRequirements(lessonId: string) {
   const l = LESSONS.find((x) => x.id === lessonId);
-  return { ear: l && l.pairs.length ? 6 : 0, speak: 4, sentence: sentenceItem(lessonId) ? 1 : 0 };
+  return { ear: l && l.pairs.length ? 6 : 0, speak: 4, sentence: sentenceText(lessonId) ? 1 : 0 };
 }
 
 export function dayReady(p: Profile): boolean {

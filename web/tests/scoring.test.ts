@@ -6,6 +6,7 @@
  */
 import { readFileSync } from "node:fs";
 import { ASSESSMENT } from "../src/content/assessment";
+import { LESSONS } from "../src/content/lessons";
 import { buildCourse, completeDay, currentStreak, dayKey, dayReady, dayRequirements, finishedToday, newProfile, planLessons, replan } from "../src/course";
 import { mergeLesson } from "../src/progress";
 import { REVIEW_PER_DAY, dueReviews, recordAttempt } from "../src/review";
@@ -151,7 +152,7 @@ check(p2.history.length === 2 && p2.course[0].completedAt !== undefined, "re-tes
   s = { ...s, today: { learnedTarget: true, learnedHabit: true, earAnswered: req.ear, earRight: 0, speakTries: req.speak, speakGood: 0 } };
   check(req.sentence === 1 && !dayReady(s), `day 1 (${id}) needs its sentence, also for a profile saved before sentences existed`);
   check(dayReady({ ...s, today: { ...s.today, sentenceTries: 1 } }), "one try at the sentence completes the day");
-  check(dayRequirements("dark-l").sentence === 0 && dayRequirements("aspiration").sentence === 0, "lessons the model can't hear ask for no sentence");
+  check(LESSONS.every((l) => dayRequirements(l.id).sentence === 1), "every lesson has a sentence to say, scored or by ear");
 }
 
 // ---- score-history chart geometry
