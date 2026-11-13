@@ -17,6 +17,7 @@ import time
 from collections import defaultdict, deque
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 from recognizer import PhonemeRecognizer, RecognizerNotReady, read_wav
@@ -82,7 +83,8 @@ async def recognize(request: Request) -> dict[str, object]:
     except Exception:
         raise HTTPException(400, "could not read audio (send 16-bit PCM WAV)")
     try:
-        r = rec.recognize(audio)
+        # off the event loop, so /health and other visitors aren't stalled while the model runs
+        r = await run_in_threadpool(rec.recognize, audio)
     except RecognizerNotReady as exc:
         raise HTTPException(503, f"model loading: {exc}")
     return {"phonemes": r.phonemes, "seconds": round(r.seconds, 2)}

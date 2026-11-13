@@ -52,6 +52,10 @@ def test_speak_errors(tmp_path):
     c = make(tmp_path)
     assert c.post("/api/speak", json={"text": "  "}).status_code == 400
     assert c.post("/api/speak", content=b"nope").status_code == 400
+    assert c.post("/api/speak", json={"text": "hi", "speed": "fast"}).status_code == 400
+    assert c.post("/api/speak", json={"text": "hi", "speed": None}).status_code == 400
+    assert c.post("/api/speak", content=b'{"text": "hi", "speed": NaN}').status_code == 400
+    assert c.post("/api/speak", json={"text": "a" * 20000}).status_code == 413
 
 
 def test_health_reports_voice(tmp_path):

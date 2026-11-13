@@ -236,24 +236,29 @@ async function playWord(word: string) {
   const phonemes = LEXICON[word];
   if (!phonemes) return;
   busy = true;
-  stopLoop();
-  stopMirror();
-  scene.setGhost(null);
-  scene.setContact(null);
-  const steps = wordTimeline(phonemes);
-  const now = $("nowPlaying");
-  const anim = () => scene.play(steps, slow, (i) => (now.textContent = steps[i].symbol));
-  scene.speed = slow > 1 ? 9 / slow : 11;
-  if (slow === 1) {
-    await Promise.all([speak(word, 0.85), anim()]);
-  } else {
-    await speak(word, 0.7);
-    await anim();
-    await speak(word, 0.7);
+  try {
+    stopLoop();
+    stopMirror();
+    scene.setGhost(null);
+    scene.setContact(null);
+    const steps = wordTimeline(phonemes);
+    const now = $("nowPlaying");
+    const anim = () => scene.play(steps, slow, (i) => (now.textContent = steps[i].symbol));
+    scene.speed = slow > 1 ? 9 / slow : 11;
+    // a failed voice shouldn't stop the mouth animating, or lock the word chips
+    const say = (rate: number) => speak(word, rate).catch(() => undefined);
+    if (slow === 1) {
+      await Promise.all([say(0.85), anim()]);
+    } else {
+      await say(0.7);
+      await anim();
+      await say(0.7);
+    }
+    await new Promise((r) => setTimeout(r, 350));
+  } finally {
+    scene.speed = 9;
+    busy = false;
   }
-  await new Promise((r) => setTimeout(r, 350));
-  scene.speed = 9;
-  busy = false;
   if (mode.kind === "mirror" || mode.kind === "yours") mode = { kind: "target", i: 0 };
   applyMode();
 }
@@ -631,6 +636,7 @@ function recordCard() {
   let stopper: { stop: () => Promise<string> } | null = null;
   rec.onclick = async () => {
     if (stopper) {
+      if (url) URL.revokeObjectURL(url); // free the previous take
       url = await stopper.stop();
       stopper = null;
       label(rec, icons.again, "Record again");

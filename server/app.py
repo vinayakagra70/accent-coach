@@ -16,11 +16,13 @@ from __future__ import annotations
 
 import hmac
 import json
+import math
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -30,6 +32,7 @@ from .recognizer import PhonemeRecognizer, RecognizerNotReady, read_wav
 from .tts import KokoroTTS, TtsNotReady
 
 MAX_UPLOAD = 4 * 1024 * 1024  # ~2 min of 16 kHz PCM; a test phrase is ~100 KB
+MAX_SPEAK_BODY = 16 * 1024  # tts.py keeps only the first 400 characters anyway
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(os.environ.get("ACCENT_COACH_DATA", ROOT / "data"))
 DIST_DIR = ROOT / "web" / "dist"
@@ -94,6 +97,9 @@ def create_app(
             "voice": {"ready": voice.ready, "loading": voice.loading, "error": voice.error},
         }
 
+    # The model calls below take seconds of CPU, so they run in a worker thread;
+    # called directly they would block the event loop and stall every other request.
+
     @app.post("/api/recognize")
     async def recognize(request: Request) -> dict[str, object]:
         body = await request.body()
@@ -106,23 +112,29 @@ def create_app(
         except Exception:
             raise HTTPException(400, "could not read audio (send 16-bit PCM WAV)")
         try:
-            r = rec.recognize(audio)
+            r = await run_in_threadpool(rec.recognize, audio)
         except RecognizerNotReady as exc:
             raise HTTPException(503, f"speech model not ready: {exc}")
         return {"phonemes": r.phonemes, "seconds": round(r.seconds, 2)}
 
     @app.post("/api/speak")
     async def speak(request: Request) -> Response:
+        raw = await request.body()
+        if len(raw) > MAX_SPEAK_BODY:
+            raise HTTPException(413, "request too large")
         try:
-            body = json.loads(await request.body())
+            body = json.loads(raw)
             text = str(body.get("text", "")).strip()
-        except (json.JSONDecodeError, AttributeError):
-            raise HTTPException(400, "send JSON like {\"text\": \"hello\"}")
+            speed = float(body.get("speed", 1.0))
+        except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
+            raise HTTPException(400, "send JSON like {\"text\": \"hello\", \"speed\": 1.0}")
         if not text:
             raise HTTPException(400, "nothing to say")
+        if not math.isfinite(speed):
+            raise HTTPException(400, "speed must be a number")
         try:
             lang = body.get("lang")
-            wav = voice.speak(text, str(body.get("voice", "af_heart")), float(body.get("speed", 1.0)), str(lang) if lang else None)
+            wav = await run_in_threadpool(voice.speak, text, str(body.get("voice", "af_heart")), speed, str(lang) if lang else None)
         except TtsNotReady as exc:
             raise HTTPException(503, f"voice not ready: {exc}")
         return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
