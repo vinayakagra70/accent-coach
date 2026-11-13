@@ -1,15 +1,19 @@
 import { accent, accentInfo } from "./content/accent";
 import { STATIC } from "./api";
 import { clip, SPEEDS, speedBucket, splitSentences, type Speed } from "./speech/clips";
-import { Nova } from "./nova/core/Nova";
-import { idleGlances } from "./nova/plugins/idleGlances";
-import { tapReactions } from "./nova/plugins/tapReactions";
+import type { Nova } from "./nova/core/Nova";
 
 /**
  * The coach: NOVA's Live2D character with a Kokoro voice from the local server.
  * Everything spoken in the app goes through say(), so model words lip-sync too.
  * If the character or the voice can't load, the app still works: words fall
  * back to the browser's own voice.
+ *
+ * The character engine is loaded on demand (import() in mountCoach), never at
+ * the top of the file: its Live2D library throws while loading when the Cubism
+ * runtime (live2dcubismcore.min.js, not in git) is absent, and as a normal
+ * import that took the whole app down with it. That is how the hosted site,
+ * which Vercel builds from git, came to show an empty page.
  */
 
 /** Your recoloured Hiyori if it's installed, else Live2D's original (what setup.ps1 downloads for others). */
@@ -56,6 +60,11 @@ export function setCoachVoice(on: boolean) {
 export async function mountCoach(host: HTMLElement, caption: HTMLElement): Promise<boolean> {
   captionEl = caption;
   try {
+    const [{ Nova }, { idleGlances }, { tapReactions }] = await Promise.all([
+      import("./nova/core/Nova"),
+      import("./nova/plugins/idleGlances"),
+      import("./nova/plugins/tapReactions"),
+    ]);
     nova = await Nova.create({
       host,
       config: {

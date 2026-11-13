@@ -1191,7 +1191,11 @@ function setupCoach() {
   paint();
   buttons.append(explain, voiceBtn);
   void mountCoach($("coachStage"), $("coachCaption")).then((ok) => {
-    if (!ok) $("coachStage").classList.add("missing");
+    if (ok) return;
+    // On the laptop, say how to get the character. On the hosted site there is
+    // nothing a visitor can install, so the empty stage is simply not shown.
+    if (api.STATIC) $("coachStage").hidden = true;
+    else $("coachStage").classList.add("missing");
   });
 }
 
