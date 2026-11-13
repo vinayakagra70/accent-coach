@@ -25,6 +25,7 @@ import * as progress from "./progress";
 import { align, judge, normalizeAll, type CheckResult, type Verdict } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { judgeItem } from "./scoring/report";
+import { freeTextItem, judgeFreeText, type FreeItem } from "./scoring/freeText";
 import type { TestItem } from "./content/assessment";
 import { sentenceItem, sentenceText } from "./content/sentences";
 import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
@@ -389,8 +390,14 @@ function renderList() {
     nav.append(h("div", { class: "course-card" }, h("b", {}, "No course yet"), h("p", { class: "muted small" }, "A 3-minute voice test builds your personal course."), start));
   }
 
+  if (api.CAN_PHONEMIZE) {
+    const own = h("button", { class: "btn small own-btn" }, icons.mic(), "Try your own words");
+    own.onclick = showOwnWords;
+    nav.append(own);
+  }
+
   const todayId = todaysLessonId();
-  const courseIds = new Set(profile?.course.filter((d) => d.kind === "lesson").map((d) => d.lesson));
+  const courseIds =new Set(profile?.course.filter((d) => d.kind === "lesson").map((d) => d.lesson));
   for (const kind of ["consonant", "vowel"] as const) {
     nav.append(h("h2", {}, kind === "consonant" ? "Consonants" : "Vowels"));
     for (const l of LESSONS.filter((x) => x.kind === kind)) {
@@ -672,7 +679,8 @@ async function hear(btn: HTMLElement, status: HTMLElement, prompt: string, opts:
  * Shadowing: the model sentence, then the learner's own recording, back to back.
  * Hearing the two side by side trains rhythm and melody, which no score covers.
  */
-function shadowing(text: string) {
+function shadowing(text: string | (() => string)) {
+  const say = () => (typeof text === "string" ? text : text());
   let mine: string | null = null;
   let playing = false;
   const both = h("button", { class: "btn", disabled: "", title: "The model, then your recording" }, icons.play(), "Hear both") as HTMLButtonElement;
@@ -680,7 +688,7 @@ function shadowing(text: string) {
     if (!mine || playing || recording) return;
     playing = true;
     try {
-      await speak(text, 0.85).catch(() => undefined);
+      await speak(say(), 0.85).catch(() => undefined);
       await new Promise((r) => setTimeout(r, 250));
       const url = mine;
       await new Promise<void>((res) => {
@@ -700,7 +708,138 @@ function shadowing(text: string) {
       mine = URL.createObjectURL(new Blob([take.wav], { type: "audio/wav" }));
       both.disabled = false;
     },
+    /** Forget the take (the text it was a recording of has changed). */
+    reset() {
+      if (mine) URL.revokeObjectURL(mine);
+      mine = null;
+      both.disabled = true;
+    },
   };
+}
+
+// ------------------------------------------------------------------ your own words
+
+/** Type any word or sentence, hear it, say it, and get it checked with the same rules as the lessons. */
+function showOwnWords() {
+  const o = $("overlay");
+  o.hidden = false;
+  o.replaceChildren();
+
+  const input = h("textarea", { id: "ownText", rows: "2", maxlength: "160", placeholder: "e.g. Thank you for joining the meeting today.", "aria-label": "Your word or sentence" }) as HTMLTextAreaElement;
+  try {
+    input.value = localStorage.getItem("accentCoach.ownText") ?? "";
+  } catch {
+    /* ignore */
+  }
+  const status = h("p", { class: "note", role: "status" });
+  const marks = h("div", { class: "chips word-marks" });
+  const summary = h("p", { class: "own-summary" });
+  const findings = h("div", { class: "results" });
+  const gate = h("div");
+  const stopGate = mountEngineGate(gate, (ready) => {
+    engineReady = ready;
+    gate.hidden = ready;
+  });
+
+  let item: FreeItem | null = null;
+  let itemKey = "";
+  const text = () => input.value.replace(/\s+/g, " ").trim();
+  /** The typed text's expected sounds (asked from the server once per text and accent). */
+  const prepare = async (): Promise<FreeItem | null> => {
+    const t = text();
+    if (!t) {
+      status.textContent = "Type a word or a sentence first.";
+      return null;
+    }
+    const key = `${accent()}|${t}`;
+    if (item && key === itemKey) return item;
+    status.textContent = "Looking up how that's pronounced…";
+    try {
+      item = freeTextItem(await api.phonemize(t, accentInfo().lang), accent());
+      itemKey = key;
+      try {
+        localStorage.setItem("accentCoach.ownText", t);
+      } catch {
+        /* ignore */
+      }
+      return item;
+    } catch (e) {
+      status.textContent = `Couldn't look that up: ${(e as Error).message}`;
+      return null;
+    }
+  };
+
+  const shadow = shadowing(text);
+  const clear = () => {
+    marks.replaceChildren();
+    findings.replaceChildren();
+    summary.textContent = "";
+    status.textContent = "";
+    shadow.reset();
+  };
+  input.oninput = clear;
+
+  const close = () => {
+    stopGate();
+    stopTalking();
+    shadow.reset();
+    o.hidden = true;
+    o.replaceChildren();
+  };
+
+  const listen = h("button", { class: "btn" }, icons.listen(), "Hear it");
+  listen.onclick = () => {
+    if (text()) void speak(text(), 0.85);
+    else status.textContent = "Type a word or a sentence first.";
+  };
+  const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
+  sayBtn.onclick = async () => {
+    const it = await prepare();
+    if (!it) return;
+    const heard = await hear(sayBtn, status, "Listening… say it, then pause.", { maxSeconds: 14, silenceToStop: 1.2 }, shadow.keep);
+    if (!heard || it !== item) return; // the text was edited while recording
+    const r = judgeFreeText(it, heard);
+    marks.replaceChildren(...it.words.map((w, i) => {
+      const v = r.words[i];
+      return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}` }, v === "good" ? icons.check() : null, w.text);
+    }));
+    const sure = r.good + r.habits;
+    summary.textContent = !r.findings.length
+      ? "Nothing in that could be judged. Try a longer phrase."
+      : `${r.good} of ${sure} sounds clean${r.unclear ? `, ${r.unclear} not heard clearly` : ""}.`;
+
+    // one row per word and habit, with the way to the lesson that fixes it
+    const seen = new Set<string>();
+    const rows = r.findings.filter((f) => f.verdict === "habit" && !seen.has(`${f.word}|${f.habit}`) && seen.add(`${f.word}|${f.habit}`)).map((f) => {
+      const l = LESSONS.find((x) => x.id === f.lesson);
+      const go = h("button", { class: "btn small" }, `Practise: ${l?.title ?? f.lesson}`);
+      go.onclick = () => {
+        close();
+        if (l) openLesson(l);
+      };
+      return h("div", { class: "result bad" }, h("span", {}, `"${it.words[f.word].text}": you said ${f.habit}.`), h("span", { class: "own-fix" }, h("span", { class: "ipa-tag" }, `/${f.heard}/ for /${f.sym}/`), go));
+    });
+    findings.replaceChildren(...rows, h("p", { class: "ipa-tag own-heard" }, `heard /${heard.join("")}/`));
+    status.textContent = r.habits ? "The green words were clean. Press Hear both to compare, or Say it to go again." : "Press Hear both to compare your rhythm with the model, or Say it to go again.";
+    const first = r.findings.find((f) => f.verdict === "habit");
+    speakFeedback(r.habits ? "habit" : r.unclear && !r.good ? "off" : "good", r.findings[0]?.sym ?? "", first?.habit);
+  };
+  const done = h("button", { class: "linklike" }, "Close");
+  done.onclick = close;
+
+  o.append(
+    h("div", { class: "sheet own" },
+      h("p", { class: "eyebrow" }, "Your own words"),
+      h("h2", {}, "Type anything, then say it"),
+      h("p", { class: "lead" }, `Your name, a line from a meeting, a word you always trip on. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
+      input,
+      gate,
+      h("div", { class: "row" }, listen, sayBtn, shadow.both),
+      status, marks, summary, findings,
+      h("p", { class: "note" }, "Vowels are only judged where they're stressed, and names or unusual words may be pronounced differently from how you'd expect: press Hear it to check."),
+      h("div", { class: "row" }, done)),
+  );
+  input.focus();
 }
 
 /** One word's sounds judged against a lesson's checks, boiled down to a single verdict. */

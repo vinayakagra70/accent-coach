@@ -1,6 +1,7 @@
 import type { Take } from "./audio/recorder";
 import type { Profile } from "./course";
 import { engine } from "./listen/engine";
+import type { SpokenWord } from "./scoring/freeText";
 
 /**
  * Where listening and saving happen.
@@ -124,6 +125,18 @@ export function profileBasedOn(rev: number) {
 /** True while a save is on its way (don't refetch in the middle of one). */
 export function profileSyncBusy(): boolean {
   return sending || pending !== null;
+}
+
+/**
+ * How any typed text is pronounced (server/phonemize.py). Laptop and same-Wi-Fi
+ * phones only: the hosted phone build has no server to ask.
+ */
+export const CAN_PHONEMIZE = !STATIC;
+
+export async function phonemize(text: string, lang: string): Promise<SpokenWord[]> {
+  const r = await fetch("/api/phonemize", { method: "POST", body: JSON.stringify({ text, lang }), headers: { "Content-Type": "application/json" } });
+  if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail ?? `server error ${r.status}`);
+  return (await r.json()).words as SpokenWord[];
 }
 
 export async function getProfile(): Promise<Profile | null> {

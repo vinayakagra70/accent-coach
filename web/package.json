@@ -11,7 +11,7 @@
     "build:phone": "tsc && vite build --mode phone --outDir dist-phone --emptyOutDir && node tools/trim-phone-build.mjs",
     "preview:phone": "vite preview --mode phone --outDir dist-phone",
     "typecheck": "tsc",
-    "test": "esbuild tests/formants.test.ts tests/scoring.test.ts tests/british.test.ts tests/sentences.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/tests --log-level=warning && node node_modules/.cache/tests/formants.test.js && node node_modules/.cache/tests/scoring.test.js && node node_modules/.cache/tests/british.test.js && node node_modules/.cache/tests/sentences.test.js"
+    "test": "esbuild tests/formants.test.ts tests/scoring.test.ts tests/british.test.ts tests/sentences.test.ts tests/freetext.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/tests --log-level=warning && node node_modules/.cache/tests/formants.test.js && node node_modules/.cache/tests/scoring.test.js && node node_modules/.cache/tests/british.test.js && node node_modules/.cache/tests/sentences.test.js && node node_modules/.cache/tests/freetext.test.js"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",

@@ -35,7 +35,7 @@ export function isVowel(t: string) {
 }
 
 /** Tokens the model writes as one unit, split from an IPA string written without spaces. */
-const MULTI = ["eɪ", "oʊ", "aɪ", "aʊ", "ɔɪ", "əʊ", "dʒ", "tʃ", "t̪", "d̪"];
+export const MULTI = ["eɪ", "oʊ", "aɪ", "aʊ", "ɔɪ", "əʊ", "dʒ", "tʃ", "t̪", "d̪"];
 
 export function tokenize(s: string): string[] {
   const parts = s.trim().split(/\s+/).filter(Boolean);
@@ -96,12 +96,17 @@ export function align(expected: string[], heard: string[]): AlignedPair[] {
   const out: AlignedPair[] = [];
   let i = n;
   let j = m;
+  // The costs are sums of 0.7s and 0.3s, which don't add up exactly in floating
+  // point ("7 × 0.7" isn't "6 × 0.7 + 0.7"), so compare with a tolerance. With
+  // exact comparison a long phrase heard as nothing walked off the table and
+  // never came back.
+  const same = (a: number, b: number) => Math.abs(a - b) < 1e-9;
   while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && D[i][j] === D[i - 1][j - 1] + subCost(expected[i - 1], heard[j - 1])) {
+    if (i > 0 && j > 0 && same(D[i][j], D[i - 1][j - 1] + subCost(expected[i - 1], heard[j - 1]))) {
       out.push({ exp: i - 1, got: j - 1 });
       i--;
       j--;
-    } else if (i > 0 && D[i][j] === D[i - 1][j] + GAP) {
+    } else if (i > 0 && (j === 0 || same(D[i][j], D[i - 1][j] + GAP))) {
       out.push({ exp: i - 1, got: -1 });
       i--;
     } else {

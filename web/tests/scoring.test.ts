@@ -63,6 +63,19 @@ check(judgeOne(6, "ɹ ɛ d k ɑːɹ ɹ aɪ t n aʊ", "rhotic", "car").verdict ==
 check(judgeOne(9, "ə g r eː t d eː", "ei", "day").habit?.includes("no glide") === true, "steady eː in 'day' is caught");
 check(judgeOne(9, "ə g ɹ e ɪ t d e ɪ", "ei", "day").verdict === "good", "eɪ written as two tokens still counts");
 
+// ---- alignment always finishes, whatever was heard
+{
+  const long = "ð ə d ɑ k t ɚ s ɛ d d ɪ n ɚ ɪ z æ t t ɛ n t ə d eɪ".split(" ");
+  const nothing = align(long, []);
+  check(nothing.length === long.length && nothing.every((p, i) => p.exp === i && p.got === -1), "a long phrase heard as nothing: every sound is simply missing (this used to hang)");
+  const extra = align([], long);
+  check(extra.length === long.length && extra.every((p, i) => p.exp === -1 && p.got === i), "sounds with nothing expected are all extras");
+  for (const cut of [1, 5, 9, 14, 20]) {
+    const pairs = align(long, long.slice(cut));
+    check(pairs.filter((p) => p.exp >= 0).length === long.length && pairs.filter((p) => p.got >= 0).length === long.length - cut, `a recording missing its first ${cut} sounds still lines up`);
+  }
+}
+
 // ---- course building
 const a = buildAssessment(ASSESSMENT.map((item, i) => ({ item, heard: normalizeAll(heard[`us_am_michael_${String(i).padStart(2, "0")}`]) })));
 a.lessons["alveolar-td"].score = 20;

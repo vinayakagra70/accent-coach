@@ -48,6 +48,9 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
    sentence and hear the model and yourself back to back. Every 5 days a check-up re-test re-plans the rest.
 4. Review: a word said with a habit comes back the next day, then 2 and 4 days later, until it has
    been clean on three different days.
+5. Your own words (laptop, and phones on the same Wi-Fi): type any word or sentence, hear it, say it,
+   and get it checked for the same sounds. The laptop works out the pronunciation, so the hosted
+   phone build doesn't have this.
 
 JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
@@ -85,7 +88,8 @@ web/src/review.ts    words to come back to, and when
 web/src/reminder.ts  the daily reminder: a repeating calendar event (.ics or Google Calendar), since a
                      static site can't send notifications while it's closed
 web/src/scoring/     align.ts (what was heard vs what was expected), checks.ts (the habits looked for
-                     per sound), report.ts (voice test -> score and findings)
+                     per sound), report.ts (voice test -> score and findings),
+                     freeText.ts (text the learner typed: what to judge, and how cautiously)
 web/src/course.ts    the profile: voice-test results, the daily course, streak
 web/src/progress.ts  listening and vowel-mirror results per lesson (saved inside the profile)
 web/src/api.ts       where listening and saving happen in each of the three setups
@@ -94,6 +98,7 @@ web/src/coach.ts     Nova: what she says and when; speech/lines.ts has every lin
 web/src/nova/        her Live2D engine (copied from JARVIS)
 web/src/ui/          onboarding.ts (voice test and report), engineGate.ts, vowelChart.ts
 server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py (Kokoro),
+                     phonemize.py (how any text is pronounced, with espeak),
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
 space/               the online listener, a Hugging Face Space
 tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py

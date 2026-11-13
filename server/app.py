@@ -3,6 +3,7 @@
   GET  /api/health      are the speech model and the voice loaded?
   POST /api/recognize   WAV body -> {"phonemes": [...]}
   POST /api/speak       {"text", "voice"?, "speed"?} -> WAV (Kokoro)
+  POST /api/phonemize   {"text", "lang"?} -> {"words": [{"text", "ipa"}]}: how any text is pronounced
   GET  /api/profile     the learner's profile (course, scores, streak)
   PUT  /api/profile     save it -> {"rev"}; 409 + the current profile if "rev" in the body is out of date
   GET  /api/summary     short plain-language progress summary (for JARVIS)
@@ -27,6 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
+from .phonemize import Phonemizer, PhonemizerNotReady, split_words
 from .profile_store import ProfileStore, StaleProfile, summarize
 from .recognizer import PhonemeRecognizer, RecognizerNotReady, read_wav
 from .tts import KokoroTTS, TtsNotReady
@@ -47,7 +49,9 @@ def create_app(
     load_model: bool = True,
     access_key: str | None = None,
     serve_app: bool = False,
+    phonemizer: Phonemizer | None = None,
 ) -> FastAPI:
+    sounds = phonemizer or Phonemizer()
     rec = recognizer or PhonemeRecognizer()
     profiles = store or ProfileStore(DATA_DIR / "profile.json")
     voice = tts or KokoroTTS()
@@ -138,6 +142,25 @@ def create_app(
         except TtsNotReady as exc:
             raise HTTPException(503, f"voice not ready: {exc}")
         return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
+
+    @app.post("/api/phonemize")
+    async def phonemize(request: Request) -> dict[str, object]:
+        raw = await request.body()
+        if len(raw) > MAX_SPEAK_BODY:
+            raise HTTPException(413, "request too large")
+        try:
+            body = json.loads(raw)
+            text = str(body.get("text", "")).strip()
+            lang = str(body.get("lang", "en-us"))
+        except (json.JSONDecodeError, AttributeError):
+            raise HTTPException(400, "send JSON like {\"text\": \"hello there\"}")
+        if not split_words(text):
+            raise HTTPException(400, "nothing to pronounce")
+        try:
+            words = await run_in_threadpool(sounds.words, text, lang)
+        except PhonemizerNotReady as exc:
+            raise HTTPException(503, f"pronunciations aren't available: {exc}")
+        return {"words": words}
 
     @app.get("/api/profile")
     def get_profile() -> dict[str, object]:
