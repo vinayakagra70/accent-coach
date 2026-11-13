@@ -1,6 +1,6 @@
 # Accent Coach
 
-General American pronunciation for Indian English speakers, with a 3D cut-away mouth.
+General American or British pronunciation for Indian English speakers, with a 3D cut-away mouth.
 
 Run: double-click `start.bat`. It starts the speech engine (port 5181) and the app (http://127.0.0.1:5180).
 Tests: `cd web; npm test` and `.venv\Scripts\python.exe -m pytest server`.
@@ -55,20 +55,54 @@ JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/p
 - **Ear first.** Minimal-pair listening drills (vine/wine, thin/tin, bad/bed) before speaking.
 - **Body cues.** Touch points glow, airflow shows oral / nasal / hiss / burst, and the voice box buzzes when a sound is voiced.
 
+## Three ways it runs
+
+| | Listening (speech model) | Voice | Progress |
+|---|---|---|---|
+| Laptop (`start.bat`) | Python server on the laptop | Kokoro on the laptop | `data/profile.json` + the browser |
+| Phone on the same Wi-Fi (`start-phone.bat`) | the laptop | the laptop | the laptop, shared with the laptop's browser |
+| Phone build (`npm run build:phone`, hosted) | in the phone's browser (242 MB download, once), or the online listener in `space/` for phones without the memory | pre-rendered clips | that phone only |
+
+Progress made on one device shows up on the other: the server numbers every save, and a
+copy that is out of date (a phone tab left open while you practised on the laptop) is
+refused and replaced with the current one instead of overwriting it.
+
 ## Layout
 
 ```
-web/src/mouth/     3D mouth: anatomy.ts (fixed shapes), pose.ts (articulator parameters),
-                   phonemes.ts (pose per sound + Indian-English habits), MouthScene.ts (three.js)
-web/src/audio/     formants.ts (LPC F1/F2), mirror.ts (formants -> tongue pose, score, hints),
-                   mic.ts, speak.ts (browser TTS for now)
-web/src/content/   lessons.ts (16 sounds, words, minimal pairs, vowel targets)
-web/src/progress.ts  practice history (browser storage for now)
+web/src/main.ts      the app: lesson panel, cards, course flow
+web/src/mouth/       3D mouth: anatomy.ts (fixed shapes), pose.ts (articulator parameters),
+                     phonemes.ts (pose per sound + Indian-English habits), MouthScene.ts (three.js)
+web/src/audio/       formants.ts (LPC F1/F2), mirror.ts (formants -> tongue pose, score, hints),
+                     mic.ts, recorder.ts (a phrase, stopped by silence), speak.ts (model words)
+web/src/content/     lessons.ts (16 sounds, words, minimal pairs, vowel targets),
+                     british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases)
+web/src/scoring/     align.ts (what was heard vs what was expected), checks.ts (the habits looked for
+                     per sound), report.ts (voice test -> score and findings)
+web/src/course.ts    the profile: voice-test results, the daily course, streak
+web/src/progress.ts  listening and vowel-mirror results per lesson (saved inside the profile)
+web/src/api.ts       where listening and saving happen in each of the three setups
+web/src/listen/      the speech model in the browser (phone build): engine.ts, worker.ts
+web/src/coach.ts     Nova: what she says and when; speech/lines.ts has every line
+web/src/nova/        her Live2D engine (copied from JARVIS)
+web/src/ui/          onboarding.ts (voice test and report), engineGate.ts, vowelChart.ts
+server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py (Kokoro),
+                     profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
+space/               the online listener, a Hugging Face Space
+tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py
 ```
 
 ## Roadmap
 
-1. **Done:** 3D mouth, 16 lessons, listening drills, live vowel mirror, record & compare.
-2. **Next:** local Python scoring server (wav2vec2 phoneme recognizer) so consonants get scored and the 3D mouth shows what you actually said.
-3. Progress stored by that server, plus a JARVIS tool: "open my accent coach", "which sounds am I weak on?".
-4. Later: Kokoro American voices from JARVIS instead of browser TTS, camera lip tracking, stress and intonation.
+**Done:** 3D mouth, 16 lessons in General American and British, listening drills, live vowel
+mirror, voice test and personal daily course, sound-by-sound scoring with the wav2vec2
+recognizer, Kokoro voices, Nova, phone use (same Wi-Fi, and a hosted build that runs offline),
+progress shared between devices, JARVIS summary.
+
+**Not yet:**
+
+1. Stress and rhythm: everything is scored one word at a time, and word stress
+   ("deVElopment") is a large part of an Indian-English accent.
+2. Scoring for dark L and aspiration, which are compare-by-ear for now.
+3. A chart of voice-test scores over time (the history is already saved).
+4. Camera lip tracking.

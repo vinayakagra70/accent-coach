@@ -8,6 +8,7 @@ import { buildAssessment, weakest, type ItemResult } from "../scoring/report";
 import { $, h } from "./dom";
 import { icons } from "./icons";
 import { mountEngineGate } from "./engineGate";
+import { scoreChart } from "./scoreChart";
 import { ENGINE_STOPPED } from "../listen/engine";
 import type { Take } from "../audio/recorder";
 import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
@@ -297,7 +298,7 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
 
 const lessonTitle = (id: string) => LESSONS.find((l) => l.id === id)?.title ?? id;
 
-export function showReport(opts: { assessment: Assessment; course: CourseDay[]; previous?: number; onStart: (lessonId?: string) => void }) {
+export function showReport(opts: { assessment: Assessment; course: CourseDay[]; previous?: number; history?: { date: string; overall: number }[]; onStart: (lessonId?: string) => void }) {
   const a = opts.assessment;
   const o = overlay();
   const rows = weakest(a);
@@ -313,6 +314,8 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
   const delta = opts.previous !== undefined
     ? h("p", { class: `delta ${a.overall >= opts.previous ? "up" : "down"}` }, `${a.overall - opts.previous >= 0 ? "+" : ""}${a.overall - opts.previous} since last test`)
     : null;
+
+  const trend = scoreChart(opts.history ?? []);
 
   const flawList = h("div", { class: "flaws" }, ...flaws.slice(0, 8).map((f) => {
     const first = f.findings[0];
@@ -339,6 +342,8 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
       h("p", { class: "eyebrow" }, "Your accent report"),
       h("div", { class: "report-top" }, ring, h("div", {}, h("h2", {}, verdict), delta,
         h("p", { class: "muted" }, `Based on ${a.phrases ?? 13} phrase${a.phrases === 1 ? "" : "s"}${(a.phrases ?? 13) < 13 ? " (the short phone version: sounds it didn't cover are still in your course)" : ""}, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`))),
+      trend ? h("h3", {}, `Your ${opts.history!.length} voice tests`) : null,
+      trend,
       flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
       flawList,
       good.length ? h("h3", {}, "Already good") : null,
