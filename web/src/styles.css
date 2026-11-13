@@ -58,6 +58,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 button, select { font: inherit; color: inherit; }
+a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .icon { flex-shrink: 0; display: block; }
 .muted { color: var(--muted); }
@@ -211,6 +212,17 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .hint { margin-top: 8px !important; min-height: 20px; }
 .note { color: var(--muted); font-size: 13px; margin-top: 8px !important; }
 .card > .note:first-of-type { margin-top: 0 !important; margin-bottom: 12px !important; }
+
+.creator-credit {
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  padding: 12px 20px 16px; border-top: 1px solid var(--line); background: var(--deep);
+  color: var(--text-2); font-size: 12px; line-height: 16px; letter-spacing: 0.02em;
+}
+.creator-credit strong { color: var(--text); font-weight: 600; }
+.creator-credit a {
+  color: var(--accent); text-decoration: none; font-weight: 500;
+}
+.creator-credit a:hover { text-decoration: underline; }
 
 /* today */
 .card.today-card { background: var(--raised); border-color: var(--line-strong); }
