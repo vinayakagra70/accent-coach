@@ -214,15 +214,20 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .card > .note:first-of-type { margin-top: 0 !important; margin-bottom: 12px !important; }
 
 .creator-credit {
-  display: flex; justify-content: center; align-items: center; gap: 10px;
+  display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px;
   padding: 12px 20px 16px; border-top: 1px solid var(--line); background: var(--deep);
   color: var(--text-2); font-size: 12px; line-height: 16px; letter-spacing: 0.02em;
 }
 .creator-credit strong { color: var(--text); font-weight: 600; }
-.creator-credit a {
-  color: var(--accent); text-decoration: none; font-weight: 500;
+.creator-instagram {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 0 14px; border: 1px solid var(--accent); border-radius: 999px;
+  background: var(--accent); color: var(--deep); text-decoration: none; font-size: 13px; font-weight: 600;
+  transition: background-color 140ms var(--ease), border-color 140ms var(--ease), transform 140ms var(--ease);
 }
-.creator-credit a:hover { text-decoration: underline; }
+.creator-instagram strong { color: var(--deep); }
+.creator-instagram:hover { background: #a5cb92; border-color: #a5cb92; }
+.creator-instagram:active { transform: scale(0.96); }
 
 /* today */
 .card.today-card { background: var(--raised); border-color: var(--line-strong); }
