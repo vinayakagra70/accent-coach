@@ -26,6 +26,14 @@ The speech model goes into `models/` rather than the Hugging Face cache because 
 
 Before publishing the app (a website, a store), read Live2D's terms: the Cubism SDK release licence and the Free Material License decide whether you may ship Cubism Core and Hiyori. Your own character avoids the question.
 
+## Voice clips for the hosted build
+
+The hosted phone build has no voice engine, so everything Nova says and every model word is
+rendered ahead of time into `web/public/audio/` (about 1,600 MP3s, 20 MB). The clips are in git
+so that Vercel, which builds from git, ships them. After changing a lesson word, a sentence or one
+of Nova's lines, run `npm run voices` in `web/` (it renders only what's new and deletes what's no
+longer used) and commit the result. A line without a clip is shown as a caption only.
+
 ## On a phone (same Wi-Fi)
 
 Double-click `start-phone.bat` on the laptop and scan the QR code it shows.
