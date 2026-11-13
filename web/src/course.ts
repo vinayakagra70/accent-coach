@@ -1,5 +1,7 @@
 import { LESSONS } from "./content/lessons";
+import { sentenceItem } from "./content/sentences";
 import type { LessonProgress } from "./progress";
+import type { Reviews } from "./review";
 import { LESSON_CHECKS } from "./scoring/checks";
 
 /**
@@ -45,6 +47,8 @@ export interface TodayProgress {
   earRight: number;
   speakTries: number;
   speakGood: number;
+  /** Attempts at the lesson's sentence; missing in profiles from before sentences existed. */
+  sentenceTries?: number;
 }
 
 export interface Profile {
@@ -62,6 +66,8 @@ export interface Profile {
   streak: { count: number; lastDate: string | null };
   /** Listening and vowel-mirror results per lesson (progress.ts), so every device shows the same. */
   practice?: Record<string, LessonProgress>;
+  /** Words said with a habit, waiting to be said cleanly on later days (review.ts). */
+  review?: Reviews;
   /** Set by the server: goes up by one on every save. Tells a stale copy from a fresh one without trusting clocks. */
   rev?: number;
 }
@@ -70,7 +76,7 @@ export const PASS_SCORE = 85;
 const CHECKUP_EVERY = 5;
 
 export function emptyToday(): TodayProgress {
-  return { learnedTarget: false, learnedHabit: false, earAnswered: 0, earRight: 0, speakTries: 0, speakGood: 0 };
+  return { learnedTarget: false, learnedHabit: false, earAnswered: 0, earRight: 0, speakTries: 0, speakGood: 0, sentenceTries: 0 };
 }
 
 /** Lessons in teaching order, worst and most noticeable first. */
@@ -160,7 +166,7 @@ export function todayKey() {
 /** What the current day needs before it can be finished. */
 export function dayRequirements(lessonId: string) {
   const l = LESSONS.find((x) => x.id === lessonId);
-  return { ear: l && l.pairs.length ? 6 : 0, speak: 4 };
+  return { ear: l && l.pairs.length ? 6 : 0, speak: 4, sentence: sentenceItem(lessonId) ? 1 : 0 };
 }
 
 export function dayReady(p: Profile): boolean {
@@ -168,7 +174,7 @@ export function dayReady(p: Profile): boolean {
   if (!d || d.kind !== "lesson" || !d.lesson) return false;
   const req = dayRequirements(d.lesson);
   const t = p.today;
-  return t.learnedTarget && t.learnedHabit && t.earAnswered >= req.ear && t.speakTries >= req.speak;
+  return t.learnedTarget && t.learnedHabit && t.earAnswered >= req.ear && t.speakTries >= req.speak && (t.sentenceTries ?? 0) >= req.sentence;
 }
 
 export function completeDay(p: Profile, now = new Date()): Profile {

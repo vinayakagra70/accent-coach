@@ -6,8 +6,9 @@
  */
 import { readFileSync } from "node:fs";
 import { ASSESSMENT } from "../src/content/assessment";
-import { buildCourse, completeDay, currentStreak, dayKey, finishedToday, newProfile, planLessons, replan } from "../src/course";
+import { buildCourse, completeDay, currentStreak, dayKey, dayReady, dayRequirements, finishedToday, newProfile, planLessons, replan } from "../src/course";
 import { mergeLesson } from "../src/progress";
+import { REVIEW_PER_DAY, dueReviews, recordAttempt } from "../src/review";
 import { layout } from "../src/ui/scoreChart";
 import { align, judge, normalizeAll } from "../src/scoring/align";
 import { LESSON_CHECKS } from "../src/scoring/checks";
@@ -109,6 +110,48 @@ check(p2.history.length === 2 && p2.course[0].completedAt !== undefined, "re-tes
   check(JSON.stringify(same) === JSON.stringify(m), "merging in either order gives the same result");
   const none = { listenRight: 0, listenTotal: 0, bestVowel: 0, lastPracticed: null };
   check(JSON.stringify(mergeLesson(none, phone)) === JSON.stringify(phone), "merging into an unpractised lesson keeps the other copy");
+}
+
+// ---- review: a word said with a habit comes back until it's clean on three days
+{
+  const d = (day: number, hour = 10) => new Date(2026, 10, day, hour);
+  let r = recordAttempt(undefined, "th-voiceless", "think", "habit", "a T (\"tink\")", d(10));
+  check(dueReviews(r, d(10)).length === 0 && dueReviews(r, d(11)).length === 1, "a missed word is not due the same day, and is due the next");
+  check(dueReviews(r, d(11))[0].habit === "a T (\"tink\")", "the review item remembers what was said");
+  r = recordAttempt(r, "th-voiceless", "think", "good", undefined, d(10, 11));
+  check(r["th-voiceless:think"].clean === 0, "saying it right the same day doesn't count (it isn't due yet)");
+  r = recordAttempt(r, "th-voiceless", "think", "off", undefined, d(11));
+  check(r["th-voiceless:think"].clean === 0 && r["th-voiceless:think"].due === "2026-11-11", "an unclear recording changes nothing");
+  r = recordAttempt(r, "th-voiceless", "think", "good", undefined, d(11));
+  check(r["th-voiceless:think"].clean === 1 && r["th-voiceless:think"].due === "2026-11-13", "1st clean day: back in 2 days");
+  r = recordAttempt(r, "th-voiceless", "think", "good", undefined, d(11, 12));
+  check(r["th-voiceless:think"].clean === 1, "repeating it in the same sitting can't clear it faster");
+  r = recordAttempt(r, "th-voiceless", "think", "good", undefined, d(14));
+  check(r["th-voiceless:think"].clean === 2 && r["th-voiceless:think"].due === "2026-11-18", "2nd clean day (even if late): back in 4 days");
+  const slipped = recordAttempt(r, "th-voiceless", "think", "habit", "a T (\"tink\")", d(18));
+  check(slipped["th-voiceless:think"].clean === 0 && slipped["th-voiceless:think"].due === "2026-11-19" && slipped["th-voiceless:think"].misses === 2, "a slip starts it over, due tomorrow");
+  r = recordAttempt(r, "th-voiceless", "think", "good", undefined, d(18));
+  check(r["th-voiceless:think"] === undefined, "3rd clean day: the word is done");
+  check(Object.keys(recordAttempt(undefined, "v-w", "very", "good", undefined, d(10))).length === 0, "a clean word that was never missed is not tracked");
+  check(recordAttempt(undefined, "v-w", "very", "habit", "x", new Date(2026, 10, 30))["v-w:very"].due === "2026-12-01", "due dates roll over the month end");
+
+  let many: ReturnType<typeof recordAttempt> = {};
+  for (const [i, w] of ["a", "b", "c", "d", "e", "f", "g", "h"].entries()) many = recordAttempt(many, "z", w, "habit", "x", d(1 + i));
+  many = recordAttempt(many, "z", "h", "habit", "x", d(8, 12)); // missed twice
+  const due = dueReviews(many, d(20));
+  check(due.length === REVIEW_PER_DAY && due[0].word === "a", `at most ${REVIEW_PER_DAY} review words a day, the longest overdue first`);
+  check(JSON.stringify(recordAttempt(many, "z", "a", "good", undefined, d(20))) !== JSON.stringify(many) && many["z:a"].clean === 0, "recordAttempt returns a new list and leaves the old one alone");
+}
+
+// ---- the day isn't finished until the sentence has been tried
+{
+  let s = newProfile(null, true);
+  const id = s.course[0].lesson!;
+  const req = dayRequirements(id);
+  s = { ...s, today: { learnedTarget: true, learnedHabit: true, earAnswered: req.ear, earRight: 0, speakTries: req.speak, speakGood: 0 } };
+  check(req.sentence === 1 && !dayReady(s), `day 1 (${id}) needs its sentence, also for a profile saved before sentences existed`);
+  check(dayReady({ ...s, today: { ...s.today, sentenceTries: 1 } }), "one try at the sentence completes the day");
+  check(dayRequirements("dark-l").sentence === 0 && dayRequirements("aspiration").sentence === 0, "lessons the model can't hear ask for no sentence");
 }
 
 // ---- score-history chart geometry

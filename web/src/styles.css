@@ -243,6 +243,14 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .chip.say.live { border-color: var(--bad); }
 .chip.say.live .icon { color: var(--bad); animation: rec 1.2s ease-in-out infinite; }
 @keyframes rec { 50% { opacity: 0.35; } }
+.btn.say.live { border-color: var(--bad); }
+.btn.say.live .icon { color: var(--bad); animation: rec 1.2s ease-in-out infinite; }
+.sentence { font-size: 17px; line-height: 26px; color: var(--text); margin: 0 0 12px !important; text-wrap: balance; }
+.word-marks { margin-top: 12px; }
+.word-marks:empty { display: none; }
+.chip.mark.good { border-color: var(--accent); }
+.chip.mark.bad { border-color: var(--habit); color: var(--habit); }
+.chip.mark.mid { color: var(--muted); border-style: dashed; }
 .results { display: grid; gap: 8px; margin-top: 12px; }
 .result { display: grid; grid-template-columns: 8px 1fr; gap: 4px 12px; align-items: baseline; font-size: 13px; padding: 8px 12px; border-radius: var(--r-control); background: var(--bg); border: 1px solid var(--line); }
 .result::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transform: translateY(-1px); }

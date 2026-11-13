@@ -44,7 +44,10 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
 1. Voice test: 13 short phrases, about 3 minutes, or skip it for the standard course.
 2. Report: a score out of 100, each flaw with the exact word ("think /t/ for /θ/"), and what's already good.
 3. Daily course: one sound a day, worst and most noticeable first. Each day: watch the American way,
-   see your habit, train your ear, then say 4 words and get them scored. Every 5 days a check-up re-test re-plans the rest.
+   see your habit, train your ear, say 4 words and get them scored, then say the sound in a short
+   sentence. Every 5 days a check-up re-test re-plans the rest.
+4. Review: a word said with a habit comes back the next day, then 2 and 4 days later, until it has
+   been clean on three different days.
 
 JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
@@ -76,7 +79,9 @@ web/src/mouth/       3D mouth: anatomy.ts (fixed shapes), pose.ts (articulator p
 web/src/audio/       formants.ts (LPC F1/F2), mirror.ts (formants -> tongue pose, score, hints),
                      mic.ts, recorder.ts (a phrase, stopped by silence), speak.ts (model words)
 web/src/content/     lessons.ts (16 sounds, words, minimal pairs, vowel targets),
-                     british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases)
+                     british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases),
+                     sentences.ts (one practice sentence per lesson)
+web/src/review.ts    words to come back to, and when
 web/src/scoring/     align.ts (what was heard vs what was expected), checks.ts (the habits looked for
                      per sound), report.ts (voice test -> score and findings)
 web/src/course.ts    the profile: voice-test results, the daily course, streak
@@ -96,7 +101,7 @@ tools/               render_voice.py (pre-render Nova's lines for the phone buil
 
 **Done:** 3D mouth, 16 lessons in General American and British, listening drills, live vowel
 mirror, voice test and personal daily course, sound-by-sound scoring with the wav2vec2
-recognizer, Kokoro voices, Nova, phone use (same Wi-Fi, and a hosted build that runs offline),
+recognizer, a scored sentence per lesson, spaced review of missed words, Kokoro voices, Nova, phone use (same Wi-Fi, and a hosted build that runs offline),
 progress shared between devices, JARVIS summary.
 
 **Not yet:**

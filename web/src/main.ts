@@ -22,8 +22,12 @@ import { MouthScene } from "./mouth/MouthScene";
 import { PHONEME_POSES, SEQUENCES, wordTimeline } from "./mouth/phonemes";
 import type { Pose } from "./mouth/pose";
 import * as progress from "./progress";
-import { align, judge, normalizeAll, type CheckResult } from "./scoring/align";
+import { align, judge, normalizeAll, type CheckResult, type Verdict } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
+import { judgeItem } from "./scoring/report";
+import type { TestItem } from "./content/assessment";
+import { sentenceItem } from "./content/sentences";
+import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
 import { mountEngineGate } from "./ui/engineGate";
@@ -362,6 +366,7 @@ function renderList() {
     const d = profile.course[profile.day];
     const streak = currentStreak(profile);
     const name = !d ? "Course complete" : d.kind === "checkup" ? "Check-up voice test" : LESSONS.find((l) => l.id === d.lesson)?.title ?? "";
+    const dueN = reviewsDue().length;
     const go = h("button", { class: "btn primary small" }, !d ? "Review" : finishedToday(profile) ? "Start next day early" : "Go to today");
     go.onclick = () => goToday();
     nav.append(h("div", { class: "course-card" },
@@ -370,6 +375,7 @@ function renderList() {
       h("p", { class: "muted small" }, finishedToday(profile) ? "Done for today. Next" : "Today"),
       h("p", { class: "today-name" }, name),
       profile.assessment ? h("p", { class: "muted small" }, `Voice score ${profile.assessment.overall} of 100`) : null,
+      dueN ? h("p", { class: "muted small" }, `${dueN} word${dueN === 1 ? "" : "s"} to review today`) : null,
       go));
   } else {
     const start = h("button", { class: "btn primary small" }, "Take the voice test");
@@ -425,7 +431,8 @@ function renderTodayCard() {
       step(t.learnedTarget, `Watch the ${accentInfo().name} way`),
       step(t.learnedHabit, "See your Indian habit"),
       req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
-      step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`)),
+      step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`),
+      req.sentence ? step((t.sentenceTries ?? 0) >= req.sentence, "Say it in a sentence") : null),
     h("div", { class: "row" }, finish)));
 }
 
@@ -451,6 +458,12 @@ function renderPanel() {
   panel.append(todaySlot);
   renderTodayCard();
 
+  resetEngineGate();
+  reviewSlot = h("div");
+  reviewUi = null;
+  panel.append(reviewSlot);
+  renderReviewCard();
+
   const finding = profile?.assessment?.lessons[lesson.id]?.findings[0];
   if (finding) {
     panel.append(card("From your voice test", "mistake",
@@ -474,6 +487,8 @@ function renderPanel() {
 
   if (lesson.pairs.length) panel.append(listenCard());
   if (LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(scoredCard());
+  const sentence = sentenceItem(lesson.id);
+  if (sentence) panel.append(sentenceCard(sentence));
   if (lesson.vowel) panel.append(mirrorCard());
   if (!LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(recordCard());
   panel.append(h("p", { class: "note" }, `Model voice: ${hasVoice() ? voiceName() : "none"}. Drag the 3D view to rotate, scroll to zoom.`));
@@ -548,9 +563,9 @@ function poseForHeard(tok: string, target: string): string | null {
   return HEARD_POSE[tok] ?? (PHONEME_POSES[tok] ? tok : null);
 }
 
-function judgeWord(word: string, heard: string[]): { sym: string; res: CheckResult }[] {
+function judgeWord(word: string, heard: string[], lessonId = lesson.id): { sym: string; res: CheckResult }[] {
   const expected = normalizeAll(LEXICON[word] ?? []);
-  const sounds = LESSON_CHECKS[lesson.id]?.sounds ?? {};
+  const sounds = LESSON_CHECKS[lessonId]?.sounds ?? {};
   const pairs = align(expected, heard);
   const out: { sym: string; res: CheckResult }[] = [];
   expected.forEach((sym, i) => {
@@ -573,61 +588,118 @@ function showWhatYouSaid(heardTok: string, targetSym: string, label: string) {
   renderModes();
 }
 
+// One engine gate per panel, shown in the first card that uses the microphone;
+// the other cards only hear whether it's ready.
+let stopGate: (() => void) | null = null;
+let engineWatchers: ((ready: boolean) => void)[] = [];
+
+function resetEngineGate() {
+  stopGate?.();
+  stopGate = null;
+  engineWatchers = [];
+}
+
+function engineGate(onReady: (ready: boolean) => void): HTMLElement | null {
+  engineWatchers.push(onReady);
+  if (stopGate) {
+    onReady(engineReady);
+    return null;
+  }
+  const host = h("div");
+  const watchers = engineWatchers;
+  stopGate = mountEngineGate(host, (ready) => {
+    engineReady = ready;
+    host.hidden = ready;
+    watchers.forEach((f) => f(ready));
+  });
+  return host;
+}
+
+let recording = false;
+
+/** Record until the learner pauses and return the sounds heard, or null (with the reason in `status`). */
+async function hear(btn: HTMLElement, status: HTMLElement, prompt: string, opts: { maxSeconds: number; silenceToStop: number }): Promise<string[] | null> {
+  if (recording) return null;
+  if (!engineReady) {
+    status.textContent = "The speech engine isn't ready yet.";
+    return null;
+  }
+  recording = true;
+  stopTalking(); // never record the coach's own voice
+  btn.classList.add("live");
+  status.textContent = prompt;
+  try {
+    const take = await recordPhrase(opts);
+    btn.classList.remove("live");
+    if (!take.speech) {
+      status.textContent = "I didn't hear anything. Try again a little louder.";
+      return null;
+    }
+    status.textContent = "Checking…";
+    return normalizeAll(await api.recognize(take));
+  } catch (e) {
+    status.textContent = `Couldn't check that: ${(e as Error).message}`;
+    return null;
+  } finally {
+    recording = false;
+    btn.classList.remove("live");
+  }
+}
+
+/** One word's sounds judged against a lesson's checks, boiled down to a single verdict. */
+function wordResult(lessonId: string, word: string, heard: string[]) {
+  const judged = judgeWord(word, heard, lessonId);
+  const habit = judged.find((j) => j.res.verdict === "habit");
+  const off = judged.find((j) => j.res.verdict === "off");
+  const verdict: Verdict = habit ? "habit" : off ? "off" : "good";
+  return { judged, habit, off, verdict };
+}
+
+/** Every scored attempt feeds the review list: a habit brings the word back on a later day. */
+function noteAttempt(lessonId: string, word: string, verdict: Verdict, habit?: string) {
+  if (!profile) return;
+  saveProfile({ ...profile, review: recordAttempt(profile.review, lessonId, word, verdict, habit) });
+}
+
+function speakFeedback(verdict: Verdict, goodSym: string, habit?: string) {
+  // spoken feedback, kept short so it doesn't slow practice down
+  if (verdict === "good") void coachSays(lines.good(goodSym), "happy");
+  else if (verdict === "habit") void coachSays(lines.habit(habit ?? ""), "curious");
+  else void coachSays(lines.unclear(), "curious");
+}
+
+function addResult(results: HTMLElement, verdict: Verdict, msg: string, heard: string[]) {
+  results.prepend(h("div", { class: `result ${verdict === "good" ? "good" : verdict === "habit" ? "bad" : "mid"}` }, h("span", {}, msg), h("span", { class: "ipa-tag" }, `heard /${heard.join("")}/`)));
+  while (results.children.length > 5) results.lastChild?.remove();
+}
+
 function scoredCard() {
   const status = h("p", { class: "note" });
   const results = h("div", { class: "results" });
   const words = lesson.words.filter((w) => judgeWord(w, []).length > 0);
-  let recording = false;
 
-  const gate = h("div");
-  mountEngineGate(gate, (ready) => {
-    engineReady = ready;
-    gate.hidden = ready;
+  const gate = engineGate((ready) => {
     status.textContent = ready ? "Press a word, say it, then pause. It's checked sound by sound." : "";
   });
 
   const say = async (word: string, btn: HTMLButtonElement) => {
-    if (recording || !engineReady) return;
-    recording = true;
-    stopTalking(); // never record the coach's own voice
-    btn.classList.add("live");
-    status.textContent = `Say "${word}"…`;
-    try {
-      const take = await recordPhrase({ maxSeconds: 4, silenceToStop: 0.7 });
-      btn.classList.remove("live");
-      if (!take.speech) {
-        status.textContent = "I didn't hear anything. Try again a little louder.";
-        return;
-      }
-      status.textContent = "Checking…";
-      const heard = normalizeAll(await api.recognize(take));
-      const judged = judgeWord(word, heard);
-      const allGood = judged.every((j) => j.res.verdict === "good");
-      const habit = judged.find((j) => j.res.verdict === "habit");
-      const off = judged.find((j) => j.res.verdict === "off");
-      bumpToday((t) => {
-        t.speakTries++;
-        if (allGood) t.speakGood++;
-      });
-      let msg: string;
-      if (allGood) msg = `"${word}": a clean ${accentInfo().name} ${judged.map((j) => `/${j.sym}/`).join(" and ")}`;
-      else if (habit) msg = `"${word}": you said ${habit.res.habit}. The mouth shows what you did, and the green outline is the target.`;
-      else msg = `"${word}": the /${off?.sym}/ didn't come out clearly. Try it again, slower.`;
-      const row = h("div", { class: `result ${allGood ? "good" : habit ? "bad" : "mid"}` }, h("span", {}, msg), h("span", { class: "ipa-tag" }, `heard /${heard.join("")}/`));
-      results.prepend(row);
-      while (results.children.length > 5) results.lastChild?.remove();
-      status.textContent = "Press a word to go again.";
-      if (habit) showWhatYouSaid(habit.res.heard, habit.sym, habit.res.habit ?? "");
-      // spoken feedback, kept short so it doesn't slow practice down
-      if (allGood) void coachSays(lines.good(judged[0]?.sym ?? ""), "happy");
-      else if (habit) void coachSays(lines.habit(habit.res.habit ?? ""), "curious");
-      else void coachSays(lines.unclear(), "curious");
-    } catch (e) {
-      status.textContent = `Couldn't check that: ${(e as Error).message}`;
-    } finally {
-      recording = false;
-      btn.classList.remove("live");
-    }
+    const heard = await hear(btn, status, `Say "${word}"…`, { maxSeconds: 4, silenceToStop: 0.7 });
+    if (!heard) return;
+    const { judged, habit, off, verdict } = wordResult(lesson.id, word, heard);
+    noteAttempt(lesson.id, word, verdict, habit?.res.habit);
+    bumpToday((t) => {
+      t.speakTries++;
+      if (verdict === "good") t.speakGood++;
+    });
+    let msg: string;
+    if (verdict === "good") msg = `"${word}": a clean ${accentInfo().name} ${judged.map((j) => `/${j.sym}/`).join(" and ")}`;
+    else if (habit) msg = `"${word}": you said ${habit.res.habit}. The mouth shows what you did, and the green outline is the target. It comes back for review tomorrow.`;
+    else msg = `"${word}": the /${off?.sym}/ didn't come out clearly. Try it again, slower.`;
+    addResult(results, verdict, msg, heard);
+    status.textContent = "Press a word to go again.";
+    if (habit) showWhatYouSaid(habit.res.heard, habit.sym, habit.res.habit ?? "");
+    speakFeedback(verdict, judged[0]?.sym ?? "", habit?.res.habit);
+    renderReviewCard();
   };
 
   return card("Say it · scored", "",
@@ -639,6 +711,114 @@ function scoredCard() {
       return b;
     })),
     results);
+}
+
+/** The day's sound in connected speech: one sentence, judged on its focus words. */
+function sentenceCard(item: TestItem) {
+  const status = h("p", { class: "note" });
+  const results = h("div", { class: "results" });
+  const marks = h("div", { class: "chips word-marks" });
+  const focus = [...new Set(item.checks.map((c) => c.word))];
+
+  const gate = engineGate((ready) => {
+    status.textContent = ready ? "Say the whole sentence at your normal speed, then pause." : "";
+  });
+
+  const listen = h("button", { class: "btn" }, icons.listen(), "Hear it");
+  listen.onclick = () => void speak(item.text, 0.85);
+  const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
+  sayBtn.onclick = async () => {
+    const heard = await hear(sayBtn, status, "Listening… say the sentence, then pause.", { maxSeconds: 9, silenceToStop: 1.1 });
+    if (!heard) return;
+    const judged = judgeItem(item, heard);
+    // one verdict per focus word: a habit outweighs an unclear sound, which outweighs a clean one
+    const perWord = focus.map((word) => {
+      const mine = judged.filter((j) => j.word === word);
+      const habit = mine.find((j) => j.verdict === "habit");
+      const verdict: Verdict = habit ? "habit" : mine.some((j) => j.verdict === "off") ? "off" : "good";
+      return { word, verdict, habit };
+    });
+    const habits = perWord.filter((w) => w.verdict === "habit");
+    const unclear = perWord.filter((w) => w.verdict === "off");
+    const verdict: Verdict = habits.length ? "habit" : unclear.length ? "off" : "good";
+
+    if (profile) {
+      let review = profile.review;
+      for (const w of perWord) review = recordAttempt(review, lesson.id, w.word, w.verdict, w.habit?.habit);
+      saveProfile({ ...profile, review });
+    }
+    bumpToday((t) => (t.sentenceTries = (t.sentenceTries ?? 0) + 1));
+
+    marks.replaceChildren(...perWord.map((w) =>
+      h("span", { class: `chip static mark ${w.verdict === "good" ? "good" : w.verdict === "habit" ? "bad" : "mid"}` }, w.verdict === "good" ? icons.check() : null, w.word)));
+    let msg: string;
+    if (verdict === "good") msg = `All ${focus.length} words clean, in a full sentence.`;
+    else if (habits.length) msg = `In "${habits[0].word}" you said ${habits[0].habit?.habit}.${habits.length > 1 ? ` Also in ${habits.slice(1).map((w) => `"${w.word}"`).join(", ")}.` : ""} ${habits.length > 1 ? "They come" : "It comes"} back for review tomorrow.`;
+    else msg = `${unclear.map((w) => `"${w.word}"`).join(", ")} didn't come out clearly. Try once more, a little slower.`;
+    addResult(results, verdict, msg, heard);
+    status.textContent = "Press Say it to go again.";
+    const first = habits[0]?.habit;
+    if (first) showWhatYouSaid(first.heard, first.sym, first.habit ?? "");
+    speakFeedback(verdict, item.checks[0]?.sym ?? "", first?.habit);
+    renderReviewCard();
+  };
+
+  return card("Now in a sentence", "",
+    gate,
+    h("p", { class: "sentence" }, item.text),
+    h("div", { class: "row" }, listen, sayBtn),
+    status, marks, results);
+}
+
+// ------------------------------------------------------------------ review
+
+let reviewSlot: HTMLElement | null = null;
+let reviewUi: { chips: HTMLElement; status: HTMLElement; results: HTMLElement } | null = null;
+
+/** Today's review words that can still be scored in the current accent. */
+function reviewsDue(): ReviewItem[] {
+  return dueReviews(profile?.review).filter((r) => LEXICON[r.word] && judgeWord(r.word, [], r.lesson).length > 0);
+}
+
+/** Words said with a habit on an earlier day, back until they're clean three days running. */
+function renderReviewCard() {
+  if (!reviewSlot) return;
+  const due = reviewsDue();
+  if (!reviewUi) {
+    if (!due.length) return;
+    const status = h("p", { class: "note" });
+    const chips = h("div", { class: "chips" });
+    const results = h("div", { class: "results" });
+    const gate = engineGate((ready) => {
+      if (ready && !status.textContent) status.textContent = "You slipped on these before. Say each one cleanly.";
+    });
+    reviewUi = { chips, status, results };
+    reviewSlot.append(card("Review", "review-card", gate, status, chips, results));
+  }
+  const ui = reviewUi;
+  ui.chips.replaceChildren(...due.map((r) => {
+    const title = LESSONS.find((l) => l.id === r.lesson)?.title ?? "";
+    const b = h("button", { class: "chip say", title: `${title}${r.habit ? `: last time, ${r.habit}` : ""}` }, icons.mic(), r.word) as HTMLButtonElement;
+    b.onclick = async () => {
+      const heard = await hear(b, ui.status, `Say "${r.word}"…`, { maxSeconds: 4, silenceToStop: 0.7 });
+      if (!heard) return;
+      const { habit, off, verdict } = wordResult(r.lesson, r.word, heard);
+      noteAttempt(r.lesson, r.word, verdict, habit?.res.habit);
+      const left = REVIEW_CLEAN - r.clean - 1;
+      let msg: string;
+      if (verdict === "good") msg = left > 0 ? `"${r.word}": clean. ${left} more clean day${left === 1 ? "" : "s"} and it's yours.` : `"${r.word}": clean three days running. Done with this one.`;
+      else if (habit) msg = `"${r.word}": ${habit.res.habit} again. It comes back tomorrow.`;
+      else msg = `"${r.word}": the /${off?.sym}/ didn't come out clearly. Try it again, slower.`;
+      addResult(ui.results, verdict, msg, heard);
+      ui.status.textContent = verdict === "off" ? "Press the word to try again." : "Press the next word.";
+      if (habit && r.lesson === lesson.id) showWhatYouSaid(habit.res.heard, habit.sym, habit.res.habit ?? "");
+      speakFeedback(verdict, habit?.sym ?? "", habit?.res.habit);
+      renderReviewCard();
+      renderList();
+    };
+    return b;
+  }));
+  ui.status.textContent = due.length ? ui.status.textContent : "All reviewed for today.";
 }
 
 function mirrorCard() {
