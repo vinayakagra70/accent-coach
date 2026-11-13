@@ -55,9 +55,45 @@ let profile: Profile | null = loadLocal();
 let engineReady = false;
 
 function saveProfile(p: Profile) {
-  profile = { ...p, updatedAt: new Date().toISOString() };
+  profile = { ...p, rev: p.rev ?? profile?.rev, practice: progress.all(), updatedAt: new Date().toISOString() };
   saveLocal(profile);
-  void api.putProfile(profile);
+  api.putProfile(profile);
+}
+
+/** Practice outside today's lesson changes no course state, but still has to reach the server. */
+function savePractice() {
+  if (profile) saveProfile(profile);
+}
+
+/** Take the server's copy as ours (it is newer: saved from another device or browser). */
+function adoptServer(server: Profile) {
+  profile = server;
+  saveLocal(server);
+  progress.merge(server.practice);
+  api.profileBasedOn(server.rev ?? 0);
+}
+
+/** The same, while the app is already on screen: redraw everything that shows the profile. */
+function switchToServer(server: Profile) {
+  adoptServer(server);
+  if ((server.accent ?? "us") !== accent()) applyAccent(server.accent ?? "us");
+  openLesson(LESSONS.find((l) => l.id === lesson.id) ?? LESSONS[0]);
+}
+
+api.onProfileSync({
+  saved: (rev) => {
+    if (!profile) return;
+    profile = { ...profile, rev };
+    saveLocal(profile);
+  },
+  conflict: switchToServer,
+});
+
+/** Coming back to a tab that was left open: pick up what another device did meanwhile. */
+async function refreshFromServer() {
+  if (document.hidden || busy || api.profileSyncBusy()) return;
+  const server = await api.getProfile();
+  if (server && (server.rev ?? 0) > (profile?.rev ?? 0) && !busy && !api.profileSyncBusy()) switchToServer(server);
 }
 
 const voiceSelect = $<HTMLSelectElement>("voiceType");
@@ -308,6 +344,7 @@ function stopMirror() {
   if (mic.active) mic.stop();
   if (mirrorBest > 0) {
     progress.recordVowel(lesson.id, mirrorBest);
+    savePractice();
     renderList();
   }
   mirrorBest = 0;
@@ -466,6 +503,7 @@ function listenCard() {
         const ok = w === answer;
         if (ok) right++;
         progress.recordListen(lesson.id, ok);
+        savePractice();
         bumpToday((t) => {
           t.earAnswered++;
           if (ok) t.earRight++;
@@ -724,6 +762,7 @@ function startTest(retake: boolean) {
             assessment: a,
             course: p.course.slice(p.day),
             previous,
+            history: p.history,
             onStart: (lessonId) => {
               closeOverlay();
               if (lessonId) openLesson(LESSONS.find((l) => l.id === lessonId)!);
@@ -759,12 +798,21 @@ function setupCoach() {
 
 async function boot() {
   setupCoach();
-  // Prefer the server's copy if it's newer (e.g. progress made in another browser).
+  // The server's copy wins unless ours is the same revision with changes it never got
+  // (made while the server was off). Revisions, not clocks, say which is newer.
   const server = await api.getProfile();
-  if (server && (!profile || server.updatedAt > profile.updatedAt)) {
-    profile = server;
-    saveLocal(server);
+  if (server) {
+    const unsent = profile && (profile.rev ?? 0) === (server.rev ?? 0) && profile.updatedAt > server.updatedAt;
+    if (unsent && profile) {
+      progress.merge(server.practice);
+      api.profileBasedOn(server.rev ?? 0);
+      saveProfile(profile);
+    } else {
+      adoptServer(server);
+    }
   }
+  window.addEventListener("focus", () => void refreshFromServer());
+  document.addEventListener("visibilitychange", () => void refreshFromServer());
   let stored: Accent | null = null;
   try {
     stored = localStorage.getItem("accentCoach.accent") as Accent | null;

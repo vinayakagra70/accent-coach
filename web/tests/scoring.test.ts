@@ -6,7 +6,9 @@
  */
 import { readFileSync } from "node:fs";
 import { ASSESSMENT } from "../src/content/assessment";
-import { buildCourse, completeDay, newProfile, planLessons, replan } from "../src/course";
+import { buildCourse, completeDay, currentStreak, dayKey, finishedToday, newProfile, planLessons, replan } from "../src/course";
+import { mergeLesson } from "../src/progress";
+import { layout } from "../src/ui/scoreChart";
 import { align, judge, normalizeAll } from "../src/scoring/align";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { buildAssessment, judgeItem } from "../src/scoring/report";
@@ -77,6 +79,46 @@ check(p.day === 1 && p.streak.count === 1 && !!p.course[0].completedAt, "finishi
 const b = { ...a, lessons: { ...a.lessons, ["alveolar-td"]: { ...a.lessons["alveolar-td"], score: 95 } } };
 const p2 = replan(p, b);
 check(p2.history.length === 2 && p2.course[0].completedAt !== undefined, "re-test keeps finished days and records history");
+
+// ---- streaks go by the learner's own calendar day, not UTC
+{
+  const late = new Date(2026, 10, 10, 23, 30); // 11:30 pm
+  const early = new Date(2026, 10, 11, 1, 0); // 1 am the next day
+  let s = completeDay(newProfile(null, true), late);
+  check(dayKey(late) === "2026-11-10" && s.streak.lastDate === "2026-11-10", "a day finished at 11:30 pm belongs to that date");
+  check(finishedToday(s, late) && !finishedToday(s, early), "after midnight it is no longer 'finished today'");
+  s = completeDay(s, early);
+  check(s.streak.count === 2, `11:30 pm then 1 am are two days in a row (streak ${s.streak.count})`);
+  s = completeDay(s, new Date(2026, 10, 11, 21, 0));
+  check(s.streak.count === 2, "a second lesson on the same day doesn't add to the streak");
+  check(currentStreak(s, new Date(2026, 10, 12, 4, 0)) === 2, "the streak is still alive at 4 am the next day");
+  check(currentStreak(s, new Date(2026, 10, 13, 0, 30)) === 0, "a missed day ends the streak");
+  s = completeDay(s, new Date(2026, 10, 14, 9, 0));
+  check(s.streak.count === 1, "after a gap the streak restarts at 1");
+  const march = completeDay(completeDay(newProfile(null, true), new Date(2026, 1, 28, 12)), new Date(2026, 2, 1, 12));
+  check(march.streak.count === 2, "28 Feb then 1 Mar are consecutive");
+}
+
+// ---- practice from two devices merges without losing any
+{
+  const phone = { listenRight: 7, listenTotal: 10, bestVowel: 60, lastPracticed: "2026-11-10T10:00:00.000Z" };
+  const laptop = { listenRight: 3, listenTotal: 4, bestVowel: 82, lastPracticed: "2026-11-12T10:00:00.000Z" };
+  const m = mergeLesson(phone, laptop);
+  check(m.listenTotal === 10 && m.listenRight === 7 && m.bestVowel === 82 && m.lastPracticed === laptop.lastPracticed, "merge keeps the fuller listening record, the best vowel and the latest date");
+  const same = mergeLesson(laptop, phone);
+  check(JSON.stringify(same) === JSON.stringify(m), "merging in either order gives the same result");
+  const none = { listenRight: 0, listenTotal: 0, bestVowel: 0, lastPracticed: null };
+  check(JSON.stringify(mergeLesson(none, phone)) === JSON.stringify(phone), "merging into an unpractised lesson keeps the other copy");
+}
+
+// ---- score-history chart geometry
+{
+  const pts = layout([40, 55, 70], 320, 104);
+  check(pts[0].x < pts[1].x && pts[1].x < pts[2].x && pts[0].y > pts[1].y && pts[1].y > pts[2].y, "chart: later tests are further right, higher scores are higher up");
+  check(pts.every((p) => p.x >= 0 && p.x <= 320 && p.y >= 0 && p.y <= 104), "chart: every point is inside the box");
+  const flat = layout([100, 100], 320, 104);
+  check(flat.every((p) => Number.isFinite(p.y) && p.y >= 0 && p.y <= 104), "chart: identical scores (even 100, 100) still draw");
+}
 
 if (failed) {
   console.log(`\n${failed} failed`);

@@ -1,4 +1,5 @@
 import { LESSONS } from "./content/lessons";
+import type { LessonProgress } from "./progress";
 import { LESSON_CHECKS } from "./scoring/checks";
 
 /**
@@ -59,6 +60,10 @@ export interface Profile {
   day: number;
   today: TodayProgress;
   streak: { count: number; lastDate: string | null };
+  /** Listening and vowel-mirror results per lesson (progress.ts), so every device shows the same. */
+  practice?: Record<string, LessonProgress>;
+  /** Set by the server: goes up by one on every save. Tells a stale copy from a fresh one without trusting clocks. */
+  rev?: number;
 }
 
 export const PASS_SCORE = 85;
@@ -140,7 +145,13 @@ export function replan(p: Profile, a: Assessment): Profile {
   };
 }
 
-const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+/** The learner's own calendar day. (UTC would end the day at 5:30 am in India.) */
+export function dayKey(d: Date): string {
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+const dayBefore = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
 
 export function todayKey() {
   return dayKey(new Date());
@@ -160,11 +171,10 @@ export function dayReady(p: Profile): boolean {
   return t.learnedTarget && t.learnedHabit && t.earAnswered >= req.ear && t.speakTries >= req.speak;
 }
 
-export function completeDay(p: Profile): Profile {
-  const now = new Date();
+export function completeDay(p: Profile, now = new Date()): Profile {
   const course = p.course.map((d, i) => (i === p.day ? { ...d, completedAt: now.toISOString() } : d));
   const last = p.streak.lastDate;
-  const yesterday = dayKey(new Date(now.getTime() - 86400000));
+  const yesterday = dayKey(dayBefore(now));
   const count = last === dayKey(now) ? p.streak.count : last === yesterday ? p.streak.count + 1 : 1;
   return {
     ...p,
@@ -177,16 +187,15 @@ export function completeDay(p: Profile): Profile {
 }
 
 /** True when the last finished day was today, so the next one is "tomorrow's". */
-export function finishedToday(p: Profile): boolean {
+export function finishedToday(p: Profile, now = new Date()): boolean {
   const prev = p.course[p.day - 1];
-  return !!prev?.completedAt && prev.completedAt.slice(0, 10) === todayKey();
+  return !!prev?.completedAt && dayKey(new Date(prev.completedAt)) === dayKey(now);
 }
 
-export function currentStreak(p: Profile): number {
+export function currentStreak(p: Profile, now = new Date()): number {
   const last = p.streak.lastDate;
   if (!last) return 0;
-  const yesterday = dayKey(new Date(Date.now() - 86400000));
-  return last === todayKey() || last === yesterday ? p.streak.count : 0;
+  return last === dayKey(now) || last === dayKey(dayBefore(now)) ? p.streak.count : 0;
 }
 
 // ------------------------------------------------------------------ storage

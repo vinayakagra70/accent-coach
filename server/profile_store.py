@@ -17,6 +17,19 @@ LESSON_TITLES = {
 }
 
 
+class StaleProfile(Exception):
+    """A save was based on an older copy than the one on disk (another device saved in between)."""
+
+    def __init__(self, current: dict[str, Any]) -> None:
+        super().__init__("profile changed on another device")
+        self.current = current
+
+
+def _rev(p: dict[str, Any] | None) -> int:
+    r = (p or {}).get("rev")
+    return r if isinstance(r, int) and not isinstance(r, bool) and r >= 0 else 0
+
+
 class ProfileStore:
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -24,18 +37,31 @@ class ProfileStore:
 
     def load(self) -> dict[str, Any] | None:
         try:
-            return json.loads(self.path.read_text(encoding="utf-8"))
+            data = json.loads(self.path.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError):
             return None
+        return data if isinstance(data, dict) else None
 
-    def save(self, data: dict[str, Any]) -> None:
+    def save(self, data: dict[str, Any], base_rev: int | None = None) -> int:
+        """Stores the profile under the next revision number and returns it.
+
+        `base_rev` is the revision the caller's copy came from. If the copy on
+        disk has moved on since, nothing is written and StaleProfile carries
+        the current one, so a phone left open can't undo the laptop's progress.
+        None skips the check.
+        """
         with self._lock:
+            current = self.load()
+            if current is not None and base_rev is not None and base_rev != _rev(current):
+                raise StaleProfile(current)
+            rev = _rev(current) + 1
             self.path.parent.mkdir(parents=True, exist_ok=True)
             # write-then-rename so a crash never leaves half a file
             fd, tmp = tempfile.mkstemp(dir=self.path.parent, suffix=".tmp")
             with os.fdopen(fd, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=1)
+                json.dump({**data, "rev": rev}, f, ensure_ascii=False, indent=1)
             os.replace(tmp, self.path)
+            return rev
 
 
 def summarize(p: dict[str, Any] | None) -> dict[str, Any]:

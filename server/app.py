@@ -4,7 +4,7 @@
   POST /api/recognize   WAV body -> {"phonemes": [...]}
   POST /api/speak       {"text", "voice"?, "speed"?} -> WAV (Kokoro)
   GET  /api/profile     the learner's profile (course, scores, streak)
-  PUT  /api/profile     save it
+  PUT  /api/profile     save it -> {"rev"}; 409 + the current profile if "rev" in the body is out of date
   GET  /api/summary     short plain-language progress summary (for JARVIS)
 
 Laptop mode binds 127.0.0.1 and the Vite dev server serves the page.
@@ -27,7 +27,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from .profile_store import ProfileStore, summarize
+from .profile_store import ProfileStore, StaleProfile, summarize
 from .recognizer import PhonemeRecognizer, RecognizerNotReady, read_wav
 from .tts import KokoroTTS, TtsNotReady
 
@@ -144,7 +144,7 @@ def create_app(
         return {"profile": profiles.load()}
 
     @app.put("/api/profile")
-    async def put_profile(request: Request) -> dict[str, object]:
+    async def put_profile(request: Request):
         raw = await request.body()
         if len(raw) > 512 * 1024:
             raise HTTPException(413, "profile too large")
@@ -154,8 +154,12 @@ def create_app(
             raise HTTPException(400, "invalid JSON")
         if not isinstance(data, dict) or data.get("version") != 1:
             raise HTTPException(400, "not an Accent Coach profile")
-        profiles.save(data)
-        return {"saved": True}
+        base = data.get("rev")
+        try:
+            rev = profiles.save(data, base if isinstance(base, int) and not isinstance(base, bool) else None)
+        except StaleProfile as stale:
+            return JSONResponse({"detail": "Saved on another device since this copy was loaded.", "profile": stale.current}, status_code=409)
+        return {"saved": True, "rev": rev}
 
     @app.get("/api/summary")
     def summary() -> dict[str, object]:

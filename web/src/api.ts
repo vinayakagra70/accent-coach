@@ -96,6 +96,36 @@ export async function recognize(take: Take): Promise<string[]> {
   return (await r.json()).phonemes as string[];
 }
 
+// ------------------------------------------------------------------ profile sync
+//
+// The server numbers every save (Profile.rev). A save says which number its
+// copy came from; if another device has saved since, the server refuses it
+// and sends back the current profile instead of letting it be overwritten.
+
+/** The server revision this browser's copy is based on; null = go by the copy's own `rev`. */
+let knownRev: number | null = null;
+let pending: Profile | null = null;
+let sending = false;
+let handlers: { saved: (rev: number) => void; conflict: (server: Profile) => void } | null = null;
+
+/** `saved`: the server stored our copy as this revision. `conflict`: it refused, here is the newer one. */
+export function onProfileSync(h: NonNullable<typeof handlers>) {
+  handlers = h;
+}
+
+/**
+ * Call when the app takes a server copy as its own. Merely fetching one must
+ * not move this: a save would then claim to be based on a copy it never saw.
+ */
+export function profileBasedOn(rev: number) {
+  knownRev = rev;
+}
+
+/** True while a save is on its way (don't refetch in the middle of one). */
+export function profileSyncBusy(): boolean {
+  return sending || pending !== null;
+}
+
 export async function getProfile(): Promise<Profile | null> {
   if (STATIC) return null; // the browser copy (course.ts) is the only copy
   try {
@@ -107,11 +137,44 @@ export async function getProfile(): Promise<Profile | null> {
   }
 }
 
-export async function putProfile(p: Profile): Promise<void> {
+/**
+ * Queue a save. Only one request is in flight at a time and only the newest
+ * waiting copy is sent, so quick taps can't race each other into a false conflict.
+ */
+export function putProfile(p: Profile): void {
   if (STATIC) return;
+  pending = p;
+  void flush();
+}
+
+async function flush() {
+  if (sending) return;
+  sending = true;
   try {
-    await fetch("/api/profile", { method: "PUT", body: JSON.stringify(p), headers: { "Content-Type": "application/json" } });
+    while (pending) {
+      const p = pending;
+      pending = null;
+      const r = await fetch("/api/profile", {
+        method: "PUT",
+        body: JSON.stringify({ ...p, rev: knownRev ?? p.rev ?? null }),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (r.status === 409) {
+        const server = (await r.json()).profile as Profile;
+        knownRev = server.rev ?? 0;
+        pending = null; // anything queued was built on the stale copy too
+        handlers?.conflict(server);
+      } else if (r.ok) {
+        const rev = (await r.json()).rev;
+        if (typeof rev === "number") {
+          knownRev = rev;
+          handlers?.saved(rev);
+        }
+      }
+    }
   } catch {
-    /* offline: the browser copy is kept */
+    /* offline: the browser copy is kept and goes up with the next save */
+  } finally {
+    sending = false;
   }
 }

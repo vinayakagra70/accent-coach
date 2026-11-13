@@ -68,6 +68,30 @@ def test_profile_round_trip(tmp_path):
     assert (tmp_path / "profile.json").exists()
 
 
+def test_profile_saves_are_numbered_and_stale_ones_refused(tmp_path):
+    c, _ = client(tmp_path)
+    p = {"version": 1, "day": 0}
+    assert c.put("/api/profile", json=p).json() == {"saved": True, "rev": 1}
+    assert c.get("/api/profile").json()["profile"]["rev"] == 1
+    # the laptop saves on top of rev 1
+    assert c.put("/api/profile", json={**p, "day": 3, "rev": 1}).json()["rev"] == 2
+    # a phone still holding rev 1 must not undo that
+    r = c.put("/api/profile", json={**p, "day": 1, "rev": 1})
+    assert r.status_code == 409 and r.json()["profile"]["day"] == 3
+    assert c.get("/api/profile").json()["profile"]["day"] == 3
+    # once it has the current copy, its save goes through
+    assert c.put("/api/profile", json={**p, "day": 4, "rev": 2}).json()["rev"] == 3
+    # copies from before revisions existed (no rev, or null) are still accepted
+    assert c.put("/api/profile", json={**p, "day": 5}).json()["rev"] == 4
+    assert c.put("/api/profile", json={**p, "day": 6, "rev": None}).json()["rev"] == 5
+
+
+def test_profile_without_a_rev_on_disk_counts_as_zero(tmp_path):
+    (tmp_path / "profile.json").write_text('{"version": 1, "day": 2}', encoding="utf-8")
+    c, _ = client(tmp_path)
+    assert c.put("/api/profile", json={"version": 1, "day": 3, "rev": 0}).json()["rev"] == 1
+
+
 def test_profile_rejects_non_profiles(tmp_path):
     c, _ = client(tmp_path)
     assert c.put("/api/profile", content=b"{oops").status_code == 400
