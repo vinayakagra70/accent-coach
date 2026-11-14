@@ -59,6 +59,11 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
 5. Your own words (laptop, and phones on the same Wi-Fi): type any word or sentence, hear it, say it,
    and get it checked for the same sounds. The laptop works out the pronunciation, so the hosted
    phone build doesn't have this.
+6. Everyday phrases (everywhere, including the hosted phone build): 30 ready-made sentences in five
+   situations (meeting people, job interview, at work, on the phone, out and about), checked the
+   same way as your own words. Their pronunciations are worked out ahead of time, so no server is
+   needed. After changing `web/src/content/phrases.json`, run `.venv\Scripts\python.exe -m tools.phrases --heard`
+   and `npm run voices`; `npm test` fails if a phrase would blame a native voice for a habit.
 
 JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
@@ -91,7 +96,8 @@ web/src/audio/       formants.ts (LPC F1/F2), mirror.ts (formants -> tongue pose
                      mic.ts, recorder.ts (a phrase, stopped by silence), speak.ts (model words)
 web/src/content/     lessons.ts (16 sounds, words, minimal pairs, vowel targets),
                      british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases),
-                     sentences.ts (one practice sentence per lesson)
+                     sentences.ts (one practice sentence per lesson),
+                     phrases.ts + phrases.json + phrases-ipa.json (the everyday phrases)
 web/src/review.ts    words to come back to, and when
 web/src/reminder.ts  the daily reminder: a repeating calendar event (.ics or Google Calendar), since a
                      static site can't send notifications while it's closed
@@ -109,7 +115,8 @@ server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py
                      phonemize.py (how any text is pronounced, with espeak),
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
 space/               the online listener, a Hugging Face Space
-tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py
+tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py,
+                     phrases.py (pronunciations of the everyday phrases, and what the model hears)
 ```
 
 ## Roadmap

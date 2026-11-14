@@ -1,0 +1,62 @@
+[
+  {
+    "id": "meeting",
+    "title": "Meeting people",
+    "phrases": [
+      "Hi, nice to meet you.",
+      "Where are you from?",
+      "What do you do for a living?",
+      "I work as a software developer.",
+      "I moved here three years ago.",
+      "It was great talking to you."
+    ]
+  },
+  {
+    "id": "interview",
+    "title": "Job interview",
+    "phrases": [
+      "Thank you for having me today.",
+      "I have five years of experience.",
+      "I led a team of eight people.",
+      "My greatest strength is solving problems.",
+      "I would love to work with your team.",
+      "Could you tell me more about the role?"
+    ]
+  },
+  {
+    "id": "work",
+    "title": "At work",
+    "phrases": [
+      "Can everyone see my screen?",
+      "Let me share the latest numbers.",
+      "I will send the report by Friday.",
+      "Could we move the meeting to Thursday?",
+      "That is a very good point.",
+      "I think we should wait a week."
+    ]
+  },
+  {
+    "id": "phone",
+    "title": "On the phone",
+    "phrases": [
+      "Could you repeat that, please?",
+      "Sorry, the line is breaking up.",
+      "I am calling about my order.",
+      "Can I call you back in ten minutes?",
+      "Could you speak a little slower, please?",
+      "Thanks for your help, goodbye."
+    ]
+  },
+  {
+    "id": "out",
+    "title": "Out and about",
+    "phrases": [
+      "A table for two, please.",
+      "Could I have a glass of water?",
+      "I would like a coffee with milk.",
+      "How much is this one?",
+      "Where is the nearest station?",
+      "Can I pay by card?"
+    ]
+  }
+]

@@ -1,0 +1,1574 @@
+{
+ "us": {
+  "Hi, nice to meet you.": [
+   {
+    "text": "Hi",
+    "ipa": "hˈaɪ"
+   },
+   {
+    "text": "nice",
+    "ipa": "nˈaɪs"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "meet",
+    "ipa": "mˈiːt"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "Where are you from?": [
+   {
+    "text": "Where",
+    "ipa": "wˈɛɹ"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑːɹ"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "from",
+    "ipa": "fɹʌm"
+   }
+  ],
+  "What do you do for a living?": [
+   {
+    "text": "What",
+    "ipa": "wˌʌt"
+   },
+   {
+    "text": "do",
+    "ipa": "dˈuː"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "do",
+    "ipa": "dˈuː"
+   },
+   {
+    "text": "for",
+    "ipa": "fɚɹə"
+   },
+   {
+    "text": "a living",
+    "ipa": "lˈɪvɪŋ"
+   }
+  ],
+  "I work as a software developer.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "work",
+    "ipa": "wˈɜːk"
+   },
+   {
+    "text": "as",
+    "ipa": "æz"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "software",
+    "ipa": "sˈɔftwɛɹ"
+   },
+   {
+    "text": "developer",
+    "ipa": "dɪvˈɛləpɚ"
+   }
+  ],
+  "I moved here three years ago.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "moved",
+    "ipa": "mˈuːvd"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈɪɹ"
+   },
+   {
+    "text": "three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "years",
+    "ipa": "jˈɪɹz"
+   },
+   {
+    "text": "ago",
+    "ipa": "ɐɡˈoʊ"
+   }
+  ],
+  "It was great talking to you.": [
+   {
+    "text": "It",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "was",
+    "ipa": "wʌz"
+   },
+   {
+    "text": "great",
+    "ipa": "ɡɹˈeɪt"
+   },
+   {
+    "text": "talking",
+    "ipa": "tˈɔːkɪŋ"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "Thank you for having me today.": [
+   {
+    "text": "Thank",
+    "ipa": "θˈæŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "having",
+    "ipa": "hˌævɪŋ"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "I have five years of experience.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "five",
+    "ipa": "fˈaɪv"
+   },
+   {
+    "text": "years",
+    "ipa": "jˈɪɹz"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "experience",
+    "ipa": "ɛkspˈiəɹɪəns"
+   }
+  ],
+  "I led a team of eight people.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "led",
+    "ipa": "lˈɛd"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "team",
+    "ipa": "tˈiːm"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "eight",
+    "ipa": "ˈeɪt"
+   },
+   {
+    "text": "people",
+    "ipa": "pˈiːpəl"
+   }
+  ],
+  "My greatest strength is solving problems.": [
+   {
+    "text": "My",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "greatest",
+    "ipa": "ɡɹˈeɪɾɪst"
+   },
+   {
+    "text": "strength",
+    "ipa": "stɹˈɛŋθ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "solving",
+    "ipa": "sˈɑːlvɪŋ"
+   },
+   {
+    "text": "problems",
+    "ipa": "pɹˈɑːbləmz"
+   }
+  ],
+  "I would love to work with your team.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "love",
+    "ipa": "lˈʌv"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "work",
+    "ipa": "wˈɜːk"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "team",
+    "ipa": "tˈiːm"
+   }
+  ],
+  "Could you tell me more about the role?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "tell",
+    "ipa": "tˈɛl"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "more",
+    "ipa": "mˈɔːɹ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "role",
+    "ipa": "ɹˈoʊl"
+   }
+  ],
+  "Can everyone see my screen?": [
+   {
+    "text": "Can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "everyone",
+    "ipa": "ˈɛvɹɪwˌʌn"
+   },
+   {
+    "text": "see",
+    "ipa": "sˈiː"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "screen",
+    "ipa": "skɹˈiːn"
+   }
+  ],
+  "Let me share the latest numbers.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "share",
+    "ipa": "ʃˈɛɹ"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "latest",
+    "ipa": "lˈeɪɾɪst"
+   },
+   {
+    "text": "numbers",
+    "ipa": "nˈʌmbɚz"
+   }
+  ],
+  "I will send the report by Friday.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "send",
+    "ipa": "sˈɛnd"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "report",
+    "ipa": "ɹᵻpˈɔːɹt"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "Friday",
+    "ipa": "fɹˈaɪdeɪ"
+   }
+  ],
+  "Could we move the meeting to Thursday?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "we",
+    "ipa": "wiː"
+   },
+   {
+    "text": "move",
+    "ipa": "mˈuːv"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "meeting",
+    "ipa": "mˈiːɾɪŋ"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "Thursday",
+    "ipa": "θˈɜːzdeɪ"
+   }
+  ],
+  "That is a very good point.": [
+   {
+    "text": "That",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "point",
+    "ipa": "pˈɔɪnt"
+   }
+  ],
+  "I think we should wait a week.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "think",
+    "ipa": "θˈɪŋk"
+   },
+   {
+    "text": "we",
+    "ipa": "wiː"
+   },
+   {
+    "text": "should",
+    "ipa": "ʃˌʊd"
+   },
+   {
+    "text": "wait",
+    "ipa": "wˈeɪt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "week",
+    "ipa": "wˈiːk"
+   }
+  ],
+  "Could you repeat that, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "repeat",
+    "ipa": "ɹᵻpˈiːt"
+   },
+   {
+    "text": "that",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Sorry, the line is breaking up.": [
+   {
+    "text": "Sorry",
+    "ipa": "sˈɑːɹi"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "line",
+    "ipa": "lˈaɪn"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "breaking",
+    "ipa": "bɹˈeɪkɪŋ"
+   },
+   {
+    "text": "up",
+    "ipa": "ˈʌp"
+   }
+  ],
+  "I am calling about my order.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "calling",
+    "ipa": "kˈɔːlɪŋ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "order",
+    "ipa": "ˈɔːɹdɚ"
+   }
+  ],
+  "Can I call you back in ten minutes?": [
+   {
+    "text": "Can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "call",
+    "ipa": "kˈɔːl"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "back",
+    "ipa": "bˈæk"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "ten",
+    "ipa": "tˈɛn"
+   },
+   {
+    "text": "minutes",
+    "ipa": "mˈɪnɪts"
+   }
+  ],
+  "Could you speak a little slower, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "speak",
+    "ipa": "spˈiːk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "little",
+    "ipa": "lˈɪɾəl"
+   },
+   {
+    "text": "slower",
+    "ipa": "slˈoʊɚ"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Thanks for your help, goodbye.": [
+   {
+    "text": "Thanks",
+    "ipa": "θˈæŋks"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "goodbye",
+    "ipa": "ɡʊdbˈaɪ"
+   }
+  ],
+  "A table for two, please.": [
+   {
+    "text": "A",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "table",
+    "ipa": "tˈeɪbəl"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "two",
+    "ipa": "tˈuː"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Could I have a glass of water?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "glass",
+    "ipa": "ɡlˈæs"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "water",
+    "ipa": "wˈɔːɾɚ"
+   }
+  ],
+  "I would like a coffee with milk.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "coffee",
+    "ipa": "kˈɔfi"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "milk",
+    "ipa": "mˈɪlk"
+   }
+  ],
+  "How much is this one?": [
+   {
+    "text": "How",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "much",
+    "ipa": "mˈʌtʃ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "this one",
+    "ipa": "ðˈɪswˌʌn"
+   }
+  ],
+  "Where is the nearest station?": [
+   {
+    "text": "Where",
+    "ipa": "wˌɛɹ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "nearest",
+    "ipa": "nˌɪɹɪst"
+   },
+   {
+    "text": "station",
+    "ipa": "stˈeɪʃən"
+   }
+  ],
+  "Can I pay by card?": [
+   {
+    "text": "Can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "pay",
+    "ipa": "pˈeɪ"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "card",
+    "ipa": "kˈɑːɹd"
+   }
+  ]
+ },
+ "uk": {
+  "Hi, nice to meet you.": [
+   {
+    "text": "Hi",
+    "ipa": "hˈaɪ"
+   },
+   {
+    "text": "nice",
+    "ipa": "nˈaɪs"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "meet",
+    "ipa": "mˈiːt"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "Where are you from?": [
+   {
+    "text": "Where",
+    "ipa": "wˈeəɹ"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑː"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "from",
+    "ipa": "fɹɒm"
+   }
+  ],
+  "What do you do for a living?": [
+   {
+    "text": "What",
+    "ipa": "wˌɒt"
+   },
+   {
+    "text": "do",
+    "ipa": "dˈuː"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "do",
+    "ipa": "dˈuː"
+   },
+   {
+    "text": "for",
+    "ipa": "fəɹə"
+   },
+   {
+    "text": "a living",
+    "ipa": "lˈɪvɪŋ"
+   }
+  ],
+  "I work as a software developer.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "work",
+    "ipa": "wˈɜːk"
+   },
+   {
+    "text": "as",
+    "ipa": "az"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "software",
+    "ipa": "sˈɒftweə"
+   },
+   {
+    "text": "developer",
+    "ipa": "dɪvˈɛləpə"
+   }
+  ],
+  "I moved here three years ago.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "moved",
+    "ipa": "mˈuːvd"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈiə"
+   },
+   {
+    "text": "three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "years",
+    "ipa": "jˈiəz"
+   },
+   {
+    "text": "ago",
+    "ipa": "ɐɡˈəʊ"
+   }
+  ],
+  "It was great talking to you.": [
+   {
+    "text": "It",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "was",
+    "ipa": "wɒz"
+   },
+   {
+    "text": "great",
+    "ipa": "ɡɹˈeɪt"
+   },
+   {
+    "text": "talking",
+    "ipa": "tˈɔːkɪŋ"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "Thank you for having me today.": [
+   {
+    "text": "Thank",
+    "ipa": "θˈaŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "having",
+    "ipa": "hˌavɪŋ"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "I have five years of experience.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "five",
+    "ipa": "fˈaɪv"
+   },
+   {
+    "text": "years",
+    "ipa": "jˈiəz"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "experience",
+    "ipa": "ɛkspˈiəɹɪəns"
+   }
+  ],
+  "I led a team of eight people.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "led",
+    "ipa": "lˈɛd"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "team",
+    "ipa": "tˈiːm"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "eight",
+    "ipa": "ˈeɪt"
+   },
+   {
+    "text": "people",
+    "ipa": "pˈiːpəl"
+   }
+  ],
+  "My greatest strength is solving problems.": [
+   {
+    "text": "My",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "greatest",
+    "ipa": "ɡɹˈeɪtɪst"
+   },
+   {
+    "text": "strength",
+    "ipa": "stɹˈɛŋθ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "solving",
+    "ipa": "sˈɒlvɪŋ"
+   },
+   {
+    "text": "problems",
+    "ipa": "pɹˈɒbləmz"
+   }
+  ],
+  "I would love to work with your team.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "love",
+    "ipa": "lˈʌv"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "work",
+    "ipa": "wˈɜːk"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "team",
+    "ipa": "tˈiːm"
+   }
+  ],
+  "Could you tell me more about the role?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "tell",
+    "ipa": "tˈɛl"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "more",
+    "ipa": "mˈɔːɹ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "role",
+    "ipa": "ɹˈəʊl"
+   }
+  ],
+  "Can everyone see my screen?": [
+   {
+    "text": "Can",
+    "ipa": "kan"
+   },
+   {
+    "text": "everyone",
+    "ipa": "ˈɛvɹɪwˌɒn"
+   },
+   {
+    "text": "see",
+    "ipa": "sˈiː"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "screen",
+    "ipa": "skɹˈiːn"
+   }
+  ],
+  "Let me share the latest numbers.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "share",
+    "ipa": "ʃˈeə"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "latest",
+    "ipa": "lˈeɪtɪst"
+   },
+   {
+    "text": "numbers",
+    "ipa": "nˈʌmbəz"
+   }
+  ],
+  "I will send the report by Friday.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "send",
+    "ipa": "sˈɛnd"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "report",
+    "ipa": "ɹɪpˈɔːt"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "Friday",
+    "ipa": "fɹˈaɪdeɪ"
+   }
+  ],
+  "Could we move the meeting to Thursday?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "we",
+    "ipa": "wiː"
+   },
+   {
+    "text": "move",
+    "ipa": "mˈuːv"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "meeting",
+    "ipa": "mˈiːtɪŋ"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "Thursday",
+    "ipa": "θˈɜːzdeɪ"
+   }
+  ],
+  "That is a very good point.": [
+   {
+    "text": "That",
+    "ipa": "ðat"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "point",
+    "ipa": "pˈɔɪnt"
+   }
+  ],
+  "I think we should wait a week.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "think",
+    "ipa": "θˈɪŋk"
+   },
+   {
+    "text": "we",
+    "ipa": "wiː"
+   },
+   {
+    "text": "should",
+    "ipa": "ʃˌʊd"
+   },
+   {
+    "text": "wait",
+    "ipa": "wˈeɪt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "week",
+    "ipa": "wˈiːk"
+   }
+  ],
+  "Could you repeat that, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "repeat",
+    "ipa": "ɹɪpˈiːt"
+   },
+   {
+    "text": "that",
+    "ipa": "ðat"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Sorry, the line is breaking up.": [
+   {
+    "text": "Sorry",
+    "ipa": "sˈɒɹi"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "line",
+    "ipa": "lˈaɪn"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "breaking",
+    "ipa": "bɹˈeɪkɪŋ"
+   },
+   {
+    "text": "up",
+    "ipa": "ˈʌp"
+   }
+  ],
+  "I am calling about my order.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "calling",
+    "ipa": "kˈɔːlɪŋ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "order",
+    "ipa": "ˈɔːdə"
+   }
+  ],
+  "Can I call you back in ten minutes?": [
+   {
+    "text": "Can",
+    "ipa": "kan"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "call",
+    "ipa": "kˈɔːl"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "back",
+    "ipa": "bˈak"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "ten",
+    "ipa": "tˈɛn"
+   },
+   {
+    "text": "minutes",
+    "ipa": "mˈɪnɪts"
+   }
+  ],
+  "Could you speak a little slower, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "speak",
+    "ipa": "spˈiːk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "little",
+    "ipa": "lˈɪtəl"
+   },
+   {
+    "text": "slower",
+    "ipa": "slˈəʊə"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Thanks for your help, goodbye.": [
+   {
+    "text": "Thanks",
+    "ipa": "θˈaŋks"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "goodbye",
+    "ipa": "ɡʊdbˈaɪ"
+   }
+  ],
+  "A table for two, please.": [
+   {
+    "text": "A",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "table",
+    "ipa": "tˈeɪbəl"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "two",
+    "ipa": "tˈuː"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Could I have a glass of water?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "glass",
+    "ipa": "ɡlˈas"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "water",
+    "ipa": "wˈɔːtə"
+   }
+  ],
+  "I would like a coffee with milk.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "coffee",
+    "ipa": "kˈɒfi"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "milk",
+    "ipa": "mˈɪlk"
+   }
+  ],
+  "How much is this one?": [
+   {
+    "text": "How",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "much",
+    "ipa": "mˈʌtʃ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "this one",
+    "ipa": "ðˈɪswˌɒn"
+   }
+  ],
+  "Where is the nearest station?": [
+   {
+    "text": "Where",
+    "ipa": "wˌeəɹ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "nearest",
+    "ipa": "nˌiəɹɪst"
+   },
+   {
+    "text": "station",
+    "ipa": "stˈeɪʃən"
+   }
+  ],
+  "Can I pay by card?": [
+   {
+    "text": "Can",
+    "ipa": "kan"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "pay",
+    "ipa": "pˈeɪ"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "card",
+    "ipa": "kˈɑːd"
+   }
+  ]
+ }
+}

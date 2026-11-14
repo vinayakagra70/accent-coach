@@ -56,7 +56,7 @@ function switchButton(to: api.ListenMode, label: string, primary = false) {
 function device(host: HTMLElement, onReady: (ready: boolean) => void): () => void {
   const ui = line(host);
   const goOnline = api.ONLINE_URL ? switchButton("online", "Phone low on memory? Check recordings online instead") : null;
-  const download = h("button", { class: "btn small" }, `Download it (${MB} MB, once)`);
+  const download = h("button", { class: "btn primary small" }, `Download the listener (${MB} MB)`);
   download.onclick = () => engine.load();
   let stopped = false;
   const unsub = engine.subscribe((s) => {
@@ -80,7 +80,7 @@ function device(host: HTMLElement, onReady: (ready: boolean) => void): () => voi
     } else if (s.cached) {
       engine.load(); // already on this device: no download, just start it
     } else {
-      ui.show(`To hear you, Accent Coach downloads a ${MB} MB speech model once. After that it works offline. Use Wi-Fi if you can.`, "wait");
+      ui.show(`One-time setup: to check how you speak, this phone downloads the listener (${MB} MB). After that it works offline. Use Wi-Fi if you can.`, "wait");
       ui.actions(download, goOnline);
       onReady(false);
     }

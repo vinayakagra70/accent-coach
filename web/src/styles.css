@@ -378,8 +378,10 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
   .label3d[data-index]:not([data-index="0"]):not([data-key="tip"]) { display: none; }
   .label3d span { max-width: 160px; }
   .layout { display: flex; flex-direction: column; overflow-y: auto; }
-  .lessons { order: 3; max-height: none; border-right: none; border-top: 1px solid var(--line); }
-  .stage { order: 1; height: 62vh; min-height: 380px; flex-shrink: 0; }
+  /* flex-shrink: 0 matters: without it the list is squeezed into a sliver at the bottom of the page */
+  .lessons { order: 3; max-height: none; flex-shrink: 0; overflow: visible; border-right: none; border-top: 1px solid var(--line); }
+  .panel { flex-shrink: 0; }
+  .stage { order: 1; height: 50vh; min-height: 340px; flex-shrink: 0; }
   .panel { order: 2; border-left: none; overflow: visible; padding: 16px; }
   .legend { display: none; }
   .stage-bar { padding: 8px; }
@@ -405,3 +407,24 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
 .accent-opt small { color: var(--muted); font-size: 12px; line-height: 16px; }
 .accent-opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 @media (max-width: 520px) { .accent-pick { grid-template-columns: 1fr; } }
+/* ---------- everyday phrases */
+.phrase-picker { margin-bottom: 16px; }
+.phrase-packs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.phrase-pack { flex: none; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer; }
+.phrase-pack[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.phrase-list { display: grid; gap: 6px; }
+.phrase-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 8px 14px; text-align: left; border-radius: var(--r-control); border: 1px solid var(--line); background: var(--raised); color: var(--text); font: inherit; font-size: 16px; line-height: 22px; cursor: pointer; }
+.phrase-item[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.phrase-item svg { flex: none; width: 18px; height: 18px; color: var(--good); }
+.engine-gate .row:empty { display: none; }
+.engine-gate .engine { margin-bottom: 0; }
+.engine-gate .row { margin-top: 12px; }
+.engine-gate { margin-bottom: 20px; }
+/* phones: the lesson list sits below everything, so the stage bar gets a way to it */
+.to-lessons { display: none; margin-right: auto; }
+@media (max-width: 720px) {
+  .to-lessons { display: inline-flex; }
+  .creator-credit { flex-wrap: nowrap; gap: 8px; padding: 6px 12px; }
+  .creator-instagram { min-height: 36px; padding: 0 12px; }
+  .creator-instagram span:first-child { display: none; }
+}

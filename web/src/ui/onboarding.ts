@@ -71,16 +71,15 @@ export function showWelcome(opts: {
       }));
   }
   const status = h("div");
-  const start = h("button", { class: "btn primary big", disabled: "" }, icons.mic(), "Start the voice test");
+  const start = h("button", { class: "btn primary big", hidden: "" }, icons.mic(), "Start the voice test");
   const stopPoll = mountEngineGate(status, (ready) => {
-    if (ready) start.removeAttribute("disabled");
-    else start.setAttribute("disabled", "");
+    start.hidden = !ready; // until then the line above says what's missing and how to get it
   });
   start.onclick = () => {
     stopPoll();
     opts.onStart();
   };
-  const skip = h("button", { class: "btn" }, opts.retake ? "Not now" : "Skip — give me the standard course");
+  const skip = h("button", { class: "btn" }, opts.retake ? "Not now" : "Skip the test, show me the lessons");
   skip.onclick = () => {
     stopPoll();
     (opts.retake ? opts.onCancel ?? opts.onSkip : opts.onSkip)();

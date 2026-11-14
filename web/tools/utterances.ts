@@ -6,6 +6,7 @@
 import { writeFileSync } from "node:fs";
 import { ACCENTS, setAccent, type Accent } from "../src/content/accent";
 import { LESSONS, LEXICON } from "../src/content/lessons";
+import { PHRASE_PACKS } from "../src/content/phrases";
 import { sentenceText } from "../src/content/sentences";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { clipKey, splitSentences, type Speed } from "../src/speech/clips";
@@ -34,6 +35,8 @@ for (const accent of ["us", "uk"] as Accent[]) {
     const s = sentenceText(l.id);
     if (s) add(accent, "word", "normal", s);
   }
+  // the everyday phrases, the same way
+  for (const pack of PHRASE_PACKS) for (const p of pack.phrases) add(accent, "word", "normal", p);
 
   for (const sym of ["θ", "t"]) say(accent, lines.good(sym));
   for (const check of Object.values(LESSON_CHECKS))

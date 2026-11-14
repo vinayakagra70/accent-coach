@@ -28,6 +28,7 @@ import { judgeItem } from "./scoring/report";
 import { freeTextItem, judgeFreeText, stressParts, type FreeItem } from "./scoring/freeText";
 import type { TestItem } from "./content/assessment";
 import { sentenceItem, sentenceText } from "./content/sentences";
+import { PHRASE_PACKS, phraseWords } from "./content/phrases";
 import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
@@ -149,6 +150,8 @@ accentPick.onchange = () => {
 };
 
 $("viewSide").onclick = () => scene.sideView();
+// phones only (hidden by CSS elsewhere): the course card, phrases and lesson list are below the lesson
+$("toLessons").onclick = () => $("lessonList").scrollIntoView({ behavior: "smooth", block: "start" });
 $("view3d").onclick = () => scene.resetView();
 $("retakeTest").prepend(icons.mic());
 $("retakeTest").onclick = () => startTest(true);
@@ -360,6 +363,11 @@ function stopMirror() {
 
 // ------------------------------------------------------------------ sidebar
 
+/** On a phone the lesson list is below the lesson, so picking one has to bring the lesson back into view. */
+function toTop() {
+  document.querySelector(".layout")?.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function renderList() {
   const nav = $("lessonList");
   nav.replaceChildren();
@@ -371,7 +379,10 @@ function renderList() {
     const name = !d ? "Course complete" : d.kind === "checkup" ? "Check-up voice test" : LESSONS.find((l) => l.id === d.lesson)?.title ?? "";
     const dueN = reviewsDue().length;
     const go = h("button", { class: "btn primary small" }, !d ? "Review" : finishedToday(profile) ? "Start next day early" : "Go to today");
-    go.onclick = () => goToday();
+    go.onclick = () => {
+      goToday();
+      toTop();
+    };
     const at = reminderTime();
     const remind = h("button", { class: "linklike small remind" }, icons.bell(), at ? `Reminder at ${friendlyTime(at)}` : "Remind me every day");
     remind.onclick = () => showReminder(renderList);
@@ -390,9 +401,12 @@ function renderList() {
     nav.append(h("div", { class: "course-card" }, h("b", {}, "No course yet"), h("p", { class: "muted small" }, "A 3-minute voice test builds your personal course."), start));
   }
 
+  const phrases = h("button", { class: "btn small own-btn" }, icons.listen(), "Everyday phrases");
+  phrases.onclick = () => showOwnWords(true);
+  nav.append(phrases);
   if (api.CAN_PHONEMIZE) {
     const own = h("button", { class: "btn small own-btn" }, icons.mic(), "Try your own words");
-    own.onclick = showOwnWords;
+    own.onclick = () => showOwnWords();
     nav.append(own);
   }
 
@@ -408,7 +422,10 @@ function renderList() {
       const b = h("button", { class: `lesson-btn${l.id === todayId ? " today" : ""}${profile && !courseIds.has(l.id) ? " passed" : ""}`, "aria-current": String(l.id === lesson.id), title: l.sound },
         h("span", {}, h("span", { class: "name" }, l.title), h("span", { class: "tags" }, ...lessonSymbols(l).map(ipa))),
         h("span", { class: `badge${known && shown! >= 85 ? " good" : known && shown! < 60 ? " low" : ""}` }, known ? `${shown}%` : "–"));
-      b.onclick = () => openLesson(l);
+      b.onclick = () => {
+        openLesson(l);
+        toTop();
+      };
       nav.append(b);
     }
   }
@@ -719,8 +736,12 @@ function shadowing(text: string | (() => string)) {
 
 // ------------------------------------------------------------------ your own words
 
-/** Type any word or sentence, hear it, say it, and get it checked with the same rules as the lessons. */
-function showOwnWords() {
+/**
+ * Say a sentence and get it checked with the same rules as the lessons. The
+ * sentence is either typed (the laptop works out how it's pronounced) or, with
+ * `preset`, picked from the everyday phrases, which also work on the hosted build.
+ */
+function showOwnWords(preset = false) {
   const o = $("overlay");
   o.hidden = false;
   o.replaceChildren();
@@ -753,7 +774,43 @@ function showOwnWords() {
 
   let item: FreeItem | null = null;
   let itemKey = "";
-  const text = () => input.value.replace(/\s+/g, " ").trim();
+  let current = PHRASE_PACKS[0].phrases[0];
+  let cleanSet = new Set<string>();
+  try {
+    const saved = localStorage.getItem("accentCoach.phrase");
+    if (saved && PHRASE_PACKS.some((p) => p.phrases.includes(saved))) current = saved;
+    cleanSet = new Set(JSON.parse(localStorage.getItem("accentCoach.phrasesClean") ?? "[]") as string[]);
+  } catch {
+    /* ignore */
+  }
+  const packOf = (t: string) => PHRASE_PACKS.find((p) => p.phrases.includes(t))?.id ?? PHRASE_PACKS[0].id;
+  const picker = h("div", { class: "phrase-picker" });
+  const renderPicker = (packId: string) => {
+    const pack = PHRASE_PACKS.find((p) => p.id === packId) ?? PHRASE_PACKS[0];
+    picker.replaceChildren(
+      h("div", { class: "phrase-packs", role: "tablist", "aria-label": "Situation" }, ...PHRASE_PACKS.map((p) => {
+        const b = h("button", { class: "phrase-pack", role: "tab", "aria-selected": String(p.id === pack.id) }, p.title);
+        b.onclick = () => renderPicker(p.id);
+        return b;
+      })),
+      h("div", { class: "phrase-list" }, ...pack.phrases.map((t) => {
+        const b = h("button", { class: "phrase-item", "aria-current": String(t === current) }, h("span", {}, t), cleanSet.has(`${accent()}|${t}`) ? icons.check() : null);
+        b.onclick = () => {
+          current = t;
+          try {
+            localStorage.setItem("accentCoach.phrase", t);
+          } catch {
+            /* ignore */
+          }
+          clear();
+          renderPicker(pack.id);
+          void prepare();
+          void speak(t, 0.85);
+        };
+        return b;
+      })));
+  };
+  const text = () => (preset ? current : input.value.replace(/\s+/g, " ").trim());
   /** The typed text's expected sounds (asked from the server once per text and accent). */
   const prepare = async (): Promise<FreeItem | null> => {
     const t = text();
@@ -765,12 +822,14 @@ function showOwnWords() {
     if (item && key === itemKey) return item;
     status.textContent = "Looking up how that's pronounced…";
     try {
-      item = freeTextItem(await api.phonemize(t, accentInfo().lang), accent());
+      const words = preset ? phraseWords(t, accent()) : await api.phonemize(t, accentInfo().lang);
+      if (!words) throw new Error("this phrase has no pronunciation");
+      item = freeTextItem(words, accent());
       itemKey = key;
       showPron(item);
       status.textContent = "";
       try {
-        localStorage.setItem("accentCoach.ownText", t);
+        if (!preset) localStorage.setItem("accentCoach.ownText", t);
       } catch {
         /* ignore */
       }
@@ -820,6 +879,15 @@ function showOwnWords() {
       const v = r.words[i];
       return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}` }, v === "good" ? icons.check() : null, w.text);
     }));
+    if (preset && r.findings.length && !r.habits && !r.unclear) {
+      cleanSet.add(`${accent()}|${current}`);
+      try {
+        localStorage.setItem("accentCoach.phrasesClean", JSON.stringify([...cleanSet]));
+      } catch {
+        /* ignore */
+      }
+      renderPicker(packOf(current));
+    }
     const sure = r.good + r.habits;
     summary.textContent = !r.findings.length
       ? "Nothing in that could be judged. Try a longer phrase."
@@ -846,17 +914,22 @@ function showOwnWords() {
 
   o.append(
     h("div", { class: "sheet own" },
-      h("p", { class: "eyebrow" }, "Your own words"),
-      h("h2", {}, "Type anything, then say it"),
-      h("p", { class: "lead" }, `Your name, a line from a meeting, a word you always trip on. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
-      input,
+      h("p", { class: "eyebrow" }, preset ? "Everyday phrases" : "Your own words"),
+      h("h2", {}, preset ? "Pick a phrase, then say it" : "Type anything, then say it"),
+      h("p", { class: "lead" }, preset
+        ? `Sentences you'll really use. Tap one to hear it, then say it: it's checked for the same ${accentInfo().name} sounds as the lessons.`
+        : `Your name, a line from a meeting, a word you always trip on. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
+      preset ? picker : input,
       gate,
       h("div", { class: "row" }, listen, sayBtn, shadow.both),
       status, pron, marks, summary, findings,
-      h("p", { class: "note" }, "Vowels are only judged where they're stressed, and names or unusual words may be pronounced differently from how you'd expect: press Hear it to check."),
+      h("p", { class: "note" }, preset ? "Vowels are only judged where they're stressed. A tick marks a phrase you've said clean." : "Vowels are only judged where they're stressed, and names or unusual words may be pronounced differently from how you'd expect: press Hear it to check."),
       h("div", { class: "row" }, done)),
   );
-  input.focus();
+  if (preset) {
+    renderPicker(packOf(current));
+    void prepare();
+  } else input.focus();
 }
 
 /** One word's sounds judged against a lesson's checks, boiled down to a single verdict. */
