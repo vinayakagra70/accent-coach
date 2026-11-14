@@ -161,6 +161,21 @@ export async function sayWord(text: string, speed = 0.95): Promise<void> {
   return browserSay(text, speed * 0.9);
 }
 
+/** Play a sound file shipped with the app (the "Indian habit" example words). False when it's missing or was interrupted. */
+export async function playFile(url: string): Promise<boolean> {
+  const my = ++seq;
+  try {
+    const r = await fetch(url);
+    if (!r.ok || my !== seq) return false;
+    const buf = await r.arrayBuffer();
+    if (my !== seq) return false;
+    await playBuffer(buf);
+    return my === seq;
+  } catch {
+    return false;
+  }
+}
+
 /** The coach talking to the learner: a caption always, the voice if it's switched on. */
 export async function coachSays(text: string, mood: Mood = null): Promise<void> {
   const my = ++seq;

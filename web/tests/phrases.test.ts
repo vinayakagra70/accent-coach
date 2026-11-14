@@ -5,7 +5,8 @@
  * facebook/wav2vec2-lv-60-espeak-cv-ft. A native voice must never be told it
  * has an Indian-English habit.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { LESSONS, LEXICON } from "../src/content/lessons";
 import { setAccent, type Accent } from "../src/content/accent";
 import { ALL_PHRASES, CONVERSATIONS, PHRASE_PACKS, phraseWords } from "../src/content/phrases";
 import { normalizeAll } from "../src/scoring/align";
@@ -74,6 +75,16 @@ setAccent("us");
   const spoken = [...texts, ...CONVERSATIONS.flatMap((c) => c.turns.map((t) => t.ask))];
   const none = (["us", "uk"] as Accent[]).flatMap((a) => spoken.filter((t) => !have.has(clipKey(a, "word", "normal", t))).map((t) => `${a}: ${t}`));
   check(none.length === 0, `every phrase has a pre-rendered clip in both accents (run npm run voices)${none.length ? `: ${none.length} missing, e.g. ${none[0]}` : ""}`);
+}
+
+// every lesson can be heard both ways: a model word for the target, a recorded clip for the Indian habit
+{
+  const habits: Record<string, { word: string }> = JSON.parse(readFileSync("src/content/habits.json", "utf-8"));
+  const bad = LESSONS.filter((l) => {
+    const h = habits[l.id];
+    return !h || !l.words.includes(h.word) || !LEXICON[h.word] || !existsSync(`public/audio/habit/${l.id}.mp3`);
+  }).map((l) => l.id);
+  check(bad.length === 0, `every lesson has a habit clip of one of its own words (run python -m tools.habit_voice) ${bad.join(" ")}`);
 }
 
 if (failed) {

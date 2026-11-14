@@ -34,7 +34,8 @@ import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
 import { mountEngineGate } from "./ui/engineGate";
 import { lines, shortTitle } from "./speech/lines";
-import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking } from "./coach";
+import { coachSays, coachVoiceOn, mountCoach, playFile, react, setCoachVoice, stopTalking } from "./coach";
+import habitWords from "./content/habits.json";
 import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
@@ -242,23 +243,52 @@ function applyMode() {
   renderModes();
 }
 
+const HABIT_WORDS: Record<string, { word: string }> = habitWords;
+
+/**
+ * Let the learner hear the view they just chose. The target: an example word in
+ * the model voice, with the mouth moving through it. The habit: the same word
+ * said the Indian way (audio/habit/, see tools/habit_voice.py), then the model
+ * voice right after it, because the difference is easiest to hear back to back.
+ */
+async function sayMode() {
+  const example = HABIT_WORDS[lesson.id]?.word ?? lesson.words[0];
+  if (mode.kind === "target") {
+    const pose = lesson.targets[mode.i].pose;
+    const word = mode.i === 0 ? example : lesson.words.find((w) => LEXICON[w]?.includes(pose)) ?? example;
+    await playWord(word);
+  } else if (mode.kind === "habit") {
+    if (busy) return;
+    const id = lesson.id;
+    const note = $("nowPlaying");
+    if (!(await playFile(`audio/habit/${id}.mp3`))) return;
+    await new Promise((r) => setTimeout(r, 450));
+    if (lesson.id !== id || mode.kind !== "habit") return; // moved on while it played
+    note.textContent = `${accentInfo().name}: ${example}`;
+    await speak(example, 0.85).catch(() => undefined);
+    if (lesson.id === id && mode.kind === "habit") note.textContent = lesson.habit.pose.replace(" (habit)", "");
+  }
+}
+
 function renderModes() {
   const box = $("modes");
   box.replaceChildren();
   lesson.targets.forEach((t, i) => {
-    const b = h("button", { class: "mode target", role: "tab", "aria-selected": String(mode.kind === "target" && mode.i === i), title: `Show the ${accentInfo().name} target` },
+    const b = h("button", { class: "mode target", role: "tab", "aria-selected": String(mode.kind === "target" && mode.i === i), title: `See and hear the ${accentInfo().name} way` },
       h("span", { class: "sw", style: "background: var(--accent)" }), h("span", {}, h("b", {}, `${accentInfo().name} way`), h("small", {}, t.label)));
     b.onclick = () => {
       mode = { kind: "target", i };
       applyMode();
+      void sayMode();
     };
     box.append(b);
   });
-  const hb = h("button", { class: "mode habit", role: "tab", "aria-selected": String(mode.kind === "habit"), title: "What Indian-English speakers often do. The green outline is where it should be." },
+  const hb = h("button", { class: "mode habit", role: "tab", "aria-selected": String(mode.kind === "habit"), title: "See and hear what Indian-English speakers often do. The green outline is where it should be." },
     h("span", { class: "sw", style: "background: var(--habit)" }), h("span", {}, h("b", {}, "Indian habit"), h("small", {}, lesson.habit.label)));
   hb.onclick = () => {
     mode = { kind: "habit" };
     applyMode();
+    void sayMode();
   };
   box.append(hb);
   if (lesson.vowel) {
@@ -456,7 +486,7 @@ function renderTodayCard() {
     const li = h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
     if (show) {
       // the mouth has tabs for these, but nobody reads a tab as "do this step"
-      const b = h("button", { class: "btn small step-go" }, icons.play(), done ? "Watch again" : "Watch");
+      const b = h("button", { class: "btn small step-go" }, icons.play(), done ? "Watch & hear again" : "Watch & hear");
       b.onclick = () => {
         show();
         document.querySelector(".stage")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -468,6 +498,7 @@ function renderTodayCard() {
   const watch = (m: Mode) => () => {
     mode = m;
     applyMode();
+    void sayMode();
   };
   const finish = h("button", { class: "btn primary" }, `Finish day ${profile.day + 1}`) as HTMLButtonElement;
   if (!dayReady(profile)) finish.disabled = true;

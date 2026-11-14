@@ -125,6 +125,8 @@ server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
 space/               the online listener, a Hugging Face Space
 tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py,
+                     habit_voice.py (the "Indian habit" example words in web/public/audio/habit/: each word
+                     written in Devanagari and read by a Hindi Kokoro voice, which gives the real habit),
                      phrases.py (pronunciations of the everyday phrases, and what the model hears)
 ```
 
