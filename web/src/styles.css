@@ -486,3 +486,8 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
   .sound-row { grid-template-columns: minmax(0, 1fr) 72px 44px; }
   .sound-state { display: none; }
 }
+/* One word, both ways */
+.compare { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.compare .note { margin: 0 0 8px !important; }
+.compare .row { margin: 0; }
+.habit-btn svg { color: var(--habit); }

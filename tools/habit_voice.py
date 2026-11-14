@@ -12,11 +12,10 @@ by one of Kokoro's Hindi voices. That gives the real habit: no puff on P, J for
 Z, a tapped R, PH for F. The dropped R of "car" is simply a British voice.
 The voice for each word is the one the speech model heard most clearly.
 
-Where the lesson's sound can be said in one short syllable ("ta"), that comes
-first, twice: web/public/audio/sound/<lesson>-<target>.mp3 for the
-model voice and habit/<lesson>-sound.mp3 for the habit. Each syllable is
-rendered alone and the two are joined with a gap, because Kokoro slurs a
-repeated syllable when it's given as one sentence. Stops need the vowel; the
+Where the lesson's sound can be said in one short syllable ("ta"), that is a
+clip of its own: web/public/audio/sound/<lesson>-<target>.mp3 for the model
+voice and habit/<lesson>-sound.mp3 for the habit. The app plays the sound for
+the two views of the mouth and keeps the word for the word comparison. Stops need the vowel; the
 vowels, R, L and the flap only show in a word, so those lessons have no "sound".
 """
 import io
@@ -45,14 +44,12 @@ def main() -> None:
     rec = PhonemeRecognizer()
     rec._load()
     assert rec.ready, rec.error
-    import numpy as np
-
-    def twice(text: str, voice: str, lang: str, phonemes: bool, path: Path, label: str) -> None:
+    def alone(text: str, voice: str, lang: str, phonemes: bool, path: Path, label: str) -> None:
         audio, rate = tts._kokoro.create(text, voice=voice, speed=0.85, lang=lang, is_phonemes=phonemes)
         one = io.BytesIO()
         sf.write(one, audio, rate, format="WAV", subtype="PCM_16")
         heard = " ".join(rec.recognize(read_wav(one.getvalue())).phonemes)
-        sf.write(path, np.concatenate([audio, np.zeros(int(rate * 0.3), dtype=audio.dtype), audio]), rate, format="MP3")
+        sf.write(path, audio, rate, format="MP3")
         print(f"{label:28} {len(audio) / rate:.2f}s  heard /{heard}/".encode("ascii", "backslashreplace").decode(), flush=True)
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -63,8 +60,8 @@ def main() -> None:
     for lesson, h in habits.items():
         if "sound" in h:
             for i, ph in enumerate(h["sound"]["targets"]):
-                twice(ph, MODEL[0], MODEL[1], True, SOUNDS / f"{lesson}-{i}.mp3", f"{lesson} target {i}")
-            twice(h["sound"]["habit"], SOUND_VOICE, "hi", False, OUT / f"{lesson}-sound.mp3", f"{lesson} habit sound")
+                alone(ph, MODEL[0], MODEL[1], True, SOUNDS / f"{lesson}-{i}.mp3", f"{lesson} target {i}")
+            alone(h["sound"]["habit"], SOUND_VOICE, "hi", False, OUT / f"{lesson}-sound.mp3", f"{lesson} habit sound")
         audio, rate = tts._kokoro.create(h["say"], voice=h["voice"], speed=0.9, lang=h["lang"])
         sf.write(OUT / f"{lesson}.mp3", audio, rate, format="MP3")
         wav = io.BytesIO()

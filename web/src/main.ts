@@ -244,47 +244,45 @@ function applyMode() {
 }
 
 const HABIT_WORDS: Record<string, { word: string; sound?: { targets: string[] } }> = habitWords;
-const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 
 /**
- * Let the learner hear the view they just chose. First the sound alone, twice
- * ("ta, ta"), where it can be said alone; then an example word. The target is in
- * the model voice with the mouth moving through the word; the habit is said the
- * Indian way (audio/habit/, see tools/habit_voice.py), with the model voice right
- * after it, because the difference is easiest to hear back to back.
+ * Let the learner hear the view they just chose: the sound alone, once ("ta"),
+ * in the model voice for the target and the Indian way for the habit
+ * (tools/habit_voice.py). Sounds that only show inside a word (the vowels, R,
+ * L, the flap) have no clip of their own, so those views say the example word.
+ * Whole words are compared in the "Watch & listen" card (compareRow).
  */
 async function sayMode() {
   const example = HABIT_WORDS[lesson.id]?.word ?? lesson.words[0];
   const sound = HABIT_WORDS[lesson.id]?.sound;
+  if (busy) return;
   if (mode.kind === "target") {
-    const pose = lesson.targets[mode.i].pose;
-    const word = mode.i === 0 ? example : lesson.words.find((w) => LEXICON[w]?.includes(pose)) ?? example;
-    const id = lesson.id;
-    const i = mode.i;
-    if (!busy && sound && i < sound.targets.length) {
-      if (!(await playFile(`audio/sound/${id}-${i}.mp3`))) return;
-      await pause(350);
-      if (lesson.id !== id || mode.kind !== "target" || mode.i !== i) return; // moved on while it played
-    }
-    await playWord(word);
+    if (sound && mode.i < sound.targets.length) await playFile(`audio/sound/${lesson.id}-${mode.i}.mp3`);
+    else await playWord(example);
   } else if (mode.kind === "habit") {
-    if (busy) return;
-    const id = lesson.id;
-    const note = $("nowPlaying");
-    if (sound) {
-      if (!(await playFile(`audio/habit/${id}-sound.mp3`))) return;
-      await pause(350);
-      if (lesson.id !== id || mode.kind !== "habit") return;
-    }
-    if (!(await playFile(`audio/habit/${id}.mp3`))) return;
-    await pause(450);
-    if (lesson.id !== id || mode.kind !== "habit") return; // moved on while it played
-    note.textContent = `${accentInfo().name}: ${example}`;
-    await speak(example, 0.85).catch(() => undefined);
-    if (lesson.id === id && mode.kind === "habit") note.textContent = lesson.habit.pose.replace(" (habit)", "");
+    await playFile(`audio/habit/${lesson.id}${sound ? "-sound" : ""}.mp3`);
   }
 }
 
+/** One word, both ways, side by side: the model voice (with the mouth moving) and the Indian habit. */
+function compareRow(): HTMLElement | null {
+  const word = HABIT_WORDS[lesson.id]?.word;
+  if (!word) return null;
+  const model = h("button", { class: "btn small" }, icons.listen(), `${accentInfo().name}: ${word}`);
+  model.onclick = () => {
+    mode = { kind: "target", i: 0 };
+    void playWord(word);
+  };
+  const habit = h("button", { class: "btn small habit-btn" }, icons.listen(), `Indian habit: ${word}`);
+  habit.onclick = () => {
+    if (busy) return;
+    mode = { kind: "habit" };
+    applyMode();
+    void playFile(`audio/habit/${lesson.id}.mp3`);
+  };
+  return h("div", { class: "compare" }, h("p", { class: "note" }, "Compare one word, both ways:"), h("div", { class: "row" }, model, habit));
+}
 function renderModes() {
   const box = $("modes");
   box.replaceChildren();
@@ -585,6 +583,7 @@ function renderPanel() {
       c.onclick = () => void playWord(w);
       return c;
     })),
+    compareRow(),
     h("div", { class: "slow" }, "Mouth speed", slowSel),
     hasVoice() ? null : h("p", { class: "note" }, "This browser has no speech voice, so words animate silently.")));
 
