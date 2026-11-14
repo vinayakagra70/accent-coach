@@ -103,6 +103,13 @@ select { height: 32px; background: var(--raised); border: 1px solid var(--line-s
 
 /* ---------- layout */
 .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr) 384px; }
+/* wide screens: lessons | Nova and the lesson (the part you read and act on) | the mouth */
+@media (min-width: 1101px) {
+  .layout { grid-template-columns: 248px minmax(0, 1fr) minmax(400px, 42%); }
+  .layout > .panel { order: 2; border-left: none; padding: 24px 32px 48px; }
+  .layout > .stage { order: 3; border-left: 1px solid var(--line); }
+  .panel > .coach, #panelBody { max-width: 720px; margin-left: auto; margin-right: auto; }
+}
 @media (max-width: 1100px) {
   .layout { grid-template-columns: 216px minmax(0, 1fr); }
   .panel { grid-column: 1 / -1; }
