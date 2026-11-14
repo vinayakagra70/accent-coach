@@ -122,8 +122,10 @@ progress shared between devices, JARVIS summary.
 
 **Not yet:**
 
-1. Stress and rhythm: everything is scored one word at a time, and word stress
-   ("deVElopment") is a large part of an Indian-English accent.
+1. Scoring stress and rhythm. "Your own words" shows which syllable carries the stress, but
+   doesn't judge it: an attempt on 2026-11-14 (length, loudness and pitch of each vowel, alone
+   and against a reference voice) picked the stressed syllable of correct speech only 73% of the
+   time and caught a moved stress 46% of the time. Notes in `web/src/scoring/freeText.ts`.
 2. Scoring for dark L and aspiration, which are compare-by-ear for now.
 3. A chart of voice-test scores over time (the history is already saved).
 4. Camera lip tracking.

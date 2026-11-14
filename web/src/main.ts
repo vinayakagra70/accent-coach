@@ -25,7 +25,7 @@ import * as progress from "./progress";
 import { align, judge, normalizeAll, type CheckResult, type Verdict } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { judgeItem } from "./scoring/report";
-import { freeTextItem, judgeFreeText, type FreeItem } from "./scoring/freeText";
+import { freeTextItem, judgeFreeText, stressParts, type FreeItem } from "./scoring/freeText";
 import type { TestItem } from "./content/assessment";
 import { sentenceItem, sentenceText } from "./content/sentences";
 import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
@@ -732,8 +732,18 @@ function showOwnWords() {
     /* ignore */
   }
   const status = h("p", { class: "note", role: "status" });
+  const pron = h("div", { class: "own-pron" });
   const marks = h("div", { class: "chips word-marks" });
   const summary = h("p", { class: "own-summary" });
+  /** How it's said, word by word, with the stressed vowel of each longer word highlighted. */
+  const showPron = (it: FreeItem) => {
+    const anyStress = it.words.some((w) => stressParts(w.ipa).some((p) => p.stressed));
+    pron.replaceChildren(
+      h("div", { class: "own-pron-words" }, ...it.words.map((w) =>
+        h("span", { class: "own-pron-word" }, h("span", {}, w.text),
+          h("span", { class: "ipa-tag" }, "/", ...stressParts(w.ipa).map((p) => (p.stressed ? h("b", { class: "stress" }, p.text) : p.text)), "/")))));
+    if (anyStress) pron.append(h("p", { class: "note" }, "The highlighted sound carries the stress: say that syllable longer and stronger, and let the others go quick and soft."));
+  };
   const findings = h("div", { class: "results" });
   const gate = h("div");
   const stopGate = mountEngineGate(gate, (ready) => {
@@ -757,6 +767,8 @@ function showOwnWords() {
     try {
       item = freeTextItem(await api.phonemize(t, accentInfo().lang), accent());
       itemKey = key;
+      showPron(item);
+      status.textContent = "";
       try {
         localStorage.setItem("accentCoach.ownText", t);
       } catch {
@@ -771,6 +783,7 @@ function showOwnWords() {
 
   const shadow = shadowing(text);
   const clear = () => {
+    pron.replaceChildren();
     marks.replaceChildren();
     findings.replaceChildren();
     summary.textContent = "";
@@ -789,8 +802,12 @@ function showOwnWords() {
 
   const listen = h("button", { class: "btn" }, icons.listen(), "Hear it");
   listen.onclick = () => {
-    if (text()) void speak(text(), 0.85);
-    else status.textContent = "Type a word or a sentence first.";
+    if (!text()) {
+      status.textContent = "Type a word or a sentence first.";
+      return;
+    }
+    void prepare(); // shows how it's pronounced and where the stress goes
+    void speak(text(), 0.85);
   };
   const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
   sayBtn.onclick = async () => {
@@ -835,7 +852,7 @@ function showOwnWords() {
       input,
       gate,
       h("div", { class: "row" }, listen, sayBtn, shadow.both),
-      status, marks, summary, findings,
+      status, pron, marks, summary, findings,
       h("p", { class: "note" }, "Vowels are only judged where they're stressed, and names or unusual words may be pronounced differently from how you'd expect: press Hear it to check."),
       h("div", { class: "row" }, done)),
   );

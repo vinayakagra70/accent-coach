@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { setAccent, type Accent } from "../src/content/accent";
 import { normalizeAll } from "../src/scoring/align";
-import { freeTextItem, ipaTokens, judgeFreeText, type SpokenWord } from "../src/scoring/freeText";
+import { freeTextItem, ipaTokens, judgeFreeText, stressParts, type SpokenWord } from "../src/scoring/freeText";
 
 const fx: { texts: string[]; words: Record<Accent, SpokenWord[][]>; heard: Record<string, string[][]> } = JSON.parse(readFileSync("tests/fixtures/freetext-heard.json", "utf-8"));
 
@@ -70,6 +70,20 @@ setAccent("us");
   setAccent("uk");
   check(uk("hˈɒt") === "t:alveolar-td" && uk("kˈɑːɹ") === "", "British: short O and R after a vowel are never judged");
   setAccent("us");
+}
+
+// ---- where the stress goes (shown, not scored)
+{
+  const show = (ipa: string) => stressParts(ipa).map((p) => (p.stressed ? `[${p.text}]` : p.text)).join("");
+  check(show("dɪvˈɛləpmənt") === "dɪv[ɛ]ləpmənt", `development: the second vowel is marked (${show("dɪvˈɛləpmənt")})`);
+  check(show("ˌʌndɚstˈænd") === "ʌndɚst[æ]nd", "understand: only the main stress is marked, not the secondary one");
+  check(show("fˈoʊɾəɡɹˌæf") === "f[oʊ]ɾəɡɹæf" && show("fətˈɑːɡɹəfi") === "fət[ɑː]ɡɹəfi", "photograph vs photography: the stress moves, diphthongs and long vowels stay whole");
+  check(show("θˈɪŋk") === "θɪŋk" && show("ðə") === "ðə", "one-syllable words have nothing marked");
+  const real = fx.words.us[fx.texts.indexOf("development")][0].ipa;
+  check(stressParts(real).filter((p) => p.stressed).length === 1, `the real phonemizer's "development" (${real}) gets exactly one mark`);
+  const every = fx.words.us.flat().concat(fx.words.uk.flat());
+  check(every.every((w) => stressParts(w.ipa).filter((p) => p.stressed).length <= w.text.split(" ").length), "no word in the 20 sample texts gets more marks than it has words");
+  check(every.every((w) => stressParts(w.ipa).map((p) => p.text).join("") === w.ipa.replace(/[ˈˌ\s]/g, "")), "the pieces put back together are the pronunciation, minus the stress marks");
 }
 
 // ---- a learner's habits are found, on the right words

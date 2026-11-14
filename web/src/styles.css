@@ -250,6 +250,12 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
 .own-btn { width: 100%; justify-content: center; margin-top: 8px; }
 .sheet.own textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px; margin-bottom: 16px; padding: 12px; background: var(--raised); border: 1px solid var(--line-strong); border-radius: var(--r-control); color: var(--text); font: inherit; font-size: 17px; line-height: 26px; }
 .sheet.own textarea::placeholder { color: var(--muted); }
+.own-pron:empty { display: none; }
+.own-pron { margin-top: 12px; }
+.own-pron-words { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.own-pron-word { display: grid; gap: 2px; }
+.own-pron-word .ipa-tag { font-size: 13px; }
+.own-pron .stress { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .own-summary { margin: 12px 0 0 !important; font-variant-numeric: tabular-nums; }
 .own-summary:empty { display: none; }
 .own-fix { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 4px; }

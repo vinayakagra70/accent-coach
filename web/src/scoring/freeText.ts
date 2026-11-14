@@ -89,6 +89,48 @@ export function ipaTokens(ipa: string): Tok[] {
   return out;
 }
 
+const VOWEL_LETTERS = "aæɐɑɒʌəɚɝɜɛeɪᵻiɔoʊuɨ";
+
+/**
+ * A word's pronunciation cut into pieces for display, with the vowel that
+ * carries the main stress marked: "dɪvˈɛləpmənt" → dɪv · [ɛ] · ləpmənt.
+ * Words of one syllable have nothing to mark. The stress marks themselves are
+ * dropped (the highlight replaces them).
+ *
+ * Stress is shown, not scored. Scoring it was tried on 2026-11-14 and wasn't
+ * reliable: from a vowel's length, loudness and pitch, the stressed syllable
+ * of a correctly said word was picked right only 73% of the time, and against
+ * a reference voice a moved stress was caught 46% of the time at 5% false
+ * alarms. In a single word the first syllable is loudest and highest and the
+ * last is longest whichever one is stressed.
+ */
+export function stressParts(ipa: string): { text: string; stressed: boolean }[] {
+  const isVowel = (ch: string) => VOWEL_LETTERS.includes(ch);
+  const runs: { text: string; vowel: boolean; stressed: boolean }[] = [];
+  let pending = false;
+  for (let i = 0; i < ipa.length; ) {
+    const ch = ipa[i];
+    if (ch === "ˈ") {
+      pending = true;
+      i++;
+    } else if (ch === "ˌ" || /\s/.test(ch)) {
+      i++;
+    } else if (isVowel(ch)) {
+      let run = "";
+      while (i < ipa.length && (isVowel(ipa[i]) || ipa[i] === "ː")) run += ipa[i++];
+      runs.push({ text: run, vowel: true, stressed: pending });
+      pending = false;
+    } else {
+      const last = runs[runs.length - 1];
+      if (last && !last.vowel) last.text += ch;
+      else runs.push({ text: ch, vowel: false, stressed: false });
+      i++;
+    }
+  }
+  const syllables = runs.filter((r) => r.vowel).length;
+  return runs.map((r) => ({ text: r.text, stressed: r.stressed && syllables > 1 }));
+}
+
 /** Which lesson's check judges this sound here, or null to leave it unjudged. */
 function lessonFor(sym: string, prev: string | undefined, next: string | undefined, stressed: boolean, accent: Accent): string | null {
   const scored = (id: string) => LESSON_CHECKS[id]?.voiceTested && !SKIP[accent].includes(id) && !!LESSON_CHECKS[id].sounds[sym];
