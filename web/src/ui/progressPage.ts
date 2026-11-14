@@ -101,8 +101,8 @@ export function showProgress(opts: {
 
   o.append(
     h("div", { class: "sheet my-progress" },
-      h("p", { class: "eyebrow" }, "My progress"),
-      h("h2", {}, p && p.course.length ? `Day ${Math.min(p.day + 1, p.course.length)} of ${p.course.length}` : "Your sounds so far"),
+      h("h2", {}, "My progress"),
+      h("p", { class: "lead" }, p && p.course.length ? `Day ${Math.min(p.day + 1, p.course.length)} of ${p.course.length} in your course.` : "No course yet. These are your sounds so far."),
       h("div", { class: "stats" },
         stat(stats.score === null ? "–" : String(stats.score), "voice score"),
         stat(String(stats.streak), "day streak"),
@@ -115,8 +115,8 @@ export function showProgress(opts: {
         : "One test so far. The next check-up shows how far you've moved."),
 
       h("h3", {}, "Your sounds, weakest first"),
-      h("div", { class: "sound-rows" }, ...rows.map((r) => {
-        const b = h("button", { class: `sound-row ${r.state}`, title: "Open this lesson" },
+      h("div", { class: "sound-rows" }, ...rows.map((r, i) => {
+        const b = h("button", { class: `sound-row ${r.state}`, title: "Open this lesson", style: `--i:${i}` },
           h("span", { class: "sound-name" }, r.title),
           h("span", { class: "sound-bar" }, h("i", { style: `width:${r.score ?? 0}%` })),
           h("span", { class: "sound-score" }, r.score === null ? "–" : `${r.score}%`),

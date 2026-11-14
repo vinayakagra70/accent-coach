@@ -86,7 +86,6 @@ export function showWelcome(opts: {
   };
   o.append(
     h("div", { class: "sheet" },
-      h("p", { class: "eyebrow" }, opts.retake ? "Check-up" : "Welcome"),
       h("h2", {}, opts.retake ? "Let's see how far you've come" : "First, let's hear how you speak"),
       h("p", { class: "lead" },
         opts.retake
@@ -207,7 +206,6 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
     const progressLine = h("p", { class: "lead" }, "");
     const progressBar = h("i");
     o.replaceChildren(h("div", { class: "sheet" },
-      h("p", { class: "eyebrow" }, "Voice test"),
       h("h2", {}, "Listening to your recordings…"),
       progressLine,
       h("div", { class: "progress" }, progressBar),
@@ -253,7 +251,6 @@ export function runTest(opts: { onDone: (a: Assessment) => void; onCancel: () =>
         void finish();
       };
       o.replaceChildren(h("div", { class: "sheet" },
-        h("p", { class: "eyebrow" }, "Voice test"),
         h("h2", {}, failed.length === total ? "Your recordings couldn't be checked" : `${failed.length} of ${total} recordings couldn't be checked`),
         h("p", { class: "lead" }, api.STATIC ? ENGINE_STOPPED : "The speech engine on this laptop didn't answer. Make sure start.bat is still running, then retry."),
         h("p", { class: "note" }, "Your recordings are kept, so you won't have to read the phrases again."),

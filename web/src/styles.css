@@ -491,3 +491,83 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
 .compare .note { margin: 0 0 8px !important; }
 .compare .row { margin: 0; }
 .habit-btn svg { color: var(--habit); }
+
+/* ---------- enhance pass (2026-11-14): the same world, tuned.
+ * Type:   prose in cards reads at 15/22; headings balance; one muted grey that passes contrast on every surface.
+ * Colour: green is only ever "the target / clean", amber only "the habit". Red is kept for recording and errors.
+ * Layout: the sidebar's practice links read as navigation, not three equal buttons; more air around the day's card.
+ * Motion: one authored moment (a checked sentence lights up word by word) and quiet state feedback around it.
+ */
+:root { --muted: #929299; --good: var(--accent); --ease-out: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* the parts the browser draws */
+::selection { background: rgba(141, 184, 122, 0.34); color: var(--text); }
+html { scrollbar-color: rgba(237, 237, 237, 0.18) transparent; }
+.lessons, .panel, .overlay { scrollbar-width: thin; }
+textarea, input { caret-color: var(--accent); }
+.linklike { text-decoration-color: rgba(237, 237, 237, 0.28); }
+
+/* type */
+.panel h2, .sheet h2 { text-wrap: balance; letter-spacing: -0.01em; }
+.sheet h2 { margin: 0 0 8px; }
+.lead { margin-bottom: 20px; max-width: 62ch; text-wrap: pretty; }
+.card { font-size: 15px; line-height: 22px; }
+.card p, .card li { text-wrap: pretty; }
+.card .btn, .card .chip { font-size: 14px; }
+.card .btn.small { font-size: 13px; }
+.card li { margin-bottom: 6px; }
+.stat b, .sound-score, .score, .badge { font-variant-numeric: tabular-nums; }
+
+/* layout */
+.coach { margin-bottom: 24px; }
+.panel .sub { margin-bottom: 20px; }
+.card.today-card { margin-bottom: 20px; }
+.card h3 { margin-bottom: 10px; }
+@media (min-width: 721px) { .card { padding: 20px; } }
+.lessons h2:first-of-type { margin-top: 20px; }
+.own-btn { justify-content: flex-start; height: 40px; margin-top: 2px; padding: 0 8px; background: none; border-color: transparent; font-weight: 400; font-size: 14px; }
+.own-btn:hover { background: var(--card); border-color: transparent; }
+.own-btn .icon { color: var(--text-2); }
+.btn:hover { background: #2a2a2d; }
+.btn.primary:hover { background: #ffffff; }
+.own-btn:hover { background: var(--card); }
+
+/* colour: two meanings, used the same way everywhere */
+.phrase-item[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: none; }
+.chip.mark.good { background: var(--accent-soft); }
+.chip.mark.bad { background: var(--habit-soft); }
+.own-summary.clean { color: var(--accent); font-weight: 500; }
+.compare .btn:first-child .icon { color: var(--accent); }
+.habit-btn .icon { color: var(--habit); }
+.mode.target[aria-selected="true"] { border-color: rgba(141, 184, 122, 0.45); }
+.mode.habit[aria-selected="true"] { border-color: rgba(217, 163, 91, 0.45); }
+.sound-row.work .sound-bar i { background: var(--habit); }
+.sound-row.work .sound-state { color: var(--habit); }
+.sound-row.close .sound-bar i { background: color-mix(in oklab, var(--habit) 45%, var(--accent)); }
+.card.mistake { border-color: rgba(217, 163, 91, 0.22); }
+
+/* motion */
+.overlay { animation: veil 180ms ease-out; }
+@keyframes veil { from { opacity: 0; } }
+/* the authored moment: a checked sentence resolves word by word, in reading order */
+.word-marks .mark { animation: mark-in 340ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes mark-in { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
+/* ...and when every sound was clean, a wave of green runs through it once */
+.word-marks.all-clean .mark.good { animation: mark-in 340ms var(--ease-out) backwards, clean-wave 620ms ease-out; animation-delay: calc(var(--i, 0) * 45ms), calc(var(--i, 0) * 45ms + 420ms); }
+@keyframes clean-wave { 35% { background: rgba(141, 184, 122, 0.4); border-color: #b5d8a4; } }
+.results .result { animation: mark-in 300ms var(--ease-out) backwards; animation-delay: 220ms; }
+.sound-bar i { transform-origin: left center; animation: fill 620ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 24ms + 140ms); }
+@keyframes fill { from { transform: scaleX(0); } }
+.talk-now .talk-line.them { animation: say-in 380ms var(--ease-out); }
+@keyframes say-in { from { opacity: 0; transform: translateX(-10px); } }
+.talk-done { animation: mark-in 420ms var(--ease-out); }
+.phrase-item, .phrase-pack, .sound-row { transition: background-color 140ms var(--ease), border-color 140ms var(--ease), color 140ms var(--ease); }
+.phrase-item:hover { border-color: var(--line-strong); }
+.phrase-item[aria-current="true"]:hover { border-color: var(--accent); }
+.phrase-pack:hover { color: var(--text); }
+.phrase-pack[aria-selected="true"]:hover { color: var(--bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* keep the colour changes that carry the result; drop the movement */
+  .overlay, .word-marks .mark, .word-marks.all-clean .mark.good, .results .result, .sound-bar i, .talk-now .talk-line.them, .talk-done { animation: none; }
+}

@@ -445,6 +445,7 @@ function renderList() {
     nav.append(h("div", { class: "course-card" }, h("b", {}, "No course yet"), h("p", { class: "muted small" }, "A 3-minute voice test builds your personal course."), start));
   }
 
+  nav.append(h("h2", {}, "Practice"));
   const phrases = h("button", { class: "btn small own-btn" }, icons.listen(), "Everyday phrases");
   phrases.onclick = () => showOwnWords(true);
   nav.append(phrases);
@@ -499,7 +500,7 @@ function renderTodayCard() {
     const li = h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
     if (show) {
       // the mouth has tabs for these, but nobody reads a tab as "do this step"
-      const b = h("button", { class: "btn small step-go" }, icons.play(), done ? "Watch & hear again" : "Watch & hear");
+      const b = h("button", { class: "btn small step-go" }, icons.play(), "Watch & hear");
       b.onclick = () => {
         show();
         document.querySelector(".stage")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -549,7 +550,8 @@ function renderPanel() {
     talkNow.onclick = () => showTalk();
     const seeProgress = h("button", { class: "btn" }, "See my progress");
     seeProgress.onclick = () => openProgress();
-    panel.append(card("Day done", "today-card",
+    const kept = currentStreak(profile);
+    panel.append(card(kept > 1 ? `Day done · ${kept} days in a row` : "Day done", "today-card",
       h("p", {}, next ? `Nice work. Tomorrow: ${next.kind === "checkup" ? "a check-up voice test" : LESSONS.find((l) => l.id === next.lesson)?.title}.` : "That was the last day. Take the voice test to see your progress."),
       // the lesson is done, but ten more minutes of real sentences is where it sticks
       h("div", { class: "row" }, talkNow, seeProgress, next ? early : null)));
@@ -822,7 +824,8 @@ function renderPron(pron: HTMLElement, it: FreeItem) {
 function wordMarks(it: FreeItem, r: FreeResult): HTMLElement[] {
   return it.words.map((w, i) => {
     const v = r.words[i];
-    return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}` }, v === "good" ? icons.check() : null, w.text);
+    // --i staggers the chips in reading order: the sentence lights up word by word as it's checked
+    return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}`, style: `--i:${Math.min(i, 14)}` }, v === "good" ? icons.check() : null, w.text);
   });
 }
 
@@ -830,9 +833,15 @@ function wordMarks(it: FreeItem, r: FreeResult): HTMLElement[] {
 function renderFreeResult(ui: { marks: HTMLElement; summary: HTMLElement; findings: HTMLElement }, it: FreeItem, r: FreeResult, heard: string[], toLesson: (l: Lesson) => void) {
   ui.marks.replaceChildren(...wordMarks(it, r));
   const sure = r.good + r.habits;
+  // every judged sound clean and none unclear: the one result worth a small flourish
+  const allClean = r.findings.length > 0 && !r.habits && !r.unclear;
+  ui.marks.classList.toggle("all-clean", allClean);
+  ui.summary.classList.toggle("clean", allClean);
   ui.summary.textContent = !r.findings.length
     ? "Nothing in that could be judged. Try a longer phrase."
-    : `${r.good} of ${sure} sounds clean${r.unclear ? `, ${r.unclear} not heard clearly` : ""}.`;
+    : allClean
+      ? `All ${r.good} sounds clean.`
+      : `${r.good} of ${sure} sounds clean${r.unclear ? `, ${r.unclear} not heard clearly` : ""}.`;
   const seen = new Set<string>();
   const rows = r.findings.filter((f) => f.verdict === "habit" && !seen.has(`${f.word}|${f.habit}`) && seen.add(`${f.word}|${f.habit}`)).map((f) => {
     const l = LESSONS.find((x) => x.id === f.lesson);
@@ -1022,8 +1031,7 @@ function showOwnWords(preset = false) {
 
   o.append(
     h("div", { class: "sheet own" },
-      h("p", { class: "eyebrow" }, preset ? "Everyday phrases" : "Your own words"),
-      h("h2", {}, preset ? "Pick a phrase, then say it" : "Type anything, then say it"),
+      h("h2", {}, preset ? "Everyday phrases" : "Your own words"),
       h("p", { class: "lead" }, preset
         ? `Sentences you'll really use. Tap one to hear it, then say it: it's checked for the same ${accentInfo().name} sounds as the lessons.`
         : `Your name, a line from a meeting, a word you always trip on. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
@@ -1234,8 +1242,7 @@ function showTalk() {
 
   o.append(
     h("div", { class: "sheet own talk" },
-      h("p", { class: "eyebrow" }, "Conversations"),
-      h("h2", {}, "Answer the question"),
+      h("h2", {}, "Conversations"),
       h("p", { class: "lead" }, `A short chat, one question at a time. You hear the question, pick an answer and say it. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
       tabs, log, now, gate, actions, status, pron, marks, summary, findings,
       h("div", { class: "row" }, done_)),

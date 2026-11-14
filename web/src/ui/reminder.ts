@@ -80,7 +80,6 @@ export function showReminder(onClose: () => void) {
 
   o.append(
     h("div", { class: "sheet" },
-      h("p", { class: "eyebrow" }, "Daily reminder"),
       h("h2", {}, "Pick a time to practise"),
       h("p", { class: "lead" }, "Accent Coach adds a repeating event with an alert to your calendar, so your phone reminds you even when the app is closed."),
       h("div", { class: "row reminder-time" }, h("label", { for: "reminderTime" }, "Remind me at"), time),
