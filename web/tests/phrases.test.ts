@@ -7,7 +7,7 @@
  */
 import { readFileSync } from "node:fs";
 import { setAccent, type Accent } from "../src/content/accent";
-import { PHRASE_PACKS, phraseWords } from "../src/content/phrases";
+import { ALL_PHRASES, CONVERSATIONS, PHRASE_PACKS, phraseWords } from "../src/content/phrases";
 import { normalizeAll } from "../src/scoring/align";
 import { freeTextItem, judgeFreeText } from "../src/scoring/freeText";
 import { clipKey } from "../src/speech/clips";
@@ -21,9 +21,11 @@ function check(ok: boolean, msg: string) {
 }
 
 const VOICES: Record<Accent, string[]> = { us: ["af_heart", "am_michael"], uk: ["bf_emma", "bm_george"] };
-const texts = PHRASE_PACKS.flatMap((p) => p.phrases);
+const packed = PHRASE_PACKS.flatMap((p) => p.phrases);
+const texts = ALL_PHRASES;
 
-check(new Set(texts).size === texts.length, "no phrase appears twice");
+check(new Set(packed).size === packed.length, "no phrase appears twice");
+check(CONVERSATIONS.every((c) => c.turns.length >= 3 && c.turns.every((t) => t.replies.length >= 2)), "every conversation has at least 3 turns with a choice of replies");
 check(texts.every((t) => t.length <= 60 && /[.?!]$/.test(t) && !/[.?!]./.test(t)), "every phrase is one short sentence (one voice clip each)");
 
 for (const accent of ["us", "uk"] as Accent[]) {
@@ -69,7 +71,8 @@ setAccent("us");
 {
   const manifest: { clips: string[] } = JSON.parse(readFileSync("public/audio/manifest.json", "utf-8"));
   const have = new Set(manifest.clips);
-  const none = (["us", "uk"] as Accent[]).flatMap((a) => texts.filter((t) => !have.has(clipKey(a, "word", "normal", t))).map((t) => `${a}: ${t}`));
+  const spoken = [...texts, ...CONVERSATIONS.flatMap((c) => c.turns.map((t) => t.ask))];
+  const none = (["us", "uk"] as Accent[]).flatMap((a) => spoken.filter((t) => !have.has(clipKey(a, "word", "normal", t))).map((t) => `${a}: ${t}`));
   check(none.length === 0, `every phrase has a pre-rendered clip in both accents (run npm run voices)${none.length ? `: ${none.length} missing, e.g. ${none[0]}` : ""}`);
 }
 

@@ -6,7 +6,7 @@
 import { writeFileSync } from "node:fs";
 import { ACCENTS, setAccent, type Accent } from "../src/content/accent";
 import { LESSONS, LEXICON } from "../src/content/lessons";
-import { PHRASE_PACKS } from "../src/content/phrases";
+import { ALL_PHRASES, CONVERSATIONS } from "../src/content/phrases";
 import { sentenceText } from "../src/content/sentences";
 import { LESSON_CHECKS } from "../src/scoring/checks";
 import { clipKey, splitSentences, type Speed } from "../src/speech/clips";
@@ -36,7 +36,9 @@ for (const accent of ["us", "uk"] as Accent[]) {
     if (s) add(accent, "word", "normal", s);
   }
   // the everyday phrases, the same way
-  for (const pack of PHRASE_PACKS) for (const p of pack.phrases) add(accent, "word", "normal", p);
+  for (const p of ALL_PHRASES) add(accent, "word", "normal", p);
+  // and the coach's side of each conversation
+  for (const c of CONVERSATIONS) for (const t of c.turns) add(accent, "word", "normal", t.ask);
 
   for (const sym of ["θ", "t"]) say(accent, lines.good(sym));
   for (const check of Object.values(LESSON_CHECKS))

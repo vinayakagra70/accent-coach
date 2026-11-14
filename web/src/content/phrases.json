@@ -44,7 +44,7 @@
       "I am calling about my order.",
       "Can I call you back in ten minutes?",
       "Could you speak a little slower, please?",
-      "Thanks for your help, goodbye."
+      "Thanks for your help, have a good day."
     ]
   },
   {
@@ -57,6 +57,57 @@
       "How much is this one?",
       "Where is the nearest station?",
       "Can I pay by card?"
+    ]
+  },
+  {
+    "id": "smalltalk",
+    "title": "Small talk",
+    "phrases": [
+      "How was your weekend?",
+      "The weather is lovely today.",
+      "Have you watched anything good lately?",
+      "I went hiking with my family.",
+      "What are your plans for the holidays?",
+      "That sounds like a lot of fun."
+    ]
+  },
+  {
+    "id": "present",
+    "title": "Presentations",
+    "phrases": [
+      "Thank you all for coming.",
+      "Today I will talk about three things.",
+      "Let me start with the big picture.",
+      "You can see the results on this slide.",
+      "Sales went up by thirty percent.",
+      "I am happy to take your questions."
+    ]
+  },
+  {
+    "id": "service",
+    "title": "Helping a customer",
+    "phrases": [
+      "Hello, how can I help you today?",
+      "May I have your order number, please?",
+      "Let me check that for you.",
+      "I am very sorry for the trouble.",
+      "Your refund will reach you in five days.",
+      "Is there anything else I can help with?"
+    ]
+  },
+  {
+    "id": "twisters",
+    "title": "Tongue twisters",
+    "phrases": [
+      "Three thin thieves thought a thousand thoughts.",
+      "We wove a very warm vest in the west.",
+      "Vivid waves washed over the wet village.",
+      "Zebras zip through the breezy zoo.",
+      "Fifty fine fish found a fresh pond.",
+      "This thing and that thing are both theirs.",
+      "Peter picked a pack of perfect peppers.",
+      "Victor wants a very wide window.",
+      "The cat sat back and had a nap."
     ]
   }
 ]

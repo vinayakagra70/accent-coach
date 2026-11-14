@@ -11,3 +11,4 @@ certs/
 web/dist-phone/
 accent-coach-phone.zip
 data/space-build/
+web/.playwright-cli/

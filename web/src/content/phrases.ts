@@ -13,14 +13,29 @@ import type { Accent } from "./accent";
 import type { SpokenWord } from "../scoring/freeText";
 import packs from "./phrases.json";
 import ipa from "./phrases-ipa.json";
+import talks from "./conversations.json";
 
 export interface PhrasePack {
   id: string;
   title: string;
   phrases: string[];
+  /** A line shown above the phrases (the "For you" pack says what it was picked for). */
+  note?: string;
 }
 
 export const PHRASE_PACKS: PhrasePack[] = packs;
+
+/** A short exchange: the coach asks, the learner answers with one of the replies. */
+export interface Conversation {
+  id: string;
+  title: string;
+  turns: { ask: string; replies: string[] }[];
+}
+
+export const CONVERSATIONS: Conversation[] = talks;
+
+/** Everything the learner can be asked to say: the phrases, then the replies that aren't phrases already. */
+export const ALL_PHRASES: string[] = [...new Set([...PHRASE_PACKS.flatMap((p) => p.phrases), ...CONVERSATIONS.flatMap((c) => c.turns.flatMap((t) => t.replies))])];
 
 const IPA = ipa as Record<Accent, Record<string, SpokenWord[]>>;
 

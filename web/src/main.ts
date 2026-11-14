@@ -25,19 +25,20 @@ import * as progress from "./progress";
 import { align, judge, normalizeAll, type CheckResult, type Verdict } from "./scoring/align";
 import { LESSON_CHECKS } from "./scoring/checks";
 import { judgeItem } from "./scoring/report";
-import { freeTextItem, judgeFreeText, stressParts, type FreeItem } from "./scoring/freeText";
+import { freeTextItem, judgeFreeText, stressParts, type FreeItem, type FreeResult } from "./scoring/freeText";
 import type { TestItem } from "./content/assessment";
 import { sentenceItem, sentenceText } from "./content/sentences";
-import { PHRASE_PACKS, phraseWords } from "./content/phrases";
+import { CONVERSATIONS, PHRASE_PACKS, phraseWords, type PhrasePack } from "./content/phrases";
 import { REVIEW_CLEAN, dueReviews, recordAttempt, type ReviewItem } from "./review";
 import { $, h } from "./ui/dom";
 import { icons, ipa } from "./ui/icons";
 import { mountEngineGate } from "./ui/engineGate";
-import { lines } from "./speech/lines";
+import { lines, shortTitle } from "./speech/lines";
 import { coachSays, coachVoiceOn, mountCoach, react, setCoachVoice, stopTalking } from "./coach";
 import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
+import { showProgress } from "./ui/progressPage";
 import { friendlyTime } from "./reminder";
 import { reminderTime, showReminder } from "./ui/reminder";
 
@@ -404,11 +405,17 @@ function renderList() {
   const phrases = h("button", { class: "btn small own-btn" }, icons.listen(), "Everyday phrases");
   phrases.onclick = () => showOwnWords(true);
   nav.append(phrases);
+  const talks = h("button", { class: "btn small own-btn" }, icons.next(), "Conversations");
+  talks.onclick = () => showTalk();
+  nav.append(talks);
   if (api.CAN_PHONEMIZE) {
     const own = h("button", { class: "btn small own-btn" }, icons.mic(), "Try your own words");
     own.onclick = () => showOwnWords();
     nav.append(own);
   }
+  const prog = h("button", { class: "btn small own-btn" }, icons.check(), "My progress");
+  prog.onclick = () => openProgress();
+  nav.append(prog);
 
   const todayId = todaysLessonId();
   const courseIds =new Set(profile?.course.filter((d) => d.kind === "lesson").map((d) => d.lesson));
@@ -494,9 +501,14 @@ function renderPanel() {
     const next = profile.course[profile.day];
     const early = h("button", { class: "btn" }, "Start it now anyway");
     early.onclick = () => goToday();
+    const talkNow = h("button", { class: "btn primary" }, "Try a conversation");
+    talkNow.onclick = () => showTalk();
+    const seeProgress = h("button", { class: "btn" }, "See my progress");
+    seeProgress.onclick = () => openProgress();
     panel.append(card("Day done", "today-card",
       h("p", {}, next ? `Nice work. Tomorrow: ${next.kind === "checkup" ? "a check-up voice test" : LESSONS.find((l) => l.id === next.lesson)?.title}.` : "That was the last day. Take the voice test to see your progress."),
-      next ? h("div", { class: "row" }, early) : null));
+      // the lesson is done, but ten more minutes of real sentences is where it sticks
+      h("div", { class: "row" }, talkNow, seeProgress, next ? early : null)));
   }
 
   todaySlot = h("div");
@@ -751,6 +763,62 @@ function shadowing(text: string | (() => string)) {
 
 // ------------------------------------------------------------------ your own words
 
+/** How a sentence is said, word by word, with the stressed vowel of each longer word highlighted. */
+function renderPron(pron: HTMLElement, it: FreeItem) {
+  const anyStress = it.words.some((w) => stressParts(w.ipa).some((p) => p.stressed));
+  pron.replaceChildren(
+    h("div", { class: "own-pron-words" }, ...it.words.map((w) =>
+      h("span", { class: "own-pron-word" }, h("span", {}, w.text),
+        h("span", { class: "ipa-tag" }, "/", ...stressParts(w.ipa).map((p) => (p.stressed ? h("b", { class: "stress" }, p.text) : p.text)), "/")))));
+  if (anyStress) pron.append(h("p", { class: "note" }, "The highlighted sound carries the stress: say that syllable longer and stronger, and let the others go quick and soft."));
+}
+
+/** One chip per word of a checked sentence: green when clean, red for a habit. */
+function wordMarks(it: FreeItem, r: FreeResult): HTMLElement[] {
+  return it.words.map((w, i) => {
+    const v = r.words[i];
+    return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}` }, v === "good" ? icons.check() : null, w.text);
+  });
+}
+
+/** A checked sentence on screen: a mark per word, a one-line summary, and each habit with the way to the lesson that fixes it. */
+function renderFreeResult(ui: { marks: HTMLElement; summary: HTMLElement; findings: HTMLElement }, it: FreeItem, r: FreeResult, heard: string[], toLesson: (l: Lesson) => void) {
+  ui.marks.replaceChildren(...wordMarks(it, r));
+  const sure = r.good + r.habits;
+  ui.summary.textContent = !r.findings.length
+    ? "Nothing in that could be judged. Try a longer phrase."
+    : `${r.good} of ${sure} sounds clean${r.unclear ? `, ${r.unclear} not heard clearly` : ""}.`;
+  const seen = new Set<string>();
+  const rows = r.findings.filter((f) => f.verdict === "habit" && !seen.has(`${f.word}|${f.habit}`) && seen.add(`${f.word}|${f.habit}`)).map((f) => {
+    const l = LESSONS.find((x) => x.id === f.lesson);
+    const go = h("button", { class: "btn small" }, `Practise: ${l?.title ?? f.lesson}`);
+    go.onclick = () => {
+      if (l) toLesson(l);
+    };
+    return h("div", { class: "result bad" }, h("span", {}, `"${it.words[f.word].text}": you said ${f.habit}.`), h("span", { class: "own-fix" }, h("span", { class: "ipa-tag" }, `/${f.heard}/ for /${f.sym}/`), go));
+  });
+  ui.findings.replaceChildren(...rows, h("p", { class: "ipa-tag own-heard" }, `heard /${heard.join("")}/`));
+}
+
+/** The everyday phrases that hold the sounds this learner is working on now, most useful first. */
+function phrasesForYou(clean: Set<string>): PhrasePack | null {
+  if (!profile) return null;
+  const weak = profile.course.slice(profile.day).filter((d) => d.kind === "lesson" && d.lesson).slice(0, 4).map((d) => d.lesson!);
+  if (!weak.length) return null;
+  const weight = new Map(weak.map((id, i) => [id, weak.length - i]));
+  const ranked = PHRASE_PACKS.flatMap((p) => p.phrases)
+    .map((t) => {
+      const words = phraseWords(t, accent());
+      const hits = words ? freeTextItem(words, accent()).checks.reduce((n, c) => n + (weight.get(c.lesson) ?? 0), 0) : 0;
+      return { t, score: clean.has(`${accent()}|${t}`) ? hits / 4 : hits };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  if (ranked.length < 3) return null;
+  const names = weak.slice(0, 3).map((id) => shortTitle(LESSONS.find((l) => l.id === id)?.title ?? "")).filter(Boolean);
+  return { id: "foryou", title: "For you", phrases: ranked.slice(0, 6).map((x) => x.t), note: `Picked for the sounds you're working on: ${names.join(", ")}.` };
+}
+
 /**
  * Say a sentence and get it checked with the same rules as the lessons. The
  * sentence is either typed (the laptop works out how it's pronounced) or, with
@@ -771,15 +839,7 @@ function showOwnWords(preset = false) {
   const pron = h("div", { class: "own-pron" });
   const marks = h("div", { class: "chips word-marks" });
   const summary = h("p", { class: "own-summary" });
-  /** How it's said, word by word, with the stressed vowel of each longer word highlighted. */
-  const showPron = (it: FreeItem) => {
-    const anyStress = it.words.some((w) => stressParts(w.ipa).some((p) => p.stressed));
-    pron.replaceChildren(
-      h("div", { class: "own-pron-words" }, ...it.words.map((w) =>
-        h("span", { class: "own-pron-word" }, h("span", {}, w.text),
-          h("span", { class: "ipa-tag" }, "/", ...stressParts(w.ipa).map((p) => (p.stressed ? h("b", { class: "stress" }, p.text) : p.text)), "/")))));
-    if (anyStress) pron.append(h("p", { class: "note" }, "The highlighted sound carries the stress: say that syllable longer and stronger, and let the others go quick and soft."));
-  };
+  const showPron = (it: FreeItem) => renderPron(pron, it);
   const findings = h("div", { class: "results" });
   const gate = h("div");
   const stopGate = mountEngineGate(gate, (ready) => {
@@ -800,14 +860,19 @@ function showOwnWords(preset = false) {
   }
   const packOf = (t: string) => PHRASE_PACKS.find((p) => p.phrases.includes(t))?.id ?? PHRASE_PACKS[0].id;
   const picker = h("div", { class: "phrase-picker" });
+  let shownPack = "";
+  const forYou = preset ? phrasesForYou(cleanSet) : null;
+  const packs = forYou ? [forYou, ...PHRASE_PACKS] : PHRASE_PACKS;
   const renderPicker = (packId: string) => {
-    const pack = PHRASE_PACKS.find((p) => p.id === packId) ?? PHRASE_PACKS[0];
+    const pack = packs.find((p) => p.id === packId) ?? packs[0];
+    shownPack = pack.id;
     picker.replaceChildren(
-      h("div", { class: "phrase-packs", role: "tablist", "aria-label": "Situation" }, ...PHRASE_PACKS.map((p) => {
+      h("div", { class: "phrase-packs", role: "tablist", "aria-label": "Situation" }, ...packs.map((p) => {
         const b = h("button", { class: "phrase-pack", role: "tab", "aria-selected": String(p.id === pack.id) }, p.title);
         b.onclick = () => renderPicker(p.id);
         return b;
       })),
+      ...(pack.note ? [h("p", { class: "note phrase-note" }, pack.note)] : []),
       h("div", { class: "phrase-list" }, ...pack.phrases.map((t) => {
         const b = h("button", { class: "phrase-item", "aria-current": String(t === current) }, h("span", {}, t), cleanSet.has(`${accent()}|${t}`) ? icons.check() : null);
         b.onclick = () => {
@@ -890,10 +955,10 @@ function showOwnWords(preset = false) {
     const heard = await hear(sayBtn, status, "Listening… say it, then pause.", { maxSeconds: 14, silenceToStop: 1.2 }, shadow.keep);
     if (!heard || it !== item) return; // the text was edited while recording
     const r = judgeFreeText(it, heard);
-    marks.replaceChildren(...it.words.map((w, i) => {
-      const v = r.words[i];
-      return h("span", { class: `chip static mark ${v === "good" ? "good" : v === "habit" ? "bad" : v === "off" ? "mid" : "plain"}` }, v === "good" ? icons.check() : null, w.text);
-    }));
+    renderFreeResult({ marks, summary, findings }, it, r, heard, (l) => {
+      close();
+      openLesson(l);
+    });
     if (preset && r.findings.length && !r.habits && !r.unclear) {
       cleanSet.add(`${accent()}|${current}`);
       try {
@@ -901,25 +966,8 @@ function showOwnWords(preset = false) {
       } catch {
         /* ignore */
       }
-      renderPicker(packOf(current));
+      renderPicker(shownPack);
     }
-    const sure = r.good + r.habits;
-    summary.textContent = !r.findings.length
-      ? "Nothing in that could be judged. Try a longer phrase."
-      : `${r.good} of ${sure} sounds clean${r.unclear ? `, ${r.unclear} not heard clearly` : ""}.`;
-
-    // one row per word and habit, with the way to the lesson that fixes it
-    const seen = new Set<string>();
-    const rows = r.findings.filter((f) => f.verdict === "habit" && !seen.has(`${f.word}|${f.habit}`) && seen.add(`${f.word}|${f.habit}`)).map((f) => {
-      const l = LESSONS.find((x) => x.id === f.lesson);
-      const go = h("button", { class: "btn small" }, `Practise: ${l?.title ?? f.lesson}`);
-      go.onclick = () => {
-        close();
-        if (l) openLesson(l);
-      };
-      return h("div", { class: "result bad" }, h("span", {}, `"${it.words[f.word].text}": you said ${f.habit}.`), h("span", { class: "own-fix" }, h("span", { class: "ipa-tag" }, `/${f.heard}/ for /${f.sym}/`), go));
-    });
-    findings.replaceChildren(...rows, h("p", { class: "ipa-tag own-heard" }, `heard /${heard.join("")}/`));
     status.textContent = r.habits ? "The green words were clean. Press Hear both to compare, or Say it to go again." : "Press Hear both to compare your rhythm with the model, or Say it to go again.";
     const first = r.findings.find((f) => f.verdict === "habit");
     speakFeedback(r.habits ? "habit" : r.unclear && !r.good ? "off" : "good", r.findings[0]?.sym ?? "", first?.habit);
@@ -945,6 +993,209 @@ function showOwnWords(preset = false) {
     renderPicker(packOf(current));
     void prepare();
   } else input.focus();
+}
+
+/** Stored lists of `accent|text` keys (phrases said clean, conversations finished): how many are for this accent. */
+function countStored(key: string): number {
+  try {
+    return (JSON.parse(localStorage.getItem(key) ?? "[]") as string[]).filter((k) => k.startsWith(`${accent()}|`)).length;
+  } catch {
+    return 0;
+  }
+}
+
+function openProgress() {
+  showProgress({
+    profile,
+    accentName: accentInfo().name,
+    mastery: progress.mastery,
+    phrasesClean: countStored("accentCoach.phrasesClean"),
+    phrasesTotal: PHRASE_PACKS.reduce((n, p) => n + p.phrases.length, 0),
+    talksDone: countStored(TALKS_DONE),
+    talksTotal: CONVERSATIONS.length,
+    reviewWords: Object.keys(profile?.review ?? {}).length,
+    onLesson: (id) => {
+      const l = LESSONS.find((x) => x.id === id);
+      if (l) openLesson(l);
+      toTop();
+    },
+    onTest: () => startTest(!!profile?.assessment),
+  });
+}
+
+// ------------------------------------------------------------------ conversations
+
+const TALKS_DONE = "accentCoach.talksDone";
+
+/**
+ * A short conversation: the model voice asks, the learner picks one of the
+ * replies and says it, and it's checked like an everyday phrase. Answering a
+ * question is closer to real speaking than repeating a sentence.
+ */
+function showTalk() {
+  const o = $("overlay");
+  o.hidden = false;
+  o.replaceChildren();
+
+  let done = new Set<string>();
+  try {
+    done = new Set(JSON.parse(localStorage.getItem(TALKS_DONE) ?? "[]") as string[]);
+  } catch {
+    /* ignore */
+  }
+  let talk = CONVERSATIONS.find((c) => !done.has(`${accent()}|${c.id}`)) ?? CONVERSATIONS[0];
+  let turn = 0;
+  let reply = "";
+  let item: FreeItem | null = null;
+  let last: FreeResult | null = null;
+  let good = 0;
+  let sure = 0;
+
+  const tabs = h("div", { class: "phrase-packs", role: "tablist", "aria-label": "Conversation" });
+  const log = h("div", { class: "talk-log" });
+  const now = h("div", { class: "talk-now" });
+  const status = h("p", { class: "note", role: "status" });
+  const pron = h("div", { class: "own-pron" });
+  const marks = h("div", { class: "chips word-marks" });
+  const summary = h("p", { class: "own-summary" });
+  const findings = h("div", { class: "results" });
+  const gate = h("div");
+  const stopGate = mountEngineGate(gate, (ready) => {
+    engineReady = ready;
+    gate.hidden = ready;
+  });
+  const shadow = shadowing(() => reply);
+
+  const close = () => {
+    stopGate();
+    stopTalking();
+    shadow.reset();
+    o.hidden = true;
+    o.replaceChildren();
+  };
+  const clear = () => {
+    marks.replaceChildren();
+    findings.replaceChildren();
+    summary.textContent = "";
+    status.textContent = "";
+    shadow.reset();
+    last = null;
+    next.disabled = true;
+  };
+  const pick = (t: string) => {
+    reply = t;
+    const words = phraseWords(t, accent());
+    item = words ? freeTextItem(words, accent()) : null;
+    if (item) renderPron(pron, item);
+    clear();
+    now.querySelectorAll<HTMLElement>(".phrase-item").forEach((b) => b.setAttribute("aria-current", String(b.dataset.text === t)));
+  };
+  const bubble = (who: "them" | "you", ...body: (Node | string | null)[]) => h("div", { class: `talk-line ${who}` }, h("span", { class: "talk-who" }, who === "them" ? "Nova" : "You"), h("div", { class: "talk-text" }, ...body));
+
+  const renderTabs = () => {
+    tabs.replaceChildren(...CONVERSATIONS.map((c) => {
+      const b = h("button", { class: "phrase-pack", role: "tab", "aria-selected": String(c.id === talk.id) }, c.title, done.has(`${accent()}|${c.id}`) ? icons.check(12) : null);
+      b.onclick = () => start(c.id);
+      return b;
+    }));
+  };
+  const showTurn = (speakIt: boolean) => {
+    const t = talk.turns[turn];
+    const again = h("button", { class: "btn small" }, icons.listen(), "Hear the question");
+    again.onclick = () => void speak(t.ask, 0.9);
+    now.replaceChildren(
+      bubble("them", t.ask),
+      h("div", { class: "row" }, again),
+      h("p", { class: "note" }, `Question ${turn + 1} of ${talk.turns.length}. Pick your answer, then say it.`),
+      h("div", { class: "phrase-list" }, ...t.replies.map((r) => {
+        const b = h("button", { class: "phrase-item", "data-text": r }, h("span", {}, r));
+        b.onclick = () => {
+          pick(r);
+          void speak(r, 0.85);
+        };
+        return b;
+      })));
+    pick(t.replies[0]);
+    actions.hidden = false;
+    label(next, null, turn + 1 < talk.turns.length ? "Next question" : "Finish");
+    if (speakIt) void speak(t.ask, 0.9);
+  };
+  const start = (id: string) => {
+    talk = CONVERSATIONS.find((c) => c.id === id) ?? CONVERSATIONS[0];
+    turn = 0;
+    good = 0;
+    sure = 0;
+    log.replaceChildren();
+    renderTabs();
+    showTurn(true);
+  };
+  const finish = () => {
+    done.add(`${accent()}|${talk.id}`);
+    try {
+      localStorage.setItem(TALKS_DONE, JSON.stringify([...done]));
+    } catch {
+      /* ignore */
+    }
+    renderTabs();
+    actions.hidden = true;
+    pron.replaceChildren();
+    clear();
+    const again = h("button", { class: "btn" }, "Do it again");
+    again.onclick = () => start(talk.id);
+    const other = CONVERSATIONS.find((c) => !done.has(`${accent()}|${c.id}`));
+    const more = other ? h("button", { class: "btn primary" }, `Next: ${other.title}`) : null;
+    if (more && other) more.onclick = () => start(other.id);
+    now.replaceChildren(
+      h("div", { class: "talk-done" },
+        h("b", {}, "Conversation done"),
+        h("p", {}, sure ? `${good} of ${sure} sounds clean across ${talk.turns.length} answers.${good === sure ? " Not a single habit." : ""}` : "Nothing could be judged this time: check the microphone and try again."),
+        h("div", { class: "row" }, more, again)));
+    react(good === sure && sure ? "happy" : "curious");
+  };
+
+  const listen = h("button", { class: "btn" }, icons.listen(), "Hear my answer");
+  listen.onclick = () => void speak(reply, 0.85);
+  const sayBtn = h("button", { class: "btn primary say" }, icons.mic(), "Say it") as HTMLButtonElement;
+  sayBtn.onclick = async () => {
+    const it = item;
+    if (!it) return;
+    const heard = await hear(sayBtn, status, "Listening… say your answer, then pause.", { maxSeconds: 14, silenceToStop: 1.2 }, shadow.keep);
+    if (!heard || it !== item) return; // another answer was picked while recording
+    const r = judgeFreeText(it, heard);
+    last = r;
+    renderFreeResult({ marks, summary, findings }, it, r, heard, (l) => {
+      close();
+      openLesson(l);
+    });
+    next.disabled = false;
+    status.textContent = r.habits ? "Say it again to clean it up, or move on." : "Good. Move on when you're ready.";
+    const first = r.findings.find((f) => f.verdict === "habit");
+    speakFeedback(r.habits ? "habit" : r.unclear && !r.good ? "off" : "good", r.findings[0]?.sym ?? "", first?.habit);
+  };
+  const next = h("button", { class: "btn", disabled: "" }, "Next question") as HTMLButtonElement;
+  next.onclick = () => {
+    if (!item || !last) return;
+    good += last.good;
+    sure += last.good + last.habits;
+    log.append(bubble("them", talk.turns[turn].ask), bubble("you", h("div", { class: "chips word-marks" }, ...wordMarks(item, last))));
+    turn++;
+    if (turn < talk.turns.length) showTurn(true);
+    else finish();
+    log.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+  const actions = h("div", { class: "row" }, listen, sayBtn, shadow.both, next);
+  const done_ = h("button", { class: "linklike" }, "Close");
+  done_.onclick = close;
+
+  o.append(
+    h("div", { class: "sheet own talk" },
+      h("p", { class: "eyebrow" }, "Conversations"),
+      h("h2", {}, "Answer the question"),
+      h("p", { class: "lead" }, `A short chat, one question at a time. You hear the question, pick an answer and say it. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
+      tabs, log, now, gate, actions, status, pron, marks, summary, findings,
+      h("div", { class: "row" }, done_)),
+  );
+  start(talk.id);
 }
 
 /** One word's sounds judged against a lesson's checks, boiled down to a single verdict. */

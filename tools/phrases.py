@@ -1,8 +1,9 @@
 """The everyday phrases (web/src/content/phrases.json): how each is pronounced, and what the speech model hears.
 
     .venv\\Scripts\\python.exe -m tools.phrases            write web/src/content/phrases-ipa.json
-    .venv\\Scripts\\python.exe -m tools.phrases --heard    also say each phrase with native Kokoro voices,
+    .venv\\Scripts\\python.exe -m tools.phrases --heard    also say each new phrase with native Kokoro voices,
                                                          and write web/tests/fixtures/phrases-heard.json
+                                                         (add --all to say every phrase again)
 
 The hosted phone build has no server to ask how a sentence is pronounced, so the
 pronunciations are worked out here and shipped with the app. Run this after
@@ -18,6 +19,7 @@ from server.phonemize import Phonemizer
 
 ROOT = Path(__file__).resolve().parent.parent
 PHRASES = ROOT / "web" / "src" / "content" / "phrases.json"
+TALKS = ROOT / "web" / "src" / "content" / "conversations.json"
 IPA = ROOT / "web" / "src" / "content" / "phrases-ipa.json"
 HEARD = ROOT / "web" / "tests" / "fixtures" / "phrases-heard.json"
 
@@ -27,6 +29,10 @@ VOICES = {"us": ["af_heart", "am_michael"], "uk": ["bf_emma", "bm_george"]}
 
 def main() -> None:
     texts = [p for pack in json.loads(PHRASES.read_text(encoding="utf-8")) for p in pack["phrases"]]
+    # the learner's lines in the conversations are checked the same way
+    for talk in json.loads(TALKS.read_text(encoding="utf-8")):
+        for turn in talk["turns"]:
+            texts += [r for r in turn["replies"] if r not in texts]
     ph = Phonemizer()
     ipa = {accent: {t: ph.words(t, lang) for t in texts} for accent, lang in LANG.items()}
     IPA.write_text(json.dumps(ipa, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -43,10 +49,12 @@ def main() -> None:
     rec = PhonemeRecognizer()
     rec._load()
     assert rec.ready, rec.error
+    old = json.loads(HEARD.read_text(encoding="utf-8")) if HEARD.exists() and "--all" not in sys.argv else {}
     heard: dict[str, dict[str, list[str]]] = {}
     for accent, voices in VOICES.items():
         for voice in voices:
-            heard[f"{accent}_{voice}"] = {t: rec.recognize(read_wav(tts.speak(t, voice, 0.95, LANG[accent]))).phonemes for t in texts}
+            known = old.get(f"{accent}_{voice}", {})
+            heard[f"{accent}_{voice}"] = {t: known.get(t) or rec.recognize(read_wav(tts.speak(t, voice, 0.95, LANG[accent]))).phonemes for t in texts}
             print(accent, voice, "done", flush=True)
     HEARD.write_text(json.dumps(heard, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"-> {HEARD.relative_to(ROOT)}")

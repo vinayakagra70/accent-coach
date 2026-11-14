@@ -145,6 +145,9 @@ function lessonFor(sym: string, prev: string | undefined, next: string | undefin
   // The vowel of "here", "years", "nearest" sits between EE and IH, and the model
   // writes either for a native voice (found with the everyday phrases, 2026-11-14).
   if ((sym === "i" || sym === "ɪ") && (next === "ɹ" || next === "ə")) return null;
+  // Americans raise the vowel of "thank", "bank", "language" toward AY before NG, and the model
+  // then writes it as the vowel of "bed" for a native voice (found with the phrases, 2026-11-14).
+  if (sym === "æ" && next === "ŋ") return null;
   // the most telling lesson that knows this sound
   const ids = Object.keys(LESSON_CHECKS).filter(scored).sort((a, b) => LESSON_CHECKS[b].impact - LESSON_CHECKS[a].impact);
   return ids[0] ?? null;

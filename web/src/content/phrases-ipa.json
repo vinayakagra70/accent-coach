@@ -618,7 +618,7 @@
     "ipa": "plˈiːz"
    }
   ],
-  "Thanks for your help, goodbye.": [
+  "Thanks for your help, have a good day.": [
    {
     "text": "Thanks",
     "ipa": "θˈæŋks"
@@ -636,8 +636,20 @@
     "ipa": "hˈɛlp"
    },
    {
-    "text": "goodbye",
-    "ipa": "ɡʊdbˈaɪ"
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "day",
+    "ipa": "dˈeɪ"
    }
   ],
   "A table for two, please.": [
@@ -782,6 +794,1310 @@
    {
     "text": "card",
     "ipa": "kˈɑːɹd"
+   }
+  ],
+  "How was your weekend?": [
+   {
+    "text": "How",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "was",
+    "ipa": "wʌz"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "weekend",
+    "ipa": "wˈiːkɛnd"
+   }
+  ],
+  "The weather is lovely today.": [
+   {
+    "text": "The",
+    "ipa": "ðə"
+   },
+   {
+    "text": "weather",
+    "ipa": "wˈɛðɚɹ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "lovely",
+    "ipa": "lˈʌvli"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "Have you watched anything good lately?": [
+   {
+    "text": "Have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "watched",
+    "ipa": "wˈɑːtʃt"
+   },
+   {
+    "text": "anything",
+    "ipa": "ˈɛnɪθˌɪŋ"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "lately",
+    "ipa": "lˈeɪtli"
+   }
+  ],
+  "I went hiking with my family.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "went",
+    "ipa": "wɛnt"
+   },
+   {
+    "text": "hiking",
+    "ipa": "hˈaɪkɪŋ"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "family",
+    "ipa": "fˈæmɪli"
+   }
+  ],
+  "What are your plans for the holidays?": [
+   {
+    "text": "What",
+    "ipa": "wˌʌt"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑːɹ"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "plans",
+    "ipa": "plˈænz"
+   },
+   {
+    "text": "for the",
+    "ipa": "fɚðə"
+   },
+   {
+    "text": "holidays",
+    "ipa": "hˈɑːlɪdˌeɪz"
+   }
+  ],
+  "That sounds like a lot of fun.": [
+   {
+    "text": "That",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "sounds",
+    "ipa": "sˈaʊndz"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "lot",
+    "ipa": "lˈɑːt"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "fun",
+    "ipa": "fˈʌn"
+   }
+  ],
+  "Thank you all for coming.": [
+   {
+    "text": "Thank",
+    "ipa": "θˈæŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "all",
+    "ipa": "ˈɔːl"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "coming",
+    "ipa": "kˈʌmɪŋ"
+   }
+  ],
+  "Today I will talk about three things.": [
+   {
+    "text": "Today",
+    "ipa": "tədˈeɪ"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "talk",
+    "ipa": "tˈɔːk"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "things",
+    "ipa": "θˈɪŋz"
+   }
+  ],
+  "Let me start with the big picture.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "start",
+    "ipa": "stˈɑːɹt"
+   },
+   {
+    "text": "with the",
+    "ipa": "wɪððə"
+   },
+   {
+    "text": "big",
+    "ipa": "bˈɪɡ"
+   },
+   {
+    "text": "picture",
+    "ipa": "pˈɪktʃɚ"
+   }
+  ],
+  "You can see the results on this slide.": [
+   {
+    "text": "You",
+    "ipa": "juː"
+   },
+   {
+    "text": "can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "see",
+    "ipa": "sˈiː"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "results",
+    "ipa": "ɹɪzˈʌlts"
+   },
+   {
+    "text": "on",
+    "ipa": "ˌɔn"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "slide",
+    "ipa": "slˈaɪd"
+   }
+  ],
+  "Sales went up by thirty percent.": [
+   {
+    "text": "Sales",
+    "ipa": "sˈeɪlz"
+   },
+   {
+    "text": "went",
+    "ipa": "wɛnt"
+   },
+   {
+    "text": "up",
+    "ipa": "ˌʌp"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "thirty",
+    "ipa": "θˈɜːɾi"
+   },
+   {
+    "text": "percent",
+    "ipa": "pɚsˈɛnt"
+   }
+  ],
+  "I am happy to take your questions.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "happy",
+    "ipa": "hˈæpi"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "take",
+    "ipa": "tˈeɪk"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "questions",
+    "ipa": "kwˈɛstʃənz"
+   }
+  ],
+  "Hello, how can I help you today?": [
+   {
+    "text": "Hello",
+    "ipa": "həlˈoʊ"
+   },
+   {
+    "text": "how",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "May I have your order number, please?": [
+   {
+    "text": "May",
+    "ipa": "mˈeɪ"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "order",
+    "ipa": "ˈɔːɹdɚ"
+   },
+   {
+    "text": "number",
+    "ipa": "nˈʌmbɚ"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Let me check that for you.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "check",
+    "ipa": "tʃˈɛk"
+   },
+   {
+    "text": "that",
+    "ipa": "ðˈæt"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "I am very sorry for the trouble.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "sorry",
+    "ipa": "sˈɑːɹi"
+   },
+   {
+    "text": "for the",
+    "ipa": "fɚðə"
+   },
+   {
+    "text": "trouble",
+    "ipa": "tɹˈʌbəl"
+   }
+  ],
+  "Your refund will reach you in five days.": [
+   {
+    "text": "Your",
+    "ipa": "jʊɹ"
+   },
+   {
+    "text": "refund",
+    "ipa": "ɹˈiːfʌnd"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "reach",
+    "ipa": "ɹˈiːtʃ"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "five",
+    "ipa": "fˈaɪv"
+   },
+   {
+    "text": "days",
+    "ipa": "dˈeɪz"
+   }
+  ],
+  "Is there anything else I can help with?": [
+   {
+    "text": "Is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "there",
+    "ipa": "ðɛɹ"
+   },
+   {
+    "text": "anything",
+    "ipa": "ˈɛnɪθˌɪŋ"
+   },
+   {
+    "text": "else",
+    "ipa": "ˈɛls"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   }
+  ],
+  "Three thin thieves thought a thousand thoughts.": [
+   {
+    "text": "Three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "thin",
+    "ipa": "θˈɪn"
+   },
+   {
+    "text": "thieves",
+    "ipa": "θˈiːvz"
+   },
+   {
+    "text": "thought",
+    "ipa": "θˈɔːt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "thousand",
+    "ipa": "θˈaʊzənd"
+   },
+   {
+    "text": "thoughts",
+    "ipa": "θˈɔːts"
+   }
+  ],
+  "We wove a very warm vest in the west.": [
+   {
+    "text": "We",
+    "ipa": "wiː"
+   },
+   {
+    "text": "wove",
+    "ipa": "wˈoʊv"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "warm",
+    "ipa": "wˈɔːɹm"
+   },
+   {
+    "text": "vest",
+    "ipa": "vˈɛst"
+   },
+   {
+    "text": "in the",
+    "ipa": "ɪnðə"
+   },
+   {
+    "text": "west",
+    "ipa": "wˈɛst"
+   }
+  ],
+  "Vivid waves washed over the wet village.": [
+   {
+    "text": "Vivid",
+    "ipa": "vˈɪvɪd"
+   },
+   {
+    "text": "waves",
+    "ipa": "wˈeɪvz"
+   },
+   {
+    "text": "washed",
+    "ipa": "wˈɑːʃt"
+   },
+   {
+    "text": "over",
+    "ipa": "ˌoʊvɚ"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "wet",
+    "ipa": "wˈɛt"
+   },
+   {
+    "text": "village",
+    "ipa": "vˈɪlɪdʒ"
+   }
+  ],
+  "Zebras zip through the breezy zoo.": [
+   {
+    "text": "Zebras",
+    "ipa": "zˈiːbɹəz"
+   },
+   {
+    "text": "zip",
+    "ipa": "zˈɪp"
+   },
+   {
+    "text": "through",
+    "ipa": "θɹuː"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "breezy",
+    "ipa": "bɹˈiːzi"
+   },
+   {
+    "text": "zoo",
+    "ipa": "zˈuː"
+   }
+  ],
+  "Fifty fine fish found a fresh pond.": [
+   {
+    "text": "Fifty",
+    "ipa": "fˈɪfti"
+   },
+   {
+    "text": "fine",
+    "ipa": "fˈaɪn"
+   },
+   {
+    "text": "fish",
+    "ipa": "fˈɪʃ"
+   },
+   {
+    "text": "found",
+    "ipa": "fˈaʊnd"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "fresh",
+    "ipa": "fɹˈɛʃ"
+   },
+   {
+    "text": "pond",
+    "ipa": "pˈɑːnd"
+   }
+  ],
+  "This thing and that thing are both theirs.": [
+   {
+    "text": "This",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "thing",
+    "ipa": "θˈɪŋ"
+   },
+   {
+    "text": "and",
+    "ipa": "ænd"
+   },
+   {
+    "text": "that",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "thing",
+    "ipa": "θˈɪŋ"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑːɹ"
+   },
+   {
+    "text": "both",
+    "ipa": "bˈoʊθ"
+   },
+   {
+    "text": "theirs",
+    "ipa": "ðˈɛɹz"
+   }
+  ],
+  "Peter picked a pack of perfect peppers.": [
+   {
+    "text": "Peter",
+    "ipa": "pˈiːɾɚ"
+   },
+   {
+    "text": "picked",
+    "ipa": "pˈɪkt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "pack",
+    "ipa": "pˈæk"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "perfect",
+    "ipa": "pˈɜːfɛkt"
+   },
+   {
+    "text": "peppers",
+    "ipa": "pˈɛpɚz"
+   }
+  ],
+  "Victor wants a very wide window.": [
+   {
+    "text": "Victor",
+    "ipa": "vˈɪktɚ"
+   },
+   {
+    "text": "wants",
+    "ipa": "wˈɔnts"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "wide",
+    "ipa": "wˈaɪd"
+   },
+   {
+    "text": "window",
+    "ipa": "wˈɪndoʊ"
+   }
+  ],
+  "The cat sat back and had a nap.": [
+   {
+    "text": "The",
+    "ipa": "ðə"
+   },
+   {
+    "text": "cat",
+    "ipa": "kˈæt"
+   },
+   {
+    "text": "sat",
+    "ipa": "sˈæt"
+   },
+   {
+    "text": "back",
+    "ipa": "bˈæk"
+   },
+   {
+    "text": "and",
+    "ipa": "ænd"
+   },
+   {
+    "text": "had",
+    "ipa": "hæd"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "nap",
+    "ipa": "nˈæp"
+   }
+  ],
+  "I am from India.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "from",
+    "ipa": "fɹʌm"
+   },
+   {
+    "text": "India",
+    "ipa": "ˈɪndiə"
+   }
+  ],
+  "I grew up in a small town in India.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "grew",
+    "ipa": "ɡɹˈuː"
+   },
+   {
+    "text": "up",
+    "ipa": "ˌʌp"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "small",
+    "ipa": "smˈɔːl"
+   },
+   {
+    "text": "town",
+    "ipa": "tˈaʊn"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "India",
+    "ipa": "ˈɪndiə"
+   }
+  ],
+  "I am a student at the university.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "student",
+    "ipa": "stˈuːdənt"
+   },
+   {
+    "text": "at",
+    "ipa": "æt"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "university",
+    "ipa": "jˌuːnɪvˈɜːsᵻɾi"
+   }
+  ],
+  "I have been here for about a month.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have been",
+    "ipa": "hɐvbɪn"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈɪɹ"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "month",
+    "ipa": "mˈʌnθ"
+   }
+  ],
+  "Nice to meet you too, take care.": [
+   {
+    "text": "Nice",
+    "ipa": "nˈaɪs"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "meet",
+    "ipa": "mˈiːt"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "too",
+    "ipa": "tˈuː"
+   },
+   {
+    "text": "take",
+    "ipa": "tˈeɪk"
+   },
+   {
+    "text": "care",
+    "ipa": "kˈɛɹ"
+   }
+  ],
+  "I am a developer with a love for design.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "developer",
+    "ipa": "dɪvˈɛləpɚ"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "love",
+    "ipa": "lˈʌv"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "design",
+    "ipa": "dɪzˈaɪn"
+   }
+  ],
+  "I learn new things very quickly.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "learn",
+    "ipa": "lˈɜːn"
+   },
+   {
+    "text": "new",
+    "ipa": "nˈuː"
+   },
+   {
+    "text": "things",
+    "ipa": "θˈɪŋz"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "quickly",
+    "ipa": "kwˈɪkli"
+   }
+  ],
+  "I believe in what this company is building.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "believe",
+    "ipa": "bᵻlˈiːv"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "what",
+    "ipa": "wʌt"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "company",
+    "ipa": "kˈʌmpəni"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "building",
+    "ipa": "bˈɪldɪŋ"
+   }
+  ],
+  "What does a typical day look like?": [
+   {
+    "text": "What",
+    "ipa": "wˌʌt"
+   },
+   {
+    "text": "does",
+    "ipa": "dˈʌz"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "typical",
+    "ipa": "tˈɪpɪkəl"
+   },
+   {
+    "text": "day",
+    "ipa": "dˈeɪ"
+   },
+   {
+    "text": "look",
+    "ipa": "lˈʊk"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   }
+  ],
+  "Could I have a cup of tea, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "cup",
+    "ipa": "kˈʌp"
+   },
+   {
+    "text": "of",
+    "ipa": "ʌv"
+   },
+   {
+    "text": "tea",
+    "ipa": "tˈiː"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "A sandwich would be great, thank you.": [
+   {
+    "text": "A",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "sandwich",
+    "ipa": "sˈændwɪtʃ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "be",
+    "ipa": "biː"
+   },
+   {
+    "text": "great",
+    "ipa": "ɡɹˈeɪt"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈæŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "No thank you, that is everything.": [
+   {
+    "text": "No",
+    "ipa": "nˈoʊ"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈæŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "that",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "everything",
+    "ipa": "ˈɛvɹɪθˌɪŋ"
+   }
+  ],
+  "I will have it here, please.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "it",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈɪɹ"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "To go, please, I am in a hurry.": [
+   {
+    "text": "To",
+    "ipa": "tə"
+   },
+   {
+    "text": "go",
+    "ipa": "ɡˌoʊ"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   },
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "hurry",
+    "ipa": "hˈɜːɹi"
+   }
+  ],
+  "I will pay with cash.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "pay",
+    "ipa": "pˈeɪ"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "cash",
+    "ipa": "kˈæʃ"
+   }
+  ],
+  "Yes, I can hear you very well.": [
+   {
+    "text": "Yes",
+    "ipa": "jˈɛs"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "can",
+    "ipa": "kæn"
+   },
+   {
+    "text": "hear",
+    "ipa": "hˈɪɹ"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "well",
+    "ipa": "wˈɛl"
+   }
+  ],
+  "I will have it ready this evening.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "have",
+    "ipa": "hæv"
+   },
+   {
+    "text": "it",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "ready",
+    "ipa": "ɹˈɛdi"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "evening",
+    "ipa": "ˈiːvnɪŋ"
+   }
+  ],
+  "Wednesday morning works for me.": [
+   {
+    "text": "Wednesday",
+    "ipa": "wˈɛnzdeɪ"
+   },
+   {
+    "text": "morning",
+    "ipa": "mˈɔːɹnɪŋ"
+   },
+   {
+    "text": "works",
+    "ipa": "wˈɜːks"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   }
+  ],
+  "That is everything, thank you very much.": [
+   {
+    "text": "That",
+    "ipa": "ðæt"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "everything",
+    "ipa": "ˈɛvɹɪθˌɪŋ"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈæŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "much",
+    "ipa": "mˈʌtʃ"
    }
   ]
  },
@@ -1404,7 +2720,7 @@
     "ipa": "plˈiːz"
    }
   ],
-  "Thanks for your help, goodbye.": [
+  "Thanks for your help, have a good day.": [
    {
     "text": "Thanks",
     "ipa": "θˈaŋks"
@@ -1422,8 +2738,20 @@
     "ipa": "hˈɛlp"
    },
    {
-    "text": "goodbye",
-    "ipa": "ɡʊdbˈaɪ"
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "day",
+    "ipa": "dˈeɪ"
    }
   ],
   "A table for two, please.": [
@@ -1568,6 +2896,1310 @@
    {
     "text": "card",
     "ipa": "kˈɑːd"
+   }
+  ],
+  "How was your weekend?": [
+   {
+    "text": "How",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "was",
+    "ipa": "wɒz"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "weekend",
+    "ipa": "wiːkˈɛnd"
+   }
+  ],
+  "The weather is lovely today.": [
+   {
+    "text": "The",
+    "ipa": "ðə"
+   },
+   {
+    "text": "weather",
+    "ipa": "wˈɛðəɹ"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "lovely",
+    "ipa": "lˈʌvli"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "Have you watched anything good lately?": [
+   {
+    "text": "Have",
+    "ipa": "hav"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "watched",
+    "ipa": "wˈɒtʃt"
+   },
+   {
+    "text": "anything",
+    "ipa": "ˈɛnɪθˌɪŋ"
+   },
+   {
+    "text": "good",
+    "ipa": "ɡˈʊd"
+   },
+   {
+    "text": "lately",
+    "ipa": "lˈeɪtli"
+   }
+  ],
+  "I went hiking with my family.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "went",
+    "ipa": "wɛnt"
+   },
+   {
+    "text": "hiking",
+    "ipa": "hˈaɪkɪŋ"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "my",
+    "ipa": "maɪ"
+   },
+   {
+    "text": "family",
+    "ipa": "fˈamɪli"
+   }
+  ],
+  "What are your plans for the holidays?": [
+   {
+    "text": "What",
+    "ipa": "wˌɒt"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑː"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "plans",
+    "ipa": "plˈanz"
+   },
+   {
+    "text": "for the",
+    "ipa": "fəðə"
+   },
+   {
+    "text": "holidays",
+    "ipa": "hˈɒlɪdˌeɪz"
+   }
+  ],
+  "That sounds like a lot of fun.": [
+   {
+    "text": "That",
+    "ipa": "ðat"
+   },
+   {
+    "text": "sounds",
+    "ipa": "sˈaʊndz"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "lot",
+    "ipa": "lˈɒt"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "fun",
+    "ipa": "fˈʌn"
+   }
+  ],
+  "Thank you all for coming.": [
+   {
+    "text": "Thank",
+    "ipa": "θˈaŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "all",
+    "ipa": "ˈɔːl"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "coming",
+    "ipa": "kˈʌmɪŋ"
+   }
+  ],
+  "Today I will talk about three things.": [
+   {
+    "text": "Today",
+    "ipa": "tədˈeɪ"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "talk",
+    "ipa": "tˈɔːk"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "things",
+    "ipa": "θˈɪŋz"
+   }
+  ],
+  "Let me start with the big picture.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "start",
+    "ipa": "stˈɑːt"
+   },
+   {
+    "text": "with the",
+    "ipa": "wɪððə"
+   },
+   {
+    "text": "big",
+    "ipa": "bˈɪɡ"
+   },
+   {
+    "text": "picture",
+    "ipa": "pˈɪktʃə"
+   }
+  ],
+  "You can see the results on this slide.": [
+   {
+    "text": "You",
+    "ipa": "juː"
+   },
+   {
+    "text": "can",
+    "ipa": "kan"
+   },
+   {
+    "text": "see",
+    "ipa": "sˈiː"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "results",
+    "ipa": "ɹɪzˈʌlts"
+   },
+   {
+    "text": "on",
+    "ipa": "ˌɒn"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "slide",
+    "ipa": "slˈaɪd"
+   }
+  ],
+  "Sales went up by thirty percent.": [
+   {
+    "text": "Sales",
+    "ipa": "sˈeɪlz"
+   },
+   {
+    "text": "went",
+    "ipa": "wɛnt"
+   },
+   {
+    "text": "up",
+    "ipa": "ˌʌp"
+   },
+   {
+    "text": "by",
+    "ipa": "baɪ"
+   },
+   {
+    "text": "thirty",
+    "ipa": "θˈɜːti"
+   },
+   {
+    "text": "percent",
+    "ipa": "pəsˈɛnt"
+   }
+  ],
+  "I am happy to take your questions.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "happy",
+    "ipa": "hˈapi"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "take",
+    "ipa": "tˈeɪk"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "questions",
+    "ipa": "kwˈɛstʃənz"
+   }
+  ],
+  "Hello, how can I help you today?": [
+   {
+    "text": "Hello",
+    "ipa": "həlˈəʊ"
+   },
+   {
+    "text": "how",
+    "ipa": "hˌaʊ"
+   },
+   {
+    "text": "can",
+    "ipa": "kan"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "today",
+    "ipa": "tədˈeɪ"
+   }
+  ],
+  "May I have your order number, please?": [
+   {
+    "text": "May",
+    "ipa": "mˈeɪ"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "your",
+    "ipa": "jɔːɹ"
+   },
+   {
+    "text": "order",
+    "ipa": "ˈɔːdə"
+   },
+   {
+    "text": "number",
+    "ipa": "nˈʌmbə"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "Let me check that for you.": [
+   {
+    "text": "Let",
+    "ipa": "lˈɛt"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   },
+   {
+    "text": "check",
+    "ipa": "tʃˈɛk"
+   },
+   {
+    "text": "that",
+    "ipa": "ðˈat"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "I am very sorry for the trouble.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "sorry",
+    "ipa": "sˈɒɹi"
+   },
+   {
+    "text": "for the",
+    "ipa": "fəðə"
+   },
+   {
+    "text": "trouble",
+    "ipa": "tɹˈʌbəl"
+   }
+  ],
+  "Your refund will reach you in five days.": [
+   {
+    "text": "Your",
+    "ipa": "jɔː"
+   },
+   {
+    "text": "refund",
+    "ipa": "ɹˈiːfʌnd"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "reach",
+    "ipa": "ɹˈiːtʃ"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "five",
+    "ipa": "fˈaɪv"
+   },
+   {
+    "text": "days",
+    "ipa": "dˈeɪz"
+   }
+  ],
+  "Is there anything else I can help with?": [
+   {
+    "text": "Is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "there",
+    "ipa": "ðeəɹ"
+   },
+   {
+    "text": "anything",
+    "ipa": "ˈɛnɪθˌɪŋ"
+   },
+   {
+    "text": "else",
+    "ipa": "ˈɛls"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "can",
+    "ipa": "kan"
+   },
+   {
+    "text": "help",
+    "ipa": "hˈɛlp"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   }
+  ],
+  "Three thin thieves thought a thousand thoughts.": [
+   {
+    "text": "Three",
+    "ipa": "θɹˈiː"
+   },
+   {
+    "text": "thin",
+    "ipa": "θˈɪn"
+   },
+   {
+    "text": "thieves",
+    "ipa": "θˈiːvz"
+   },
+   {
+    "text": "thought",
+    "ipa": "θˈɔːt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "thousand",
+    "ipa": "θˈaʊzənd"
+   },
+   {
+    "text": "thoughts",
+    "ipa": "θˈɔːts"
+   }
+  ],
+  "We wove a very warm vest in the west.": [
+   {
+    "text": "We",
+    "ipa": "wiː"
+   },
+   {
+    "text": "wove",
+    "ipa": "wˈəʊv"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "warm",
+    "ipa": "wˈɔːm"
+   },
+   {
+    "text": "vest",
+    "ipa": "vˈɛst"
+   },
+   {
+    "text": "in the",
+    "ipa": "ɪnðə"
+   },
+   {
+    "text": "west",
+    "ipa": "wˈɛst"
+   }
+  ],
+  "Vivid waves washed over the wet village.": [
+   {
+    "text": "Vivid",
+    "ipa": "vˈɪvɪd"
+   },
+   {
+    "text": "waves",
+    "ipa": "wˈeɪvz"
+   },
+   {
+    "text": "washed",
+    "ipa": "wˈɒʃt"
+   },
+   {
+    "text": "over",
+    "ipa": "ˌəʊvə"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "wet",
+    "ipa": "wˈɛt"
+   },
+   {
+    "text": "village",
+    "ipa": "vˈɪlɪdʒ"
+   }
+  ],
+  "Zebras zip through the breezy zoo.": [
+   {
+    "text": "Zebras",
+    "ipa": "zˈɛbɹəz"
+   },
+   {
+    "text": "zip",
+    "ipa": "zˈɪp"
+   },
+   {
+    "text": "through",
+    "ipa": "θɹuː"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "breezy",
+    "ipa": "bɹˈiːzi"
+   },
+   {
+    "text": "zoo",
+    "ipa": "zˈuː"
+   }
+  ],
+  "Fifty fine fish found a fresh pond.": [
+   {
+    "text": "Fifty",
+    "ipa": "fˈɪfti"
+   },
+   {
+    "text": "fine",
+    "ipa": "fˈaɪn"
+   },
+   {
+    "text": "fish",
+    "ipa": "fˈɪʃ"
+   },
+   {
+    "text": "found",
+    "ipa": "fˈaʊnd"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "fresh",
+    "ipa": "fɹˈɛʃ"
+   },
+   {
+    "text": "pond",
+    "ipa": "pˈɒnd"
+   }
+  ],
+  "This thing and that thing are both theirs.": [
+   {
+    "text": "This",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "thing",
+    "ipa": "θˈɪŋ"
+   },
+   {
+    "text": "and",
+    "ipa": "and"
+   },
+   {
+    "text": "that",
+    "ipa": "ðat"
+   },
+   {
+    "text": "thing",
+    "ipa": "θˈɪŋ"
+   },
+   {
+    "text": "are",
+    "ipa": "ɑː"
+   },
+   {
+    "text": "both",
+    "ipa": "bˈəʊθ"
+   },
+   {
+    "text": "theirs",
+    "ipa": "ðˈeəz"
+   }
+  ],
+  "Peter picked a pack of perfect peppers.": [
+   {
+    "text": "Peter",
+    "ipa": "pˈiːtə"
+   },
+   {
+    "text": "picked",
+    "ipa": "pˈɪkt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "pack",
+    "ipa": "pˈak"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "perfect",
+    "ipa": "pˈɜːfɛkt"
+   },
+   {
+    "text": "peppers",
+    "ipa": "pˈɛpəz"
+   }
+  ],
+  "Victor wants a very wide window.": [
+   {
+    "text": "Victor",
+    "ipa": "vˈɪktə"
+   },
+   {
+    "text": "wants",
+    "ipa": "wˈɒnts"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "wide",
+    "ipa": "wˈaɪd"
+   },
+   {
+    "text": "window",
+    "ipa": "wˈɪndəʊ"
+   }
+  ],
+  "The cat sat back and had a nap.": [
+   {
+    "text": "The",
+    "ipa": "ðə"
+   },
+   {
+    "text": "cat",
+    "ipa": "kˈat"
+   },
+   {
+    "text": "sat",
+    "ipa": "sˈat"
+   },
+   {
+    "text": "back",
+    "ipa": "bˈak"
+   },
+   {
+    "text": "and",
+    "ipa": "and"
+   },
+   {
+    "text": "had",
+    "ipa": "had"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "nap",
+    "ipa": "nˈap"
+   }
+  ],
+  "I am from India.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "from",
+    "ipa": "fɹɒm"
+   },
+   {
+    "text": "India",
+    "ipa": "ˈɪndiə"
+   }
+  ],
+  "I grew up in a small town in India.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "grew",
+    "ipa": "ɡɹˈuː"
+   },
+   {
+    "text": "up",
+    "ipa": "ˌʌp"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "small",
+    "ipa": "smˈɔːl"
+   },
+   {
+    "text": "town",
+    "ipa": "tˈaʊn"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "India",
+    "ipa": "ˈɪndiə"
+   }
+  ],
+  "I am a student at the university.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "student",
+    "ipa": "stjˈuːdənt"
+   },
+   {
+    "text": "at",
+    "ipa": "at"
+   },
+   {
+    "text": "the",
+    "ipa": "ðə"
+   },
+   {
+    "text": "university",
+    "ipa": "jˌuːnɪvˈɜːsɪti"
+   }
+  ],
+  "I have been here for about a month.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have been",
+    "ipa": "hɐvbɪn"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈiə"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔːɹ"
+   },
+   {
+    "text": "about",
+    "ipa": "ɐbˌaʊt"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "month",
+    "ipa": "mˈʌnθ"
+   }
+  ],
+  "Nice to meet you too, take care.": [
+   {
+    "text": "Nice",
+    "ipa": "nˈaɪs"
+   },
+   {
+    "text": "to",
+    "ipa": "tə"
+   },
+   {
+    "text": "meet",
+    "ipa": "mˈiːt"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "too",
+    "ipa": "tˈuː"
+   },
+   {
+    "text": "take",
+    "ipa": "tˈeɪk"
+   },
+   {
+    "text": "care",
+    "ipa": "kˈeə"
+   }
+  ],
+  "I am a developer with a love for design.": [
+   {
+    "text": "I am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "developer",
+    "ipa": "dɪvˈɛləpə"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "love",
+    "ipa": "lˈʌv"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "design",
+    "ipa": "dɪzˈaɪn"
+   }
+  ],
+  "I learn new things very quickly.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "learn",
+    "ipa": "lˈɜːn"
+   },
+   {
+    "text": "new",
+    "ipa": "njˈuː"
+   },
+   {
+    "text": "things",
+    "ipa": "θˈɪŋz"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "quickly",
+    "ipa": "kwˈɪkli"
+   }
+  ],
+  "I believe in what this company is building.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "believe",
+    "ipa": "bɪlˈiːv"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "what",
+    "ipa": "wɒt"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "company",
+    "ipa": "kˈʌmpəni"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "building",
+    "ipa": "bˈɪldɪŋ"
+   }
+  ],
+  "What does a typical day look like?": [
+   {
+    "text": "What",
+    "ipa": "wˌɒt"
+   },
+   {
+    "text": "does",
+    "ipa": "dˈʌz"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "typical",
+    "ipa": "tˈɪpɪkəl"
+   },
+   {
+    "text": "day",
+    "ipa": "dˈeɪ"
+   },
+   {
+    "text": "look",
+    "ipa": "lˈʊk"
+   },
+   {
+    "text": "like",
+    "ipa": "lˈaɪk"
+   }
+  ],
+  "Could I have a cup of tea, please?": [
+   {
+    "text": "Could",
+    "ipa": "kʊd"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "cup",
+    "ipa": "kˈʌp"
+   },
+   {
+    "text": "of",
+    "ipa": "ɒv"
+   },
+   {
+    "text": "tea",
+    "ipa": "tˈiː"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "A sandwich would be great, thank you.": [
+   {
+    "text": "A",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "sandwich",
+    "ipa": "sˈandwɪtʃ"
+   },
+   {
+    "text": "would",
+    "ipa": "wʊd"
+   },
+   {
+    "text": "be",
+    "ipa": "biː"
+   },
+   {
+    "text": "great",
+    "ipa": "ɡɹˈeɪt"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈaŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   }
+  ],
+  "No thank you, that is everything.": [
+   {
+    "text": "No",
+    "ipa": "nˈəʊ"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈaŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "that",
+    "ipa": "ðat"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "everything",
+    "ipa": "ˈɛvɹɪθˌɪŋ"
+   }
+  ],
+  "I will have it here, please.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "it",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "here",
+    "ipa": "hˈiə"
+   },
+   {
+    "text": "please",
+    "ipa": "plˈiːz"
+   }
+  ],
+  "To go, please, I am in a hurry.": [
+   {
+    "text": "To go",
+    "ipa": "tə"
+   },
+   {
+    "text": "please",
+    "ipa": "ɡˌəʊ"
+   },
+   {
+    "text": "I",
+    "ipa": "plˈiːz"
+   },
+   {
+    "text": "am",
+    "ipa": "aɪɐm"
+   },
+   {
+    "text": "in",
+    "ipa": "ɪn"
+   },
+   {
+    "text": "a",
+    "ipa": "ɐ"
+   },
+   {
+    "text": "hurry",
+    "ipa": "hˈʌɹi"
+   }
+  ],
+  "I will pay with cash.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "pay",
+    "ipa": "pˈeɪ"
+   },
+   {
+    "text": "with",
+    "ipa": "wɪð"
+   },
+   {
+    "text": "cash",
+    "ipa": "kˈaʃ"
+   }
+  ],
+  "Yes, I can hear you very well.": [
+   {
+    "text": "Yes",
+    "ipa": "jˈɛs"
+   },
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "can",
+    "ipa": "kan"
+   },
+   {
+    "text": "hear",
+    "ipa": "hˈiə"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "well",
+    "ipa": "wˈɛl"
+   }
+  ],
+  "I will have it ready this evening.": [
+   {
+    "text": "I",
+    "ipa": "aɪ"
+   },
+   {
+    "text": "will",
+    "ipa": "wɪl"
+   },
+   {
+    "text": "have",
+    "ipa": "hav"
+   },
+   {
+    "text": "it",
+    "ipa": "ɪt"
+   },
+   {
+    "text": "ready",
+    "ipa": "ɹˈɛdi"
+   },
+   {
+    "text": "this",
+    "ipa": "ðɪs"
+   },
+   {
+    "text": "evening",
+    "ipa": "ˈiːvnɪŋ"
+   }
+  ],
+  "Wednesday morning works for me.": [
+   {
+    "text": "Wednesday",
+    "ipa": "wˈɛnzdeɪ"
+   },
+   {
+    "text": "morning",
+    "ipa": "mˈɔːnɪŋ"
+   },
+   {
+    "text": "works",
+    "ipa": "wˈɜːks"
+   },
+   {
+    "text": "for",
+    "ipa": "fɔː"
+   },
+   {
+    "text": "me",
+    "ipa": "mˌiː"
+   }
+  ],
+  "That is everything, thank you very much.": [
+   {
+    "text": "That",
+    "ipa": "ðat"
+   },
+   {
+    "text": "is",
+    "ipa": "ɪz"
+   },
+   {
+    "text": "everything",
+    "ipa": "ˈɛvɹɪθˌɪŋ"
+   },
+   {
+    "text": "thank",
+    "ipa": "θˈaŋk"
+   },
+   {
+    "text": "you",
+    "ipa": "juː"
+   },
+   {
+    "text": "very",
+    "ipa": "vˈɛɹi"
+   },
+   {
+    "text": "much",
+    "ipa": "mˈʌtʃ"
    }
   ]
  }

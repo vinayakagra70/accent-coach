@@ -59,11 +59,18 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
 5. Your own words (laptop, and phones on the same Wi-Fi): type any word or sentence, hear it, say it,
    and get it checked for the same sounds. The laptop works out the pronunciation, so the hosted
    phone build doesn't have this.
-6. Everyday phrases (everywhere, including the hosted phone build): 30 ready-made sentences in five
-   situations (meeting people, job interview, at work, on the phone, out and about), checked the
+6. Everyday phrases (everywhere, including the hosted phone build): ready-made sentences in eight
+   situations plus a pack of tongue twisters, and a "For you" pack picked for the sounds the learner
+   is working on, checked the
    same way as your own words. Their pronunciations are worked out ahead of time, so no server is
    needed. After changing `web/src/content/phrases.json`, run `.venv\Scripts\python.exe -m tools.phrases --heard`
    and `npm run voices`; `npm test` fails if a phrase would blame a native voice for a habit.
+
+7. Conversations (everywhere): Nova asks a question, the learner picks one of two answers and says
+   it; four questions per conversation, each answer checked like an everyday phrase. They live in
+   `web/src/content/conversations.json` and go through the same two commands as the phrases.
+8. My progress: voice score over time, every sound weakest first, phrases and conversations done,
+   and a picture of it to share (drawn in the browser; nothing is uploaded).
 
 JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
@@ -97,7 +104,8 @@ web/src/audio/       formants.ts (LPC F1/F2), mirror.ts (formants -> tongue pose
 web/src/content/     lessons.ts (16 sounds, words, minimal pairs, vowel targets),
                      british.ts + accent.ts (the British version of each), assessment.ts (voice-test phrases),
                      sentences.ts (one practice sentence per lesson),
-                     phrases.ts + phrases.json + phrases-ipa.json (the everyday phrases)
+                     phrases.ts + phrases.json + phrases-ipa.json (the everyday phrases),
+                     conversations.json (the questions and the answers to pick from)
 web/src/review.ts    words to come back to, and when
 web/src/reminder.ts  the daily reminder: a repeating calendar event (.ics or Google Calendar), since a
                      static site can't send notifications while it's closed
@@ -110,7 +118,8 @@ web/src/api.ts       where listening and saving happen in each of the three setu
 web/src/listen/      the speech model in the browser (phone build): engine.ts, worker.ts
 web/src/coach.ts     Nova: what she says and when; speech/lines.ts has every line
 web/src/nova/        her Live2D engine (copied from JARVIS)
-web/src/ui/          onboarding.ts (voice test and report), engineGate.ts, vowelChart.ts
+web/src/ui/          onboarding.ts (voice test and report), engineGate.ts, vowelChart.ts,
+                     progressPage.ts (My progress), shareCard.ts (the picture to share)
 server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py (Kokoro),
                      phonemize.py (how any text is pronounced, with espeak),
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)

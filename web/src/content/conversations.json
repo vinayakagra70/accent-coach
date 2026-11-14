@@ -1,0 +1,42 @@
+[
+  {
+    "id": "intro",
+    "title": "Meeting someone new",
+    "turns": [
+      { "ask": "Hi there! Where are you from?", "replies": ["I am from India.", "I grew up in a small town in India."] },
+      { "ask": "Nice! What do you do for a living?", "replies": ["I work as a software developer.", "I am a student at the university."] },
+      { "ask": "How long have you lived here?", "replies": ["I moved here three years ago.", "I have been here for about a month."] },
+      { "ask": "Well, it was lovely to meet you.", "replies": ["It was great talking to you.", "Nice to meet you too, take care."] }
+    ]
+  },
+  {
+    "id": "interview",
+    "title": "A job interview",
+    "turns": [
+      { "ask": "Thanks for coming in. Tell me a little about yourself.", "replies": ["I have five years of experience.", "I am a developer with a love for design."] },
+      { "ask": "What would you say is your biggest strength?", "replies": ["My greatest strength is solving problems.", "I learn new things very quickly."] },
+      { "ask": "Why do you want to work here?", "replies": ["I would love to work with your team.", "I believe in what this company is building."] },
+      { "ask": "Do you have any questions for me?", "replies": ["Could you tell me more about the role?", "What does a typical day look like?"] }
+    ]
+  },
+  {
+    "id": "cafe",
+    "title": "Ordering at a café",
+    "turns": [
+      { "ask": "Hi, what can I get for you?", "replies": ["I would like a coffee with milk.", "Could I have a cup of tea, please?"] },
+      { "ask": "Sure. Anything to eat with that?", "replies": ["A sandwich would be great, thank you.", "No thank you, that is everything."] },
+      { "ask": "For here or to go?", "replies": ["I will have it here, please.", "To go, please, I am in a hurry."] },
+      { "ask": "That's four fifty. How would you like to pay?", "replies": ["Can I pay by card?", "I will pay with cash."] }
+    ]
+  },
+  {
+    "id": "call",
+    "title": "A work call",
+    "turns": [
+      { "ask": "Hi, can you hear me okay?", "replies": ["Yes, I can hear you very well.", "Sorry, the line is breaking up."] },
+      { "ask": "Great. When can you send the report?", "replies": ["I will send the report by Friday.", "I will have it ready this evening."] },
+      { "ask": "Can we meet again next week?", "replies": ["Could we move the meeting to Thursday?", "Wednesday morning works for me."] },
+      { "ask": "Perfect. Anything else before we finish?", "replies": ["That is everything, thank you very much.", "Thanks for your help, have a good day."] }
+    ]
+  }
+]
