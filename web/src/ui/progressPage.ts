@@ -63,6 +63,11 @@ export function showProgress(opts: {
   reviewWords: number;
   onLesson: (id: string) => void;
   onTest: () => void;
+  /** Extra blocks built by the caller: under the four figures, and above the buttons. */
+  afterStats?: HTMLElement[];
+  beforeActions?: HTMLElement[];
+  /** Days practised in a row, when the caller counts them; shown in place of the course's own count so the page has one streak. */
+  streak?: number;
 }) {
   const o = $("overlay");
   o.hidden = false;
@@ -75,6 +80,7 @@ export function showProgress(opts: {
   const p = opts.profile;
   const rows = soundRows(p, opts.mastery);
   const stats = shareStats(p, rows, opts.accentName);
+  if (opts.streak !== undefined) stats.streak = opts.streak;
   const stat = (value: string, label: string) => h("div", { class: "stat" }, h("b", {}, value), h("span", {}, label));
   const chart = p ? scoreChart(p.history) : null;
 
@@ -108,6 +114,7 @@ export function showProgress(opts: {
         stat(String(stats.streak), "day streak"),
         stat(String(stats.daysDone), stats.daysDone === 1 ? "day done" : "days done"),
         stat(`${stats.soundsClean}/${stats.soundsTotal}`, "sounds clean")),
+      ...(opts.afterStats ?? []),
 
       h("h3", {}, "Voice score over time"),
       chart ?? h("p", { class: "note" }, stats.score === null
@@ -133,6 +140,7 @@ export function showProgress(opts: {
         h("li", {}, `${opts.phrasesClean} of ${opts.phrasesTotal} everyday phrases said clean`),
         h("li", {}, `${opts.talksDone} of ${opts.talksTotal} conversations finished`),
         h("li", {}, opts.reviewWords ? `${opts.reviewWords} word${opts.reviewWords === 1 ? "" : "s"} still coming back in review` : "No words waiting in review")),
+      ...(opts.beforeActions ?? []),
 
       h("div", { class: "row" }, share, test),
       status,

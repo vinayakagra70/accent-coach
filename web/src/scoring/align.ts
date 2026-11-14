@@ -141,6 +141,9 @@ export function judge(_expected: string[], heard: string[], pairs: AlignedPair[]
   if (accepted(got) || (joined && accepted(joined)) || (got !== "∅" && nextTok && accepted(nextTok) && isVowel(got) && !isVowel(nextTok) && check.accept.includes("ɹ"))) {
     return { verdict: "good", heard: joined && accepted(joined) ? joined : got };
   }
+  // Nothing heard at all (silence, a failed recording) is no evidence of a
+  // habit: without this a silent "car" was reported as a dropped R.
+  if (!heard.length) return { verdict: "off", heard: got };
   const habit = check.habits[got];
   if (habit) return { verdict: "habit", heard: got, habit };
   return { verdict: "off", heard: got };

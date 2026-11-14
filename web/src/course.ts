@@ -97,14 +97,19 @@ export function planLessons(a: Assessment | null): string[] {
     .sort((x, y) => need(y) - need(x));
 }
 
-export function buildCourse(a: Assessment | null): CourseDay[] {
+/** Lesson days with a check-up after every fifth, and one at the end. */
+function withCheckups(lessons: string[]): CourseDay[] {
   const days: CourseDay[] = [];
-  planLessons(a).forEach((id, i) => {
+  lessons.forEach((id, i) => {
     days.push({ kind: "lesson", lesson: id });
     if ((i + 1) % CHECKUP_EVERY === 0) days.push({ kind: "checkup" });
   });
   if (days[days.length - 1]?.kind !== "checkup") days.push({ kind: "checkup" });
   return days;
+}
+
+export function buildCourse(a: Assessment | null): CourseDay[] {
+  return withCheckups(planLessons(a));
 }
 
 export function newProfile(a: Assessment | null, skipped: boolean, accent: "us" | "uk" = "us"): Profile {
@@ -134,12 +139,21 @@ export function replan(p: Profile, a: Assessment): Profile {
   ];
   const doneLessons = new Set(done.filter((d) => d.kind === "lesson").map((d) => d.lesson));
   // Sounds still weak come back even if they were taught already.
-  const rest = buildCourse(a).filter((d) => d.kind === "checkup" || !doneLessons.has(d.lesson) || (a.lessons[d.lesson!]?.score ?? 0) < PASS_SCORE - 15);
+  // A taught sound the test didn't cover (score null: never voice-tested, or
+  // left out of the short test) is not known to be weak, so it stays finished.
+  const weakAgain = (id: string) => {
+    const s = a.lessons[id]?.score;
+    return s !== null && s !== undefined && s < PASS_SCORE - 15;
+  };
+  const left = planLessons(a).filter((id) => !doneLessons.has(id) || weakAgain(id));
   // Keep today's unfinished lesson first if it's still needed.
-  if (current?.kind === "lesson") {
-    const i = rest.findIndex((d) => d.lesson === current.lesson);
-    if (i > 0) rest.unshift(...rest.splice(i, 1));
+  if (current?.kind === "lesson" && current.lesson) {
+    const i = left.indexOf(current.lesson);
+    if (i > 0) left.unshift(...left.splice(i, 1));
   }
+  // Check-ups are placed after the finished lessons are taken out, so they stay
+  // five lessons apart and one never follows the check-up just taken.
+  const rest = withCheckups(left);
   return {
     ...p,
     assessment: a,

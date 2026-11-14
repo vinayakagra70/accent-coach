@@ -39,7 +39,14 @@ import habitWords from "./content/habits.json";
 import { ACCENTS, accent, accentInfo, setAccent, type Accent } from "./content/accent";
 import { closeOverlay, runTest, showReport, showWelcome } from "./ui/onboarding";
 import { VowelChart } from "./ui/vowelChart";
-import { showProgress } from "./ui/progressPage";
+import { showProgress, soundRows } from "./ui/progressPage";
+import { loadPracticeLog, practiceDays, recordPracticeToday, streakStats } from "./features/streak";
+import { renderStreak } from "./features/streakCard";
+import { addReviewCleared, lessonsDone, renderBadges, reviewCleared, reviewsCleared, twistersClean, type BadgeInput } from "./features/badges";
+import { mountInstallHint } from "./features/install";
+import { countWords, measurePace, paceVerdict, renderPace } from "./features/pace";
+import { renderBackup } from "./features/backup";
+import { clearMelody, showMelody } from "./features/melodyView";
 import { friendlyTime } from "./reminder";
 import { reminderTime, showReminder } from "./ui/reminder";
 
@@ -398,6 +405,7 @@ function stopMirror() {
   if (mic.active) mic.stop();
   if (mirrorBest > 0) {
     progress.recordVowel(lesson.id, mirrorBest);
+    recordPracticeToday();
     savePractice();
     renderList();
   }
@@ -624,6 +632,7 @@ function listenCard() {
         const ok = w === answer;
         if (ok) right++;
         progress.recordListen(lesson.id, ok);
+        recordPracticeToday();
         savePractice();
         bumpToday((t) => {
           t.earAnswered++;
@@ -791,19 +800,35 @@ function shadowing(text: string | (() => string)) {
       playing = false;
     }
   };
+  const pace = h("div", {});
+  const melody = h("div", { hidden: "" });
+  const readout = h("div", { class: "take-readout" }, pace, melody);
   return {
     both,
+    /** Pace of the newest take: shown under the buttons, never scored. */
+    readout,
     /** Keep the newest take (and free the one before it). */
     keep(take: Take) {
       if (mine) URL.revokeObjectURL(mine);
       mine = URL.createObjectURL(new Blob([take.wav], { type: "audio/wav" }));
       both.disabled = false;
+      try {
+        const measured = measurePace(take.pcm, 16000, countWords(say()));
+        // a short phrase has no pace worth showing
+        if (paceVerdict(measured).band === "short") pace.replaceChildren();
+        else renderPace(pace, measured);
+      } catch {
+        pace.replaceChildren();
+      }
+      void showMelody(melody, say(), take.pcm).catch(() => undefined);
     },
     /** Forget the take (the text it was a recording of has changed). */
     reset() {
       if (mine) URL.revokeObjectURL(mine);
       mine = null;
       both.disabled = true;
+      pace.replaceChildren();
+      clearMelody(melody);
     },
   };
 }
@@ -1038,7 +1063,7 @@ function showOwnWords(preset = false) {
       preset ? picker : input,
       gate,
       h("div", { class: "row" }, listen, sayBtn, shadow.both),
-      status, pron, marks, summary, findings,
+      status, pron, marks, summary, shadow.readout, findings,
       h("p", { class: "note" }, preset ? "Vowels are only judged where they're stressed. A tick marks a phrase you've said clean." : "Vowels are only judged where they're stressed, and names or unusual words may be pronounced differently from how you'd expect: press Hear it to check."),
       h("div", { class: "row" }, done)),
   );
@@ -1057,8 +1082,42 @@ function countStored(key: string): number {
   }
 }
 
+function badgeInput(): BadgeInput {
+  const stored = (key: string): string[] => {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  };
+  const twisters = PHRASE_PACKS.find((p) => p.id === "twisters")?.phrases ?? [];
+  const rows = soundRows(profile, progress.mastery);
+  return {
+    scores: (profile?.history ?? []).map((x) => x.overall),
+    lessonsDone: lessonsDone(profile),
+    soundsClean: rows.filter((r) => r.state === "clean").length,
+    soundsTotal: rows.length,
+    phrasesClean: countStored("accentCoach.phrasesClean"),
+    twistersClean: twistersClean(stored("accentCoach.phrasesClean"), accent(), twisters),
+    twistersTotal: twisters.length,
+    talksDone: countStored(TALKS_DONE),
+    talksTotal: CONVERSATIONS.length,
+    reviewCleared: reviewCleared(),
+  };
+}
+
 function openProgress() {
+  const streakBox = h("div", { style: "margin-top:12px" });
+  renderStreak(streakBox, { profile });
+  const badgeBox = h("div", {});
+  renderBadges(badgeBox, badgeInput());
+  const backupBox = h("div", {});
+  renderBackup(backupBox, { getProfile: () => profile, saveProfile });
+  const extras: HTMLElement[] = [h("h3", {}, "Milestones"), badgeBox, backupBox];
   showProgress({
+    streak: streakStats(practiceDays(profile, loadPracticeLog())).current,
+    afterStats: [streakBox],
+    beforeActions: extras,
     profile,
     accentName: accentInfo().name,
     mastery: progress.mastery,
@@ -1244,7 +1303,7 @@ function showTalk() {
     h("div", { class: "sheet own talk" },
       h("h2", {}, "Conversations"),
       h("p", { class: "lead" }, `A short chat, one question at a time. You hear the question, pick an answer and say it. It's checked for the same ${accentInfo().name} sounds as the lessons.`),
-      tabs, log, now, gate, actions, status, pron, marks, summary, findings,
+      tabs, log, now, gate, actions, status, pron, marks, summary, shadow.readout, findings,
       h("div", { class: "row" }, done_)),
   );
   start(talk.id);
@@ -1261,8 +1320,11 @@ function wordResult(lessonId: string, word: string, heard: string[]) {
 
 /** Every scored attempt feeds the review list: a habit brings the word back on a later day. */
 function noteAttempt(lessonId: string, word: string, verdict: Verdict, habit?: string) {
+  recordPracticeToday();
   if (!profile) return;
-  saveProfile({ ...profile, review: recordAttempt(profile.review, lessonId, word, verdict, habit) });
+  const review = recordAttempt(profile.review, lessonId, word, verdict, habit);
+  addReviewCleared(reviewsCleared(profile.review, review));
+  saveProfile({ ...profile, review });
 }
 
 function speakFeedback(verdict: Verdict, goodSym: string, habit?: string) {
@@ -1372,7 +1434,7 @@ function sentenceCard(item: TestItem) {
     gate,
     h("p", { class: "sentence" }, item.text),
     h("div", { class: "row" }, listen, sayBtn, shadow.both),
-    status, marks, results);
+    status, marks, shadow.readout, results);
 }
 
 /** The sentence for sounds the speech model can't judge: record, then compare with the model by ear. */
@@ -1394,6 +1456,7 @@ function sentenceByEarCard(text: string) {
     h("p", { class: "sentence" }, text),
     h("div", { class: "row" }, listen, sayBtn, shadow.both),
     status,
+    shadow.readout,
     h("p", { class: "note" }, "This sound can't be scored automatically yet, so compare by ear."));
 }
 
@@ -1651,6 +1714,7 @@ void boot();
 if (api.STATIC && "serviceWorker" in navigator && !import.meta.env.DEV) {
   void navigator.serviceWorker.register("./sw.js").catch(() => undefined);
 }
+if (api.STATIC) mountInstallHint(document.body);
 
 // test hook (this computer only): lets the browser tests drive the on-device speech model
 void import("./listen/engine").then(({ engine, isLocalTest }) => {

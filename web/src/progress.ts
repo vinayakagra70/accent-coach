@@ -44,6 +44,7 @@ export function recordListen(id: string, right: boolean) {
 }
 
 export function recordVowel(id: string, score: number) {
+  if (!Number.isFinite(score)) return; // NaN from a silent recording would stick: Math.max(80, NaN) is NaN
   const p = get(id);
   p.bestVowel = Math.max(p.bestVowel, score);
   p.lastPracticed = new Date().toISOString();

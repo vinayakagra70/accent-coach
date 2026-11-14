@@ -40,6 +40,35 @@ DATA_DIR = Path(os.environ.get("ACCENT_COACH_DATA", ROOT / "data"))
 DIST_DIR = ROOT / "web" / "dist"
 KEY_COOKIE = "ac_key"
 LOOPBACK = {"127.0.0.1", "::1", "localhost", "testclient"}
+MIN_SAMPLES = 400  # 25 ms at 16 kHz: the speech model cannot take less
+
+
+async def read_body(request: Request, limit: int, too_big: str) -> bytes:
+    """The request body, or 413 as soon as it is known to be over `limit`
+    (request.body() would first hold all of it in memory, however large)."""
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > limit:
+        raise HTTPException(413, too_big)
+    chunks: list[bytes] = []
+    size = 0
+    async for chunk in request.stream():
+        size += len(chunk)
+        if size > limit:
+            raise HTTPException(413, too_big)
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+def parse_json(raw: bytes, hint: str) -> object:
+    try:
+        return json.loads(raw)
+    except (ValueError, RecursionError):  # bad JSON, bytes that aren't UTF-8, nesting too deep
+        raise HTTPException(400, hint)
+
+
+def same_key(given: str, key: str) -> bool:
+    # as bytes: compare_digest raises TypeError on a str with non-ASCII characters
+    return hmac.compare_digest(given.encode("utf-8", "surrogatepass"), key.encode("utf-8"))
 
 
 def create_app(
@@ -81,12 +110,12 @@ def create_app(
             if host in LOOPBACK:
                 return await call_next(request)
             given = request.query_params.get("key")
-            if given is not None and hmac.compare_digest(given, access_key):
+            if given is not None and same_key(given, access_key):
                 resp = RedirectResponse(request.url.remove_query_params("key"), status_code=303)
                 resp.set_cookie(KEY_COOKIE, access_key, httponly=True, secure=True, samesite="strict", max_age=60 * 60 * 24 * 365)
                 return resp
             cookie = request.cookies.get(KEY_COOKIE, "")
-            if not hmac.compare_digest(cookie, access_key):
+            if not same_key(cookie, access_key):
                 return JSONResponse({"detail": "Open the link shown on the laptop (it includes the access key)."}, status_code=403)
             return await call_next(request)
 
@@ -106,15 +135,15 @@ def create_app(
 
     @app.post("/api/recognize")
     async def recognize(request: Request) -> dict[str, object]:
-        body = await request.body()
+        body = await read_body(request, MAX_UPLOAD, "audio too long")
         if not body:
             raise HTTPException(400, "empty audio")
-        if len(body) > MAX_UPLOAD:
-            raise HTTPException(413, "audio too long")
         try:
             audio = read_wav(body)
         except Exception:
             raise HTTPException(400, "could not read audio (send 16-bit PCM WAV)")
+        if len(audio) < MIN_SAMPLES:
+            raise HTTPException(400, "empty audio")
         try:
             r = await run_in_threadpool(rec.recognize, audio)
         except RecognizerNotReady as exc:
@@ -123,15 +152,13 @@ def create_app(
 
     @app.post("/api/speak")
     async def speak(request: Request) -> Response:
-        raw = await request.body()
-        if len(raw) > MAX_SPEAK_BODY:
-            raise HTTPException(413, "request too large")
+        hint = "send JSON like {\"text\": \"hello\", \"speed\": 1.0}"
+        body = parse_json(await read_body(request, MAX_SPEAK_BODY, "request too large"), hint)
         try:
-            body = json.loads(raw)
             text = str(body.get("text", "")).strip()
             speed = float(body.get("speed", 1.0))
-        except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
-            raise HTTPException(400, "send JSON like {\"text\": \"hello\", \"speed\": 1.0}")
+        except (AttributeError, TypeError, ValueError):
+            raise HTTPException(400, hint)
         if not text:
             raise HTTPException(400, "nothing to say")
         if not math.isfinite(speed):
@@ -145,15 +172,13 @@ def create_app(
 
     @app.post("/api/phonemize")
     async def phonemize(request: Request) -> dict[str, object]:
-        raw = await request.body()
-        if len(raw) > MAX_SPEAK_BODY:
-            raise HTTPException(413, "request too large")
+        hint = "send JSON like {\"text\": \"hello there\"}"
+        body = parse_json(await read_body(request, MAX_SPEAK_BODY, "request too large"), hint)
         try:
-            body = json.loads(raw)
             text = str(body.get("text", "")).strip()
             lang = str(body.get("lang", "en-us"))
-        except (json.JSONDecodeError, AttributeError):
-            raise HTTPException(400, "send JSON like {\"text\": \"hello there\"}")
+        except AttributeError:
+            raise HTTPException(400, hint)
         if not split_words(text):
             raise HTTPException(400, "nothing to pronounce")
         try:
@@ -168,15 +193,14 @@ def create_app(
 
     @app.put("/api/profile")
     async def put_profile(request: Request):
-        raw = await request.body()
-        if len(raw) > 512 * 1024:
-            raise HTTPException(413, "profile too large")
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            raise HTTPException(400, "invalid JSON")
+        data = parse_json(await read_body(request, 512 * 1024, "profile too large"), "invalid JSON")
         if not isinstance(data, dict) or data.get("version") != 1:
             raise HTTPException(400, "not an Accent Coach profile")
+        try:
+            # NaN / Infinity (1e999) parse, but once stored GET /api/profile could never send them back
+            json.dumps(data, allow_nan=False)
+        except (ValueError, RecursionError):
+            raise HTTPException(400, "invalid JSON")
         base = data.get("rev")
         try:
             rev = profiles.save(data, base if isinstance(base, int) and not isinstance(base, bool) else None)

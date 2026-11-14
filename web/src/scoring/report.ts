@@ -24,7 +24,7 @@ export function buildAssessment(results: ItemResult[]): Assessment {
   for (const l of LESSONS) lessons[l.id] = { score: null, good: 0, total: 0, findings: [] };
 
   for (const r of results) {
-    if (!r.heard) continue;
+    if (!r.heard?.length) continue; // skipped, or nothing was heard: not judged
     for (const j of judgeItem(r.item, r.heard)) {
       const lr = lessons[j.lesson];
       lr.total += 1;
@@ -44,7 +44,7 @@ export function buildAssessment(results: ItemResult[]): Assessment {
     wsum += w;
     acc += lr.score * w;
   }
-  return { date: new Date().toISOString(), overall: wsum ? Math.round(acc / wsum) : 0, phrases: results.filter((r) => r.heard).length, lessons };
+  return { date: new Date().toISOString(), overall: wsum ? Math.round(acc / wsum) : 0, phrases: results.filter((r) => r.heard?.length).length, lessons };
 }
 
 /** Lessons sorted worst first, for the report. */

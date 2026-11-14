@@ -37,8 +37,9 @@ class ProfileStore:
 
     def load(self) -> dict[str, Any] | None:
         try:
-            data = json.loads(self.path.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError):
+            # utf-8-sig: Notepad and PowerShell put a byte-order mark in front
+            data = json.loads(self.path.read_text(encoding="utf-8-sig"))
+        except (FileNotFoundError, ValueError, RecursionError):  # ValueError: bad JSON or bad UTF-8
             return None
         return data if isinstance(data, dict) else None
 
@@ -58,21 +59,52 @@ class ProfileStore:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             # write-then-rename so a crash never leaves half a file
             fd, tmp = tempfile.mkstemp(dir=self.path.parent, suffix=".tmp")
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
-                json.dump({**data, "rev": rev}, f, ensure_ascii=False, indent=1)
-            os.replace(tmp, self.path)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump({**data, "rev": rev}, f, ensure_ascii=False, indent=1)
+                if current is None:
+                    self._keep_aside()
+                os.replace(tmp, self.path)
+            except BaseException:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+                raise
             return rev
+
+    def _keep_aside(self) -> None:
+        """A file that is there but can't be read is the learner's data, damaged:
+        move it next to the new one instead of writing over it."""
+        try:
+            if self.path.stat().st_size == 0:
+                return
+        except OSError:
+            return
+        n = 1
+        while (aside := self.path.with_name(f"{self.path.stem}.unreadable-{n}{self.path.suffix}")).exists():
+            n += 1
+        os.replace(self.path, aside)
+
+
+def _num(x: Any) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
 
 
 def summarize(p: dict[str, Any] | None) -> dict[str, Any]:
+    """Never raises: the file can be hand-edited or saved by an older version."""
     if not p:
         return {"started": False, "text": "You haven't started Accent Coach yet."}
-    course = p.get("course") or []
-    day = int(p.get("day") or 0)
+    course = p.get("course")
+    course = [d if isinstance(d, dict) else {} for d in course] if isinstance(course, list) else []
+    day = p.get("day")
+    day = max(0, int(day)) if _num(day) and day == day and abs(day) < 1e9 else 0
     done = sum(1 for d in course if d.get("completedAt"))
-    a = p.get("assessment") or {}
-    lessons = a.get("lessons") or {}
-    scored = [(k, v.get("score")) for k, v in lessons.items() if isinstance(v, dict) and v.get("score") is not None]
+    a = p.get("assessment")
+    a = a if isinstance(a, dict) else {}
+    lessons = a.get("lessons")
+    lessons = lessons if isinstance(lessons, dict) else {}
+    scored = [(k, v.get("score")) for k, v in lessons.items() if isinstance(v, dict) and _num(v.get("score"))]
     weak = [LESSON_TITLES.get(k, k) for k, s in sorted(scored, key=lambda x: x[1]) if s < 85][:3]
     strong = [LESSON_TITLES.get(k, k) for k, s in sorted(scored, key=lambda x: -x[1]) if s >= 85][:3]
     nxt = course[day] if day < len(course) else None
@@ -80,16 +112,19 @@ def summarize(p: dict[str, Any] | None) -> dict[str, Any]:
         "a check-up voice test" if nxt and nxt.get("kind") == "checkup"
         else LESSON_TITLES.get(nxt.get("lesson"), nxt.get("lesson")) if nxt else "nothing, the course is finished"
     )
-    history = p.get("history") or []
+    history = p.get("history")
+    history = [h["overall"] for h in history if isinstance(h, dict) and _num(h.get("overall"))] if isinstance(history, list) else []
     parts = [f"Day {min(day + 1, len(course))} of {len(course)}, {done} done."]
     if a.get("overall") is not None:
         parts.append(f"Latest voice score {a['overall']} out of 100.")
     if len(history) >= 2:
-        parts.append(f"That's {history[-1]['overall'] - history[0]['overall']:+d} since your first test.")
+        parts.append(f"That's {history[-1] - history[0]:+g} since your first test.")
     if weak:
         parts.append("Weakest sounds: " + ", ".join(weak) + ".")
     parts.append(f"Next up: {next_txt}.")
-    streak = (p.get("streak") or {}).get("count", 0)
+    streak = p.get("streak")
+    streak = streak.get("count", 0) if isinstance(streak, dict) else 0
+    streak = streak if _num(streak) else 0
     if streak:
         parts.append(f"Streak: {streak} day{'s' if streak != 1 else ''}.")
     return {

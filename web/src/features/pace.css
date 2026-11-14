@@ -1,0 +1,79 @@
+/* Speaking-pace readout: one line of text and a slow / comfortable / fast gauge. */
+.pace {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--raised);
+}
+.pace:empty { display: none; }
+
+.pace-line {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.pace-key {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.pace-num {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pace-tip { color: var(--muted); }
+
+.pace-gauge { max-width: 320px; }
+.pace-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line-strong);
+}
+.pace-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--from);
+  width: calc(var(--to) - var(--from));
+  background: var(--accent-soft);
+  border-inline: 1px solid var(--accent);
+}
+.pace-marker {
+  position: absolute;
+  top: -4px;
+  left: var(--at);
+  width: 4px;
+  height: 14px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--habit);
+  box-shadow: 0 0 0 2px var(--raised);
+  transition: left 0.4s var(--ease);
+}
+.pace[data-band="comfortable"] .pace-marker { background: var(--accent); }
+
+.pace-labels {
+  display: grid;
+  /* same split as the track: 80 to 130, 130 to 170, 170 to 220 words a minute */
+  grid-template-columns: 35.7% 28.6% 35.7%;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.pace-labels span:nth-child(2) { text-align: center; }
+.pace-labels span:nth-child(3) { text-align: right; }
+.pace-labels .on { color: var(--text); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pace-marker { transition: none; }
+}

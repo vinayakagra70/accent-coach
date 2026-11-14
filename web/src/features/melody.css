@@ -1,0 +1,14 @@
+/* The melody of a sentence: the model's line and the learner's, on one small chart. */
+.melody { margin: 12px 0 0; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); }
+.melody[hidden] { display: none; }
+.melody-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.melody-caption { margin: 0; color: var(--text-2); font-size: 13px; }
+.melody-legend { display: flex; gap: 12px; margin: 0; padding: 0; list-style: none; color: var(--text-2); font-size: 12px; }
+.melody-legend li { display: flex; align-items: center; gap: 6px; }
+.melody-legend li::before { content: ""; width: 14px; height: 3px; border-radius: 2px; background: var(--melody-model, var(--accent)); }
+.melody-legend li.you::before { background: var(--melody-you, var(--air)); }
+.melody-legend li.off { color: var(--muted); }
+.melody-legend li.off::before { opacity: 0.35; }
+.melody-canvas { display: block; width: 100%; height: 128px; margin-top: 8px; }
+.melody-note { margin: 6px 0 0; color: var(--muted); font-size: 12px; min-height: 0; }
+.melody-note:empty { display: none; }

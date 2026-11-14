@@ -135,7 +135,10 @@ def read_wav(data: bytes) -> np.ndarray:
     """Decode a WAV upload and resample to 16 kHz if needed."""
     import soundfile as sf
 
-    audio, rate = sf.read(io.BytesIO(data), dtype="float32", always_2d=False)
+    # Only what will be used: a few KB of FLAC can otherwise unpack into gigabytes.
+    with sf.SoundFile(io.BytesIO(data)) as f:
+        rate = f.samplerate
+        audio = f.read(frames=rate * MAX_SECONDS, dtype="float32", always_2d=False)
     if audio.ndim > 1:
         audio = audio.mean(axis=1)
     if rate != SAMPLE_RATE:

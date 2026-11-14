@@ -6,9 +6,14 @@
     <title>Accent Coach</title>
     <meta name="theme-color" content="#0f0f10" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icon-192.png" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192" />
+    <!-- iOS ignores SVG here, so the PNG stays -->
     <link rel="apple-touch-icon" href="./icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Accent Coach" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="stylesheet" href="/src/styles.css" />
     <!-- Live2D Cubism Core: proprietary, put here by setup.ps1 (not in git). Loaded locally so it works offline. -->
     <script src="./live2dcubismcore.min.js"></script>

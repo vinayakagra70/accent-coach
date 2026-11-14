@@ -1,0 +1,13 @@
+/* Keep a copy / restore from a copy (features/backup.ts) */
+.backup { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+.backup h3 { margin-top: 0; }
+.backup .row { margin-top: 12px; }
+.backup-file[hidden] { display: none; }
+.backup-confirm {
+  margin-top: 12px; padding: 12px 14px;
+  background: var(--habit-soft); border: 1px solid var(--line-strong); border-radius: var(--r-card);
+}
+.backup-confirm[hidden] { display: none; }
+.backup-confirm p { margin: 0; color: var(--text); font-size: 14px; line-height: 1.5; text-wrap: pretty; }
+.backup-status { min-height: 1.4em; }
+.backup-status.bad { color: var(--bad); }

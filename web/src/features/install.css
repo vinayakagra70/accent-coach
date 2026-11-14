@@ -1,0 +1,17 @@
+.install-hint {
+  position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+  transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+  max-width: calc(100vw - 24px); padding: 8px 8px 8px 16px;
+  background: var(--card); border: 1px solid var(--line-strong); border-radius: var(--r-card);
+  color: var(--text-2); font-size: 13px; line-height: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: install-hint-in 240ms var(--ease);
+}
+.install-hint p { margin: 0; }
+.install-hint .install-hint-close { flex-shrink: 0; padding: 4px 8px; font-size: 13px; }
+@keyframes install-hint-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .install-hint { animation: none; }
+}

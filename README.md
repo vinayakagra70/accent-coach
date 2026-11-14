@@ -70,7 +70,16 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
    it; four questions per conversation, each answer checked like an everyday phrase. They live in
    `web/src/content/conversations.json` and go through the same two commands as the phrases.
 8. My progress: voice score over time, every sound weakest first, phrases and conversations done,
-   and a picture of it to share (drawn in the browser; nothing is uploaded).
+   and a picture of it to share (drawn in the browser; nothing is uploaded). It also has a practice
+   streak with a 12-week calendar (any exercise counts as a day), thirteen milestones, and
+   "Keep a copy": save progress as a file and restore it on another device.
+9. Pace and melody: after a sentence is recorded, the card shows words per minute with pauses
+   (slow, comfortable, fast) and the rise and fall of the learner's voice drawn over the model's.
+   Both are shown, not scored.
+10. Install: the hosted phone build offers "Add to home screen", and voice clips are kept for
+    offline use the first time they play.
+
+The newer pieces live in `web/src/features/`, one module per feature with its own CSS and test.
 
 JARVIS can read progress from `GET http://127.0.0.1:5181/api/summary` or `data/profile.json`.
 
