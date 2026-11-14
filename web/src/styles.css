@@ -434,4 +434,8 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
   .creator-credit { flex-wrap: nowrap; gap: 8px; padding: 6px 12px; }
   .creator-instagram { min-height: 36px; padding: 0 12px; }
   .creator-instagram span:first-child { display: none; }
-}
+}/* the two views of the mouth: named for what they are, with the technique as small print */
+.mode:has(b) { height: auto; min-height: 44px; padding: 6px 12px; text-align: left; }
+.mode b { display: block; font-weight: 600; font-size: 13px; line-height: 18px; }
+.mode small { display: block; font-size: 11px; line-height: 14px; color: var(--muted); }
+.steps .step-go { margin-left: auto; flex-shrink: 0; }

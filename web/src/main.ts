@@ -246,7 +246,7 @@ function renderModes() {
   box.replaceChildren();
   lesson.targets.forEach((t, i) => {
     const b = h("button", { class: "mode target", role: "tab", "aria-selected": String(mode.kind === "target" && mode.i === i), title: `Show the ${accentInfo().name} target` },
-      h("span", { class: "sw", style: "background: var(--accent)" }), t.label);
+      h("span", { class: "sw", style: "background: var(--accent)" }), h("span", {}, h("b", {}, `${accentInfo().name} way`), h("small", {}, t.label)));
     b.onclick = () => {
       mode = { kind: "target", i };
       applyMode();
@@ -254,7 +254,7 @@ function renderModes() {
     box.append(b);
   });
   const hb = h("button", { class: "mode habit", role: "tab", "aria-selected": String(mode.kind === "habit"), title: "What Indian-English speakers often do. The green outline is where it should be." },
-    h("span", { class: "sw", style: "background: var(--habit)" }), lesson.habit.label);
+    h("span", { class: "sw", style: "background: var(--habit)" }), h("span", {}, h("b", {}, "Indian habit"), h("small", {}, lesson.habit.label)));
   hb.onclick = () => {
     mode = { kind: "habit" };
     applyMode();
@@ -445,8 +445,23 @@ function renderTodayCard() {
   if (!profile || !isToday(lesson)) return;
   const t = profile.today;
   const req = dayRequirements(lesson.id);
-  const step = (done: boolean, text: string, detail?: string) =>
-    h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
+  const step = (done: boolean, text: string, detail?: string, show?: () => void) => {
+    const li = h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
+    if (show) {
+      // the mouth has tabs for these, but nobody reads a tab as "do this step"
+      const b = h("button", { class: "btn small step-go" }, icons.play(), done ? "Watch again" : "Watch");
+      b.onclick = () => {
+        show();
+        document.querySelector(".stage")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      };
+      li.append(b);
+    }
+    return li;
+  };
+  const watch = (m: Mode) => () => {
+    mode = m;
+    applyMode();
+  };
   const finish = h("button", { class: "btn primary" }, `Finish day ${profile.day + 1}`) as HTMLButtonElement;
   if (!dayReady(profile)) finish.disabled = true;
   finish.onclick = () => {
@@ -458,8 +473,8 @@ function renderTodayCard() {
   };
   todaySlot.append(card(`Today · Day ${profile.day + 1}`, "today-card",
     h("ol", { class: "steps" },
-      step(t.learnedTarget, `Watch the ${accentInfo().name} way`),
-      step(t.learnedHabit, "See your Indian habit"),
+      step(t.learnedTarget, `Watch the ${accentInfo().name} way`, undefined, watch({ kind: "target", i: 0 })),
+      step(t.learnedHabit, "See your Indian habit", undefined, watch({ kind: "habit" })),
       req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
       step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`),
       req.sentence ? step((t.sentenceTries ?? 0) >= req.sentence, "Say it in a sentence") : null),
