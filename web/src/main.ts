@@ -243,26 +243,41 @@ function applyMode() {
   renderModes();
 }
 
-const HABIT_WORDS: Record<string, { word: string }> = habitWords;
+const HABIT_WORDS: Record<string, { word: string; sound?: { targets: string[] } }> = habitWords;
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Let the learner hear the view they just chose. The target: an example word in
- * the model voice, with the mouth moving through it. The habit: the same word
- * said the Indian way (audio/habit/, see tools/habit_voice.py), then the model
- * voice right after it, because the difference is easiest to hear back to back.
+ * Let the learner hear the view they just chose. First the sound alone, twice
+ * ("ta, ta"), where it can be said alone; then an example word. The target is in
+ * the model voice with the mouth moving through the word; the habit is said the
+ * Indian way (audio/habit/, see tools/habit_voice.py), with the model voice right
+ * after it, because the difference is easiest to hear back to back.
  */
 async function sayMode() {
   const example = HABIT_WORDS[lesson.id]?.word ?? lesson.words[0];
+  const sound = HABIT_WORDS[lesson.id]?.sound;
   if (mode.kind === "target") {
     const pose = lesson.targets[mode.i].pose;
     const word = mode.i === 0 ? example : lesson.words.find((w) => LEXICON[w]?.includes(pose)) ?? example;
+    const id = lesson.id;
+    const i = mode.i;
+    if (!busy && sound && i < sound.targets.length) {
+      if (!(await playFile(`audio/sound/${id}-${i}.mp3`))) return;
+      await pause(350);
+      if (lesson.id !== id || mode.kind !== "target" || mode.i !== i) return; // moved on while it played
+    }
     await playWord(word);
   } else if (mode.kind === "habit") {
     if (busy) return;
     const id = lesson.id;
     const note = $("nowPlaying");
+    if (sound) {
+      if (!(await playFile(`audio/habit/${id}-sound.mp3`))) return;
+      await pause(350);
+      if (lesson.id !== id || mode.kind !== "habit") return;
+    }
     if (!(await playFile(`audio/habit/${id}.mp3`))) return;
-    await new Promise((r) => setTimeout(r, 450));
+    await pause(450);
     if (lesson.id !== id || mode.kind !== "habit") return; // moved on while it played
     note.textContent = `${accentInfo().name}: ${example}`;
     await speak(example, 0.85).catch(() => undefined);

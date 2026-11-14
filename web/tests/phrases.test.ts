@@ -79,10 +79,11 @@ setAccent("us");
 
 // every lesson can be heard both ways: a model word for the target, a recorded clip for the Indian habit
 {
-  const habits: Record<string, { word: string }> = JSON.parse(readFileSync("src/content/habits.json", "utf-8"));
+  const habits: Record<string, { word: string; sound?: { targets: string[] } }> = JSON.parse(readFileSync("src/content/habits.json", "utf-8"));
   const bad = LESSONS.filter((l) => {
     const h = habits[l.id];
-    return !h || !l.words.includes(h.word) || !LEXICON[h.word] || !existsSync(`public/audio/habit/${l.id}.mp3`);
+    const sounds = h?.sound ? [`habit/${l.id}-sound`, ...h.sound.targets.map((_, i) => `sound/${l.id}-${i}`)] : [];
+    return !h || !l.words.includes(h.word) || !LEXICON[h.word] || ![`habit/${l.id}`, ...sounds].every((f) => existsSync(`public/audio/${f}.mp3`));
   }).map((l) => l.id);
   check(bad.length === 0, `every lesson has a habit clip of one of its own words (run python -m tools.habit_voice) ${bad.join(" ")}`);
 }

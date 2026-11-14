@@ -1,10 +1,10 @@
 {
-  "v-w": { "word": "very", "say": "वेरी", "voice": "hm_psi", "lang": "hi" },
-  "th-voiceless": { "word": "think", "say": "थिंक", "voice": "hf_beta", "lang": "hi" },
-  "th-voiced": { "word": "this", "say": "दिस", "voice": "hm_omega", "lang": "hi" },
-  "alveolar-td": { "word": "time", "say": "टाइम", "voice": "hm_omega", "lang": "hi" },
-  "aspiration": { "word": "pin", "say": "पिन", "voice": "hf_alpha", "lang": "hi" },
-  "z": { "word": "zero", "say": "जीरो", "voice": "hm_psi", "lang": "hi" },
+  "v-w": { "word": "very", "say": "वेरी", "voice": "hm_psi", "lang": "hi", "sound": { "targets": ["vˈɑː", "wˈɑː"], "habit": "व" } },
+  "th-voiceless": { "word": "think", "say": "थिंक", "voice": "hf_beta", "lang": "hi", "sound": { "targets": ["θˈɑː"], "habit": "थ" } },
+  "th-voiced": { "word": "this", "say": "दिस", "voice": "hm_omega", "lang": "hi", "sound": { "targets": ["ðˈɑː"], "habit": "द" } },
+  "alveolar-td": { "word": "time", "say": "टाइम", "voice": "hm_omega", "lang": "hi", "sound": { "targets": ["tˈɑː"], "habit": "ट" } },
+  "aspiration": { "word": "pin", "say": "पिन", "voice": "hf_alpha", "lang": "hi", "sound": { "targets": ["pˈɑː"], "habit": "प" } },
+  "z": { "word": "zero", "say": "जीरो", "voice": "hm_psi", "lang": "hi", "sound": { "targets": ["zˈɑː"], "habit": "ज" } },
   "american-r": { "word": "red", "say": "रेड", "voice": "hm_omega", "lang": "hi" },
   "rhotic": { "word": "car", "say": "car", "voice": "bm_george", "lang": "en-gb" },
   "flap-t": { "word": "water", "say": "वॉटर", "voice": "hf_beta", "lang": "hi" },
@@ -14,5 +14,5 @@
   "ei": { "word": "say", "say": "से", "voice": "hf_alpha", "lang": "hi" },
   "ou": { "word": "go", "say": "गो", "voice": "hf_beta", "lang": "hi" },
   "i-ih": { "word": "ship", "say": "शिप", "voice": "hm_omega", "lang": "hi" },
-  "f": { "word": "fan", "say": "फैन", "voice": "hm_psi", "lang": "hi" }
+  "f": { "word": "fan", "say": "फैन", "voice": "hm_psi", "lang": "hi", "sound": { "targets": ["fˈɑː"], "habit": "फ" } }
 }
