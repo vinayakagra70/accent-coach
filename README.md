@@ -133,6 +133,8 @@ server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py
                      phonemize.py (how any text is pronounced, with espeak),
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
 space/               the online listener, a Hugging Face Space
+cloudrun/            the same listener for Google Cloud Run (deploy.ps1), used because new Hugging Face
+                     accounts get no free CPU quota; its Service URL goes in Vercel as VITE_LISTEN_URL
 tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py,
                      habit_voice.py (the "Indian habit" example words in web/public/audio/habit/: each word
                      written in Devanagari and read by a Hindi Kokoro voice, which gives the real habit),

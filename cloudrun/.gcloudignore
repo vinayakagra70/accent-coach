@@ -1,0 +1,4 @@
+# Without this file gcloud would follow .gitignore and leave out the copied code.
+.gcloudignore
+.gitignore
+deploy.ps1

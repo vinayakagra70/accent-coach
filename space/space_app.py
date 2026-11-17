@@ -55,7 +55,12 @@ def allow(ip: str) -> bool:
 
 @app.on_event("startup")
 def _load() -> None:
-    rec.load_in_background()
+    if os.environ.get("LOAD_BEFORE_SERVE") == "1":
+        # Cloud Run: CPU is throttled between requests, so a background load would
+        # crawl. Load before the port opens; Cloud Run holds the first request until then.
+        rec._load()
+    else:
+        rec.load_in_background()
 
 
 @app.get("/")
