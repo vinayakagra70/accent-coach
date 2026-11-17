@@ -104,7 +104,7 @@ function online(host: HTMLElement, onReady: (ready: boolean) => void): () => voi
     tries++;
     if (s.ready) {
       ui.show("Checking recordings online", "ok");
-      ui.actions(switchButton("device", "Use this device instead"));
+      ui.actions(switchButton("device", `Work offline instead (one-time ${MB} MB download)`));
       onReady(true);
       return;
     }

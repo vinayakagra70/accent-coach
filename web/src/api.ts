@@ -20,13 +20,17 @@ export const ONLINE_URL = (import.meta.env.VITE_LISTEN_URL as string | undefined
 export type ListenMode = "device" | "online";
 const MODE_KEY = "accentCoach.listenMode";
 
-/** Where this phone checks recordings. Saved per device. */
+/**
+ * Where this phone checks recordings. Saved per device. With an online listener
+ * configured, online is the default: nobody should face a 242 MB download before
+ * their first scored word. The download is an opt-in for working offline.
+ */
 export function listenMode(): ListenMode {
   if (!STATIC || !ONLINE_URL) return "device";
   try {
-    return localStorage.getItem(MODE_KEY) === "online" ? "online" : "device";
+    return localStorage.getItem(MODE_KEY) === "device" ? "device" : "online";
   } catch {
-    return "device";
+    return "online";
   }
 }
 
