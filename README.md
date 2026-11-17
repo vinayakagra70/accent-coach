@@ -133,6 +133,7 @@ server/              app.py (the API), recognizer.py (wav2vec2 phonemes), tts.py
                      phonemize.py (how any text is pronounced, with espeak),
                      profile_store.py, phone.py (HTTPS + access key for phones on the Wi-Fi)
 space/               the online listener, a Hugging Face Space
+modal_listener/      the same listener on Modal (free monthly credits): `modal deploy modal_listener/listener.py`
 cloudrun/            the same listener for Google Cloud Run (deploy.ps1), used because new Hugging Face
                      accounts get no free CPU quota; its Service URL goes in Vercel as VITE_LISTEN_URL
 tools/               render_voice.py (pre-render Nova's lines for the phone build), eval_onnx.py,
