@@ -235,6 +235,16 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .creator-instagram strong { color: var(--deep); }
 .creator-instagram:hover { background: #a5cb92; border-color: #a5cb92; }
 .creator-instagram:active { transform: scale(0.96); }
+/* GitHub: the same pill, outlined, so Instagram stays the main call */
+.creator-github {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 999px;
+  background: transparent; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600;
+  transition: background-color 140ms var(--ease), border-color 140ms var(--ease), transform 140ms var(--ease);
+}
+.creator-github svg { flex-shrink: 0; }
+.creator-github:hover { border-color: var(--text-2); background: var(--raised); }
+.creator-github:active { transform: scale(0.96); }
 
 /* today */
 .card.today-card { background: var(--raised); border-color: var(--line-strong); }
@@ -434,6 +444,8 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
   .creator-credit { flex-wrap: nowrap; gap: 8px; padding: 6px 12px; }
   .creator-instagram { min-height: 36px; padding: 0 12px; }
   .creator-instagram span:first-child { display: none; }
+  .creator-github { min-height: 36px; padding: 0 12px; }
+  .creator-github span:last-child { display: none; }
 }/* the two views of the mouth: named for what they are, with the technique as small print */
 .mode:has(b) { height: auto; min-height: 44px; padding: 6px 12px; text-align: left; }
 .mode b { display: block; font-weight: 600; font-size: 13px; line-height: 18px; }
