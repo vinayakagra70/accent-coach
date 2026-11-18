@@ -576,7 +576,7 @@ function renderPanel() {
       h("div", { class: "row" }, talkNow, seeProgress, next ? early : null),
       h("div", { class: "day-done-more" },
         h("span", {}, "Liked this? There's more."),
-        h("a", { class: "btn small more-by", href: PORTFOLIO, target: "_blank", rel: "noopener noreferrer" }, "More by Vinayak ↗"))));
+        h("a", { class: "more-by", href: PORTFOLIO, target: "_blank", rel: "noopener noreferrer" }, "✦ More by Vinayak ↗"))));
   }
 
   todaySlot = h("div");
