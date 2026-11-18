@@ -11,6 +11,7 @@ export const lines = {
   habit: (habit: string) => `Close. You said ${habit}. Watch the mouth, then try it again.`,
   unclear: () => "I couldn't hear that clearly. Try once more, a little slower.",
   dayDone: (day: number) => `Day ${day} done. Same time tomorrow?`,
+  madeBy: () => "By the way, Vinayak built me. Tap More by Vinayak to see what else is out there.",
   report: (score: number, previous?: number) => {
     let s = `Your score is ${score} out of 100.`;
     if (previous !== undefined) {

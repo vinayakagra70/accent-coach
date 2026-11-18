@@ -496,6 +496,8 @@ function renderList() {
   }
 }
 
+const PORTFOLIO = "https://vinayak-ten-lyart.vercel.app/";
+
 // ------------------------------------------------------------------ right panel
 
 function card(title: string, cls = "", ...body: (Node | string | null)[]) {
@@ -535,7 +537,8 @@ function renderTodayCard() {
   finish.onclick = () => {
     if (!profile) return;
     saveProfile(completeDay(profile));
-    void coachSays(lines.dayDone(profile.day), "happy");
+    // after the very first finished day, once: who made this, and where to see more
+    void coachSays(profile.day === 1 ? `${lines.dayDone(profile.day)} ${lines.madeBy()}` : lines.dayDone(profile.day), "happy");
     renderList();
     renderPanel();
   };
@@ -571,8 +574,9 @@ function renderPanel() {
       h("p", {}, next ? `Nice work. Tomorrow: ${next.kind === "checkup" ? "a check-up voice test" : LESSONS.find((l) => l.id === next.lesson)?.title}.` : "That was the last day. Take the voice test to see your progress."),
       // the lesson is done, but ten more minutes of real sentences is where it sticks
       h("div", { class: "row" }, talkNow, seeProgress, next ? early : null),
-      h("p", { class: "day-done-more" }, "Enjoying it? ",
-        h("a", { href: "https://vinayak-ten-lyart.vercel.app/", target: "_blank", rel: "noopener noreferrer" }, "See what else I've built ↗"))));
+      h("div", { class: "day-done-more" },
+        h("span", {}, "Liked this? There's more."),
+        h("a", { class: "btn small more-by", href: PORTFOLIO, target: "_blank", rel: "noopener noreferrer" }, "More by Vinayak ↗"))));
   }
 
   todaySlot = h("div");

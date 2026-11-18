@@ -45,6 +45,7 @@ for (const accent of ["us", "uk"] as Accent[]) {
     for (const s of Object.values(check.sounds)) for (const habit of Object.values(s.habits)) say(accent, lines.habit(habit));
   say(accent, lines.unclear());
   for (let d = 1; d <= 40; d++) say(accent, lines.dayDone(d));
+  say(accent, lines.madeBy());
   for (let score = 0; score <= 100; score++) say(accent, lines.report(score));
   for (let d = 0; d <= 100; d++) {
     say(accent, lines.report(50, 50 - d)); // "up d"

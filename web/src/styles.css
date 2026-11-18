@@ -235,23 +235,31 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .creator-instagram strong { color: var(--deep); }
 .creator-instagram:hover { background: #a5cb92; border-color: #a5cb92; }
 .creator-instagram:active { transform: scale(0.96); }
-/* the name links to the portfolio; its tag catches the eye a few times, then rests */
-.creator-site { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--text-2); text-decoration: none; }
-.creator-site strong { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
-.creator-site-tag {
-  padding: 2px 8px; border: 1px solid var(--accent); border-radius: 999px; color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; flex-shrink: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(141, 184, 122, 0.35) 50%, transparent 70%) no-repeat;
-  background-size: 220% 100%; background-position: 130% 0;
-  animation: tag-sheen 1.6s var(--ease) 1.2s 3;
+/* "More by Vinayak": the portfolio, as a button with a glowing edge that pulses a few times, then rests */
+.more-by {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px;
+  border: 1px solid var(--accent); border-radius: 999px; background: rgba(141, 184, 122, 0.1);
+  color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap;
+  animation: more-glow 2.2s ease-in-out 1s 4;
+  transition: background-color 140ms var(--ease), transform 140ms var(--ease);
 }
-@keyframes tag-sheen { to { background-position: -30% 0; } }
-.creator-site:hover strong { color: var(--accent); }
-.creator-site:hover .creator-site-tag { background-color: rgba(141, 184, 122, 0.15); }
-.day-done-more { margin: 12px 0 0 !important; font-size: 13px; color: var(--muted); }
-.day-done-more a { color: var(--accent); }
-@media (prefers-reduced-motion: reduce) { .creator-site-tag { animation: none; } }
-/* the smallest phones: GitHub keeps only its mark, so the footer stays one line */
+@keyframes more-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(141, 184, 122, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(141, 184, 122, 0.22), 0 0 18px 2px rgba(141, 184, 122, 0.35); }
+}
+.more-by:hover { background: rgba(141, 184, 122, 0.2); }
+.more-by:active { transform: scale(0.96); }
+.day-done-more { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text); }
+.day-done-more .more-by { min-height: 36px; }
+@media (prefers-reduced-motion: reduce) { .more-by { animation: none; } }
+/* the smallest phones: a little tighter */
 @media (max-width: 360px) {
+  .creator-credit { gap: 6px !important; padding: 6px 8px !important; }
+  .creator-instagram, .creator-more { padding: 0 10px !important; }
+  .creator-instagram span[aria-hidden="true"] { display: none; }
+}
+/* phones: GitHub keeps only its mark, so the footer stays one line */
+@media (max-width: 440px) {
   .creator-github span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .creator-github { width: 36px; padding: 0; }
 }
@@ -472,8 +480,7 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
   .creator-instagram { min-height: 36px; padding: 0 12px; }
   .creator-instagram span:first-child { display: none; }
   .creator-github { min-height: 36px; padding: 0 12px; }
-  .creator-made { display: none; }
-  .creator-site { min-height: 36px; gap: 6px; }
+  .creator-more { min-height: 36px; padding: 0 12px; gap: 6px; }
   .creator-github span:last-child { display: none; }
 }/* the two views of the mouth: named for what they are, with the technique as small print */
 .mode:has(b) { height: auto; min-height: 44px; padding: 6px 12px; text-align: left; }
