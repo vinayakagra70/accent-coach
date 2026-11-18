@@ -50,11 +50,22 @@ for (const accent of ["us", "uk"] as Accent[]) {
     say(accent, lines.report(50, 50 - d)); // "up d"
     say(accent, lines.report(50, 50 + d)); // "down d"
   }
-  for (const l of LESSONS) {
-    say(accent, lines.report(50, undefined, l.title));
-    say(accent, lines.explain(l));
-  }
+  for (const l of LESSONS) say(accent, lines.explain(l));
   for (const a of Object.values(ACCENTS)) say(accent, lines.switched(a.long));
+
+  // the report, read out (every score band, flaw, count and first lesson)
+  for (const score of [95, 80, 60, 30]) say(accent, lines.reportBand(score));
+  for (const l of LESSONS) for (const i of [0, 1]) say(accent, lines.reportFlaw(i, l.title));
+  say(accent, lines.reportFlawHow());
+  say(accent, lines.reportNoFlaws());
+  for (let n = 1; n <= LESSONS.length; n++) {
+    say(accent, lines.reportGood(n));
+    say(accent, lines.reportCourse(n));
+  }
+  for (const l of LESSONS) say(accent, lines.reportCourse(1, l.title));
+  say(accent, lines.reportStart());
+  // the first-day tour
+  for (const line of Object.values(lines.tour)) say(accent, line());
 }
 
 const list = [...out.values()];

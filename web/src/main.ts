@@ -50,6 +50,7 @@ import { clearMelody, showMelody } from "./features/melodyView";
 import { friendlyTime } from "./reminder";
 import { reminderTime, showReminder } from "./ui/reminder";
 import { startAnalytics } from "./features/analytics";
+import { runTour, tourSeen } from "./ui/tour";
 
 startAnalytics(api.STATIC);
 
@@ -525,7 +526,9 @@ function renderTodayCard() {
     applyMode();
     void sayMode();
   };
-  const finish = h("button", { class: "btn primary" }, `Finish day ${profile.day + 1}`) as HTMLButtonElement;
+  const finish = h("button", { class: "btn primary finish-day" }, `Finish day ${profile.day + 1}`) as HTMLButtonElement;
+  const howTo = h("button", { class: "linklike small" }, "Show me how");
+  howTo.onclick = () => firstDayTour(true);
   if (!dayReady(profile)) finish.disabled = true;
   finish.onclick = () => {
     if (!profile) return;
@@ -541,7 +544,7 @@ function renderTodayCard() {
       req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
       step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`),
       req.sentence ? step((t.sentenceTries ?? 0) >= req.sentence, "Say it in a sentence") : null),
-    h("div", { class: "row" }, finish)));
+    h("div", { class: "row spread" }, finish, howTo)));
 }
 
 function renderPanel() {
@@ -662,7 +665,7 @@ function listenCard() {
     await new Promise((r) => setTimeout(r, 300));
     await speak(pair[1], 0.8);
   };
-  return card("Train your ear", "",
+  return card("Train your ear", "ear-card",
     h("p", { class: "note", style: "margin-top:0" }, "You can't say what you can't hear. Get 8 out of 10 before you move on."),
     h("div", { class: "row" }, play, both), q, answers, score);
 }
@@ -1371,7 +1374,7 @@ function scoredCard() {
     renderReviewCard();
   };
 
-  return card("Say it · scored", "",
+  return card("Say it · scored", "scored-card",
     gate,
     status,
     h("div", { class: "chips" }, ...words.map((w) => {
@@ -1433,7 +1436,7 @@ function sentenceCard(item: TestItem) {
     renderReviewCard();
   };
 
-  return card("Now in a sentence", "",
+  return card("Now in a sentence", "sentence-card",
     gate,
     h("p", { class: "sentence" }, item.text),
     h("div", { class: "row" }, listen, sayBtn, shadow.both),
@@ -1455,7 +1458,7 @@ function sentenceByEarCard(text: string) {
     status.textContent = "Here is the model, then you.";
     shadow.both.click();
   };
-  return card("Now in a sentence", "",
+  return card("Now in a sentence", "sentence-card",
     h("p", { class: "sentence" }, text),
     h("div", { class: "row" }, listen, sayBtn, shadow.both),
     status,
@@ -1601,6 +1604,29 @@ function goToday() {
   openLesson(LESSONS.find((l) => l.id === d.lesson) ?? LESSONS[0]);
 }
 
+/** The spotlight walk through day 1. Once per device, on the first day; "Show me how" replays it. */
+function firstDayTour(force = false) {
+  if (!force && (tourSeen() || !profile || profile.day !== 0)) return;
+  // wait for the lesson panel to be drawn
+  setTimeout(() => {
+    const today = () => document.querySelector<HTMLElement>(".today-card");
+    const go = (n: number) => () => document.querySelectorAll<HTMLElement>(".today-card .step-go")[n] ?? null;
+    runTour(
+      [
+        { target: today, text: lines.tour.plan() },
+        { target: go(0), text: lines.tour.watch() },
+        { target: () => document.querySelector<HTMLElement>(".stage"), text: lines.tour.mouth() },
+        { target: go(1), text: lines.tour.habit() },
+        { target: () => document.querySelector<HTMLElement>(".ear-card"), text: lines.tour.ear() },
+        { target: () => document.querySelector<HTMLElement>(".scored-card"), text: lines.tour.scored() },
+        { target: () => document.querySelector<HTMLElement>(".sentence-card"), text: lines.tour.sentence() },
+        { target: () => document.querySelector<HTMLElement>(".today-card .finish-day"), text: lines.tour.finish() },
+      ],
+      { say: (t) => void coachSays(t, "happy"), quiet: stopTalking },
+    );
+  }, 450);
+}
+
 function startTest(retake: boolean) {
   showWelcome({
     retake,
@@ -1614,6 +1640,7 @@ function startTest(retake: boolean) {
       closeOverlay();
       if (!profile) saveProfile(newProfile(null, true, accent()));
       goToday();
+      firstDayTour();
     },
     onStart: () =>
       runTest({
@@ -1625,12 +1652,7 @@ function startTest(retake: boolean) {
           const previous = profile?.assessment?.overall;
           const p = profile && profile.course.length ? replan(profile, a) : newProfile(a, false, accent());
           saveProfile(p);
-          const first = p.course[p.day];
-          const firstName = first?.kind === "lesson" ? LESSONS.find((l) => l.id === first.lesson)?.title : null;
-          void coachSays(
-            lines.report(a.overall, previous, firstName ?? undefined),
-            a.overall >= 75 ? "happy" : "curious",
-          );
+          // Nova reads the report out herself (ui/onboarding.ts)
           showReport({
             assessment: a,
             course: p.course.slice(p.day),
@@ -1639,7 +1661,10 @@ function startTest(retake: boolean) {
             onStart: (lessonId) => {
               closeOverlay();
               if (lessonId) openLesson(LESSONS.find((l) => l.id === lessonId)!);
-              else goToday();
+              else {
+                goToday();
+                firstDayTour();
+              }
             },
           });
         },

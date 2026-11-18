@@ -51,6 +51,9 @@ Nova, NOVA's Live2D character, sits at the top of the lesson panel and talks wit
 
 1. Voice test: 13 short phrases, about 3 minutes, or skip it for the standard course.
 2. Report: a score out of 100, each flaw with the exact word ("think /t/ for /θ/"), and what's already good.
+   Nova reads it out part by part (score, the two biggest flaws, what's good, the course), lighting up
+   each part as she gets to it. "Start day 1" then runs a spotlight tour of the first day, once per
+   device; "Show me how" on the day's plan replays it (`web/src/ui/tour.ts`).
 3. Daily course: one sound a day, worst and most noticeable first. Each day: watch the American way,
    see your habit, train your ear, say 4 words and get them scored, then say the sound in a short
    sentence and hear the model and yourself back to back. Every 5 days a check-up re-test re-plans the rest.

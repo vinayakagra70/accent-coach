@@ -12,6 +12,8 @@ import { scoreChart } from "./scoreChart";
 import { ENGINE_STOPPED } from "../listen/engine";
 import type { Take } from "../audio/recorder";
 import { ACCENTS, accent, accentInfo, type Accent } from "../content/accent";
+import { coachSays, coachVoiceOn, stopTalking } from "../coach";
+import { lines } from "../speech/lines";
 
 /**
  * Phones checking on the device get a short test: the model is heavy for a phone
@@ -32,6 +34,7 @@ function testItems() {
 /** Full-screen steps over the app: welcome → voice test → report. */
 
 function overlay(): HTMLElement {
+  stopNarration?.();
   const o = $("overlay");
   o.hidden = false;
   o.replaceChildren();
@@ -39,6 +42,7 @@ function overlay(): HTMLElement {
 }
 
 export function closeOverlay() {
+  stopNarration?.();
   const o = $("overlay");
   o.hidden = true;
   o.replaceChildren();
@@ -313,7 +317,7 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
 
   const trend = scoreChart(opts.history ?? []);
 
-  const flawList = h("div", { class: "flaws" }, ...flaws.slice(0, 8).map((f) => {
+  const flawCards = flaws.slice(0, 8).map((f) => {
     const first = f.findings[0];
     const go = h("button", { class: "btn small" }, "Practise");
     go.onclick = () => opts.onStart(f.id);
@@ -324,7 +328,9 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
         ? h("div", { class: "flaw-said" }, ...f.findings.slice(0, 3).map((x) => h("span", {}, `${x.word}  /${x.heard}/ for /${x.target}/`)))
         : null,
       go);
-  }));
+  });
+  const flawList = h("div", { class: "flaws" }, ...flawCards);
+  const goodChips = good.length ? h("div", { class: "chips" }, ...good.map((g) => h("span", { class: "chip static" }, icons.check(), g.title))) : null;
 
   const lessonDays = opts.course.filter((d) => d.kind === "lesson");
   const courseList = h("ol", { class: "course-preview" }, ...opts.course.slice(0, 6).map((d) =>
@@ -333,20 +339,87 @@ export function showReport(opts: { assessment: Assessment; course: CourseDay[]; 
   const start = h("button", { class: "btn primary big" }, "Start day 1", icons.next());
   start.onclick = () => opts.onStart();
 
+  // Nova reads the report out, lighting up each part as she gets to it.
+  const top = h("div", { class: "report-top" });
+  const firstLesson = lessonDays[0]?.lesson;
+  const parts: { text: string; el: HTMLElement | null; mood: "happy" | "curious" }[] = [
+    { text: `${lines.report(a.overall, opts.previous)} ${lines.reportBand(a.overall)}`, el: top, mood: a.overall >= 75 ? "happy" : "curious" },
+    ...(flaws.length
+      ? flaws.slice(0, 2).map((f, i) => ({ text: i === 0 ? `${lines.reportFlaw(0, f.title)} ${lines.reportFlawHow()}` : lines.reportFlaw(i, f.title), el: flawCards[i], mood: "curious" as const }))
+      : [{ text: lines.reportNoFlaws(), el: flawList, mood: "happy" as const }]),
+    ...(good.length ? [{ text: lines.reportGood(good.length), el: goodChips, mood: "happy" as const }] : []),
+    ...(lessonDays.length ? [{ text: lines.reportCourse(lessonDays.length, firstLesson ? lessonTitle(firstLesson) : undefined), el: courseList, mood: "happy" as const }] : []),
+    { text: lines.reportStart(), el: start, mood: "happy" },
+  ];
+  const said = h("p", { class: "nova-said", "aria-live": "polite" });
+  const hush = h("button", { class: "linklike small" }, "Stop talking");
+  const novaBox = h("div", { class: "nova-say" }, h("b", {}, "Nova"), said, hush);
+
+  top.append(ring, h("div", {}, h("h2", {}, verdict), delta,
+    h("p", { class: "muted" }, `Based on ${a.phrases ?? 13} phrase${a.phrases === 1 ? "" : "s"}${(a.phrases ?? 13) < 13 ? " (the short phone version: sounds it didn't cover are still in your course)" : ""}, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`)));
+
   o.append(
     h("div", { class: "sheet report" },
       h("p", { class: "eyebrow" }, "Your accent report"),
-      h("div", { class: "report-top" }, ring, h("div", {}, h("h2", {}, verdict), delta,
-        h("p", { class: "muted" }, `Based on ${a.phrases ?? 13} phrase${a.phrases === 1 ? "" : "s"}${(a.phrases ?? 13) < 13 ? " (the short phone version: sounds it didn't cover are still in your course)" : ""}, judged sound by sound against ${accentInfo().long}. ${accent() === "uk" ? "Dark L, the puff on P/T/K and dropping the R" : "Dark L and the puff on P/T/K"} can't be heard reliably yet, so they're taught but not scored.`))),
+      novaBox,
+      top,
       trend ? h("h3", {}, `Your ${opts.history!.length} voice tests`) : null,
       trend,
       flaws.length ? h("h3", {}, "What to fix") : h("h3", {}, "Nothing major to fix"),
       flawList,
       good.length ? h("h3", {}, "Already good") : null,
-      good.length ? h("div", { class: "chips" }, ...good.map((g) => h("span", { class: "chip static" }, icons.check(), g.title))) : null,
+      goodChips,
       h("h3", {}, `Your course: ${lessonDays.length} sounds, one a day`),
       courseList,
       h("div", { class: "row" }, start),
     ),
   );
+
+  // Any button on the sheet means the learner has taken over: Nova stops.
+  o.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => stopNarration?.(), { capture: true }));
+  void narrate(parts, said, novaBox);
+}
+
+// ------------------------------------------------------------------ Nova reads the report
+
+let stopNarration: (() => void) | null = null;
+
+async function narrate(parts: { text: string; el: HTMLElement | null; mood: "happy" | "curious" }[], said: HTMLElement, box: HTMLElement) {
+  stopNarration?.();
+  let live = true;
+  let lit: HTMLElement | null = null;
+  const unlight = () => lit?.classList.remove("spot");
+  const stop = () => {
+    if (!live) return;
+    live = false;
+    unlight();
+    stopTalking();
+    box.classList.add("done");
+    if (stopNarration === stop) stopNarration = null;
+  };
+  stopNarration = stop;
+  box.querySelector("button")!.addEventListener("click", stop);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  for (const p of parts) {
+    if (!live) return;
+    unlight();
+    lit = p.el;
+    if (lit) {
+      lit.classList.add("spot");
+      lit.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    }
+    said.textContent = p.text;
+    await coachSays(p.text, p.mood);
+    // with her voice off, give the caption time to be read
+    if (!coachVoiceOn()) await new Promise((r) => setTimeout(r, Math.max(2200, p.text.split(" ").length * 330)));
+    if (!live) return;
+    await new Promise((r) => setTimeout(r, 350));
+  }
+  if (live) {
+    // she's done: leave the last line up, keep the Start button lit
+    live = false;
+    box.classList.add("done");
+    if (stopNarration === stop) stopNarration = null;
+  }
 }
