@@ -26,6 +26,15 @@ The speech model goes into `models/` rather than the Hugging Face cache because 
 
 Before publishing the app (a website, a store), read Live2D's terms: the Cubism SDK release licence and the Free Material License decide whether you may ship Cubism Core and Hiyori. Your own character avoids the question.
 
+## Nova on the hosted build
+
+The Live2D files aren't in git, so `npm run build:phone` ends with `tools/fetch-live2d.mjs`: when a
+build has no character (a build from git, like Vercel's), it downloads Cubism Core from
+cubism.live2d.com and Live2D's original Hiyori from CubismWebSamples, pinned to one commit. The
+hosted site therefore shows the original Hiyori, not the recolour (which stays on this laptop). If a
+download fails, the build still succeeds and the site runs with Nova's voice and captions only; the
+build log says so.
+
 ## Voice clips for the hosted build
 
 The hosted phone build has no voice engine, so everything Nova says and every model word is
