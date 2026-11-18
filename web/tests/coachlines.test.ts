@@ -62,7 +62,7 @@ check(spokenName("Æ (cat, bad)") === "the vowel in cat", "Æ is said as the vow
   ];
   check(all.every((t) => !/[—–]/.test(t)), "no dashes in what Nova says");
   check(all.every((t) => /[.!]$/.test(t)), "every line ends a sentence");
-  check(Object.keys(lines.tour).length === 8, "the tour has eight stops");
+  check(Object.keys(lines.tour).length === 11, "nine day-tour stops plus two for before there is a course");
 }
 
 console.log(failed ? `\n${failed} failed` : "\nall passed");

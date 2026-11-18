@@ -45,7 +45,11 @@ export const lines = {
     ear: () => "Next, train your ear. Press Play a word, then pick the word you heard.",
     scored: () => "Then tap each word and say it. I'll tell you if it sounded right.",
     sentence: () => "Last, say the sound in a sentence. Hear me first, then yourself.",
+    help: () => "Lost at any point? Tap Help, and I'll walk you through it again.",
     finish: () => "When every step has a tick, tap Finish day. That's it. Let's start!",
+    // before there is a course
+    start: () => "New here? Start with the voice test. It takes about 3 minutes, and I'll build your course from it.",
+    explain: () => "And tap Explain this sound any time. I'll tell you how to make it.",
   },
 };
 

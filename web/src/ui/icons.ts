@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Check, createElement, Mic, Play, RotateCcw, Square, Volume2, VolumeX, type IconNode } from "lucide";
+import { ArrowRight, Bell, Check, CircleQuestionMark, createElement, Mic, Play, RotateCcw, Square, Volume2, VolumeX, type IconNode } from "lucide";
 
 /** One icon set, one size, one stroke; icons take the color of their text. */
 function icon(node: IconNode, size = 16): SVGElement {
@@ -17,6 +17,7 @@ export const icons = {
   again: () => icon(RotateCcw),
   next: () => icon(ArrowRight),
   bell: () => icon(Bell),
+  help: () => icon(CircleQuestionMark),
 };
 
 /** The product's signature: a sound written as an IPA tag, like /θ/. */

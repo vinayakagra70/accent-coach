@@ -387,9 +387,16 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
 /* ---------- phone */
 @media (max-width: 720px) {
   .top { padding: 0 12px; gap: 8px; }
-  .top-controls { gap: 8px; }
+  /* too many controls for a phone's width: they slide sideways instead of widening the page */
+  .brand { flex-shrink: 0; }
+  .top-controls { gap: 8px; min-width: 0; margin-left: 12px; overflow-x: auto; scrollbar-width: none; }
+  .top-controls::-webkit-scrollbar { display: none; }
+  .top-controls > * { flex-shrink: 0; }
   .top-controls .seg span { display: none; }
   .top-controls select { max-width: 112px; }
+  /* Help keeps its icon only; the label stays for screen readers */
+  #helpBtn { width: 36px; padding: 0; justify-content: center; flex-shrink: 0; }
+  #helpBtn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .brand { gap: 8px; }
   /* small screen: one label plus the tongue tip, so they don't stack on each other */
   .label3d[data-index]:not([data-index="0"]):not([data-key="tip"]) { display: none; }

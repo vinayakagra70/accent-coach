@@ -168,6 +168,8 @@ $("toLessons").onclick = () => $("lessonList").scrollIntoView({ behavior: "smoot
 $("view3d").onclick = () => scene.resetView();
 $("retakeTest").prepend(icons.mic());
 $("retakeTest").onclick = () => startTest(true);
+$("helpBtn").prepend(icons.help());
+$("helpBtn").onclick = () => helpTour();
 
 /** Replace a button's content with an icon and a label. */
 function label(btn: HTMLElement, icon: (() => SVGElement) | null, text: string) {
@@ -1620,11 +1622,30 @@ function firstDayTour(force = false) {
         { target: () => document.querySelector<HTMLElement>(".ear-card"), text: lines.tour.ear() },
         { target: () => document.querySelector<HTMLElement>(".scored-card"), text: lines.tour.scored() },
         { target: () => document.querySelector<HTMLElement>(".sentence-card"), text: lines.tour.sentence() },
+        { target: () => document.getElementById("helpBtn"), text: lines.tour.help() },
         { target: () => document.querySelector<HTMLElement>(".today-card .finish-day"), text: lines.tour.finish() },
       ],
       { say: (t) => void coachSays(t, "happy"), quiet: stopTalking },
     );
   }, 450);
+}
+
+/** The Help button: today's tour when there is a course, otherwise where to begin. */
+function helpTour() {
+  closeOverlay();
+  if (profile) {
+    goToday();
+    firstDayTour(true);
+    return;
+  }
+  runTour(
+    [
+      { target: () => document.querySelector<HTMLElement>(".course-card .btn"), text: lines.tour.start() },
+      { target: () => document.querySelector<HTMLElement>(".stage"), text: lines.tour.mouth() },
+      { target: () => document.querySelector<HTMLElement>("#coachButtons .btn"), text: lines.tour.explain() },
+    ],
+    { say: (t) => void coachSays(t, "happy"), quiet: stopTalking },
+  );
 }
 
 function startTest(retake: boolean) {
