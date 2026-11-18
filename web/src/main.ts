@@ -570,7 +570,9 @@ function renderPanel() {
     panel.append(card(kept > 1 ? `Day done · ${kept} days in a row` : "Day done", "today-card",
       h("p", {}, next ? `Nice work. Tomorrow: ${next.kind === "checkup" ? "a check-up voice test" : LESSONS.find((l) => l.id === next.lesson)?.title}.` : "That was the last day. Take the voice test to see your progress."),
       // the lesson is done, but ten more minutes of real sentences is where it sticks
-      h("div", { class: "row" }, talkNow, seeProgress, next ? early : null)));
+      h("div", { class: "row" }, talkNow, seeProgress, next ? early : null),
+      h("p", { class: "day-done-more" }, "Enjoying it? ",
+        h("a", { href: "https://vinayak-ten-lyart.vercel.app/", target: "_blank", rel: "noopener noreferrer" }, "See what else I've built ↗"))));
   }
 
   todaySlot = h("div");
