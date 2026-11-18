@@ -49,6 +49,9 @@ import { renderBackup } from "./features/backup";
 import { clearMelody, showMelody } from "./features/melodyView";
 import { friendlyTime } from "./reminder";
 import { reminderTime, showReminder } from "./ui/reminder";
+import { startAnalytics } from "./features/analytics";
+
+startAnalytics(api.STATIC);
 
 // ------------------------------------------------------------------ state
 
