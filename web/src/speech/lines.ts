@@ -73,6 +73,7 @@ export function spokenName(title: string): string {
   if (ex && /^Clear T$/.test(short)) return `the T in ${ex}`;
   if (/^Dark L$/.test(short)) return "the dark L";
   if (/^Puff on/.test(short)) return "the puff on P, T and K";
+  if (/^Small words$/.test(short)) return "small words like to and can";
   if (ex && (/[^\x00-\x7F]/.test(short) || /glide$|^Open |^Short /.test(short))) return `the vowel in ${ex}`;
   return short.replace(/^The /, "the ");
 }

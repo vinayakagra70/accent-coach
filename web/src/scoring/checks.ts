@@ -119,6 +119,9 @@ export const US_CHECKS: Record<string, LessonChecks> = {
     },
   },
   "dark-l": { impact: 4, voiceTested: false, sounds: {} },
+  // shown and compared by ear, not scored: telling a weak "tə" from a full "tu" is
+  // close to judging stress, which measured too unreliable (73% / 46%)
+  "weak-words": { impact: 6, voiceTested: false, sounds: {} },
   f: {
     impact: 3,
     voiceTested: true,

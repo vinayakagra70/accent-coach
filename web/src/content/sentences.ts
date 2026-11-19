@@ -38,6 +38,8 @@ export const SENTENCES: Record<string, Sentence> = {
   // never scored (the model can't hear these sounds): said and compared by ear
   aspiration: { text: "Time to pin the paper.", focus: ["time", "pin", "paper"] },
   "dark-l": { text: "People feel full at school.", focus: ["people", "feel", "full", "school"] },
+  // checked by ear of the speech model: both voices say each "to" weak (tə)
+  "weak-words": { text: "I want to go to the shop.", focus: [] },
 };
 
 // Wordings were chosen by ear of the speech model (2026-11-13, two American and two

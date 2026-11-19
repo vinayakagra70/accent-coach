@@ -165,6 +165,23 @@ export function replan(p: Profile, a: Assessment): Profile {
   };
 }
 
+/** Lessons added after people had already planned their course. */
+const ADDED_LATER = ["weak-words"];
+
+/**
+ * A course planned before a lesson existed doesn't have it; slot it in once,
+ * just before the final check-up (never before the day being worked on).
+ */
+export function withNewLessons(p: Profile): Profile {
+  const have = new Set(p.course.map((d) => d.lesson));
+  const missing = ADDED_LATER.filter((id) => !have.has(id) && LESSONS.some((l) => l.id === id));
+  if (!missing.length || !p.course.length) return p;
+  const course = [...p.course];
+  const end = course[course.length - 1].kind === "checkup" ? course.length - 1 : course.length;
+  course.splice(Math.max(p.day, end), 0, ...missing.map((id): CourseDay => ({ kind: "lesson", lesson: id })));
+  return { ...p, course };
+}
+
 /** The learner's own calendar day. (UTC would end the day at 5:30 am in India.) */
 export function dayKey(d: Date): string {
   const two = (n: number) => String(n).padStart(2, "0");

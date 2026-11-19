@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { ASSESSMENT } from "../src/content/assessment";
 import { LESSONS } from "../src/content/lessons";
-import { buildCourse, completeDay, currentStreak, dayKey, dayReady, dayRequirements, finishedToday, newProfile, planLessons, replan } from "../src/course";
+import { buildCourse, completeDay, currentStreak, dayKey, dayReady, dayRequirements, finishedToday, newProfile, planLessons, replan, withNewLessons } from "../src/course";
 import { mergeLesson } from "../src/progress";
 import { buildIcs, friendlyTime, googleCalendarUrl, parseTime } from "../src/reminder";
 import { REVIEW_PER_DAY, dueReviews, recordAttempt } from "../src/review";
@@ -85,7 +85,19 @@ check(plan[0] === "alveolar-td", `worst high-impact sound comes first (got ${pla
 check(!plan.includes("v-w"), "sounds already at 85+ are left out of the course");
 check(plan.includes("dark-l") && plan.includes("aspiration"), "sounds the test can't hear are still taught");
 const skipPlan = planLessons(null);
-check(skipPlan[0] === "alveolar-td" && skipPlan.length === 16, "skipping the test gives the full standard course");
+check(skipPlan[0] === "alveolar-td" && skipPlan.length === LESSONS.length, "skipping the test gives the full standard course");
+{
+  // a course planned before the weak-words lesson existed gets it once, before the final check-up
+  const old = newProfile(null, true);
+  old.course = old.course.filter((d) => d.lesson !== "weak-words");
+  old.day = 2;
+  const up = withNewLessons(old);
+  const at = up.course.findIndex((d) => d.lesson === "weak-words");
+  check(at === up.course.length - 2 && up.course[up.course.length - 1].kind === "checkup", "a lesson added later slots in before the final check-up");
+  check(withNewLessons(up) === up && up.day === 2, "and only once, without moving the current day");
+  const done = { ...old, day: old.course.length };
+  check(withNewLessons(done).course[done.day]?.lesson === "weak-words", "a finished course gets it as its next day");
+}
 const course = buildCourse(null);
 check(course.filter((d) => d.kind === "checkup").length >= 3 && course[5].kind === "checkup", "a check-up after every 5 lessons");
 

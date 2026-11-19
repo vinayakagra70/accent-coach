@@ -42,6 +42,13 @@ export const US_LEXICON: Record<string, string[]> = {
   feet: ["f", "i", "t"], bit: ["b", "ɪ", "t"], beat: ["b", "i", "t"], sit: ["s", "ɪ", "t"], seat: ["s", "i", "t"],
   fan: ["f", "æ", "n"], fair: ["f", "ɛ", "ɹ"], pair: ["p", "ɛ", "ɹ"], fine: ["f", "aɪ", "n"], pine: ["p", "aɪ", "n"],
   fast: ["f", "æ", "s", "t"], past: ["p", "æ", "s", "t"], office: ["ɑ", "f", "ɪ", "s"],
+  // Short phrases for the weak-words lesson: a small word only goes weak inside a phrase.
+  // Only "to" and "can" here: both model voices were checked to say them weak (tə, kən,
+  // 2026-11-19). The speech model writes "and"/"of" strong even from native voices, so
+  // phrases with those couldn't be checked.
+  "want to go": ["w", "ɑ", "n", "t", "t", "ə", "g", "oʊ"], "time to go": ["t", "aɪ", "m", "t", "ə", "g", "oʊ"],
+  "talk to you": ["t", "ɔ", "k", "t", "ə", "j", "u"], "I can swim": ["aɪ", "k", "ə", "n", "s", "w", "ɪ", "m"],
+  "I can do it": ["aɪ", "k", "ə", "n", "d", "u", "ɪ", "t"],
 };
 
 /** Typical General American formants (Hz), Peterson & Barney / Hillenbrand averages. */
@@ -384,6 +391,24 @@ export const US_LESSONS: Lesson[] = [
     labels: ["upperTeeth"],
     words: ["fan", "phone", "coffee", "office", "first"],
     pairs: [["fan", "pan"], ["fair", "pair"], ["fine", "pine"], ["fast", "past"]],
+  },
+  {
+    id: "weak-words",
+    title: "Small words (to, can)",
+    sound: "ə in to, can, and, of",
+    kind: "vowel",
+    targets: [{ label: "ə: quick and soft, mouth relaxed", pose: "ə" }],
+    habit: { label: "Full vowel: every small word said strongly", pose: "u" },
+    mistake: "Indian English gives every word the same weight, so small words like \"to\", \"and\" and \"of\" come out strong: \"I want TOO go\". In American English they shrink to a quick, soft \"uh\" and the important words carry the beat: \"I WANT tə GO\". Saying every word fully is one of the biggest reasons an accent sounds Indian, even when each sound is right.",
+    steps: [
+      "Find the important words, the ones that carry the meaning. Give them the beat.",
+      "Say the small words quickly and quietly, with a relaxed \"uh\": to → tə, and → ən, of → əv, can → kən, a → ə.",
+      "Don't drop them. They're short, not missing.",
+      "Tap the table on the important words only: \"a CUP of TEA\". The small words squeeze in between the taps.",
+    ],
+    labels: [],
+    words: ["want to go", "I can swim", "time to go", "talk to you", "I can do it"],
+    pairs: [],
   },
 ];
 

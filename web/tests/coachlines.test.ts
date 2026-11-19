@@ -53,6 +53,7 @@ for (const acc of ["us", "uk"] as const) {
 }
 setAccent("us");
 check(spokenName("Æ (cat, bad)") === "the vowel in cat", "Æ is said as the vowel in cat");
+check(spokenName("Small words (to, can)") === "small words like to and can", "the weak-words lesson is said naturally");
 
 // copy rules shared by every line
 {

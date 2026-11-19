@@ -43,6 +43,7 @@ export function toBritish(word: string, us: string[]): string[] {
 const SPECIAL: Record<string, string[]> = {
   water: ["w", "ɔ", "t", "ə"],
   tomato: ["t", "ə", "m", "ɑ", "t", "əʊ"],
+  "want to go": ["w", "ɒ", "n", "t", "t", "ə", "g", "əʊ"],
 };
 
 export const UK_LEXICON: Record<string, string[]> = Object.fromEntries(

@@ -14,5 +14,6 @@
   "ei": { "word": "say", "say": "से", "voice": "hf_alpha", "lang": "hi" },
   "ou": { "word": "go", "say": "गो", "voice": "hf_beta", "lang": "hi" },
   "i-ih": { "word": "ship", "say": "शिप", "voice": "hm_omega", "lang": "hi" },
-  "f": { "word": "fan", "say": "फैन", "voice": "hm_psi", "lang": "hi", "sound": { "targets": ["fˈɑː"], "habit": "फ" } }
+  "f": { "word": "fan", "say": "फैन", "voice": "hm_psi", "lang": "hi", "sound": { "targets": ["fˈɑː"], "habit": "फ" } },
+  "weak-words": { "word": "want to go", "say": "वॉन्ट टू गो", "voice": "hm_omega", "lang": "hi" }
 }

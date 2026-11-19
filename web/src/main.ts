@@ -15,6 +15,7 @@ import {
   newProfile,
   replan,
   saveLocal,
+  withNewLessons,
   type Assessment,
   type Profile,
 } from "./course";
@@ -72,7 +73,7 @@ let chart: VowelChart | null = null;
 let mirrorRaf = 0;
 let mirrorScores: number[] = [];
 let mirrorBest = 0;
-let profile: Profile | null = loadLocal();
+let profile: Profile | null = (() => { const p = loadLocal(); return p && withNewLessons(p); })();
 let engineReady = false;
 
 function saveProfile(p: Profile) {
@@ -87,7 +88,8 @@ function savePractice() {
 }
 
 /** Take the server's copy as ours (it is newer: saved from another device or browser). */
-function adoptServer(server: Profile) {
+function adoptServer(fromServer: Profile) {
+  const server = withNewLessons(fromServer);
   profile = server;
   saveLocal(server);
   progress.merge(server.practice);

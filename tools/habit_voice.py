@@ -1,6 +1,7 @@
 """The "Indian habit" clips: one example word per lesson, said the way the habit makes it sound.
 
-    .venv\\Scripts\\python.exe -m tools.habit_voice
+    .venv\\Scripts\\python.exe -m tools.habit_voice              (all)
+    .venv\\Scripts\\python.exe -m tools.habit_voice weak-words   (just one lesson)
 
 Writes web/public/audio/habit/<lesson id>.mp3 from web/src/content/habits.json and
 prints what the speech model hears in each, as a check.
@@ -20,6 +21,7 @@ vowels, R, L and the flap only show in a word, so those lessons have no "sound".
 """
 import io
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,8 +57,12 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     SOUNDS.mkdir(parents=True, exist_ok=True)
     habits = json.loads(HABITS.read_text(encoding="utf-8"))
-    for f in [*OUT.glob("*.mp3"), *SOUNDS.glob("*.mp3")]:
-        f.unlink()
+    only = set(sys.argv[1:])  # lesson ids: remake just these clips and keep the rest
+    if only:
+        habits = {k: v for k, v in habits.items() if k in only}
+    else:
+        for f in [*OUT.glob("*.mp3"), *SOUNDS.glob("*.mp3")]:
+            f.unlink()
     for lesson, h in habits.items():
         if "sound" in h:
             for i, ph in enumerate(h["sound"]["targets"]):
