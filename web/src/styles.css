@@ -256,6 +256,14 @@ canvas.chart { width: 100%; height: 220px; display: block; margin-top: 12px; bor
 .day-done-more { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text); }
 .day-done-more .more-by { min-height: 36px; }
 @media (prefers-reduced-motion: reduce) { .more-by { animation: none; } }
+/* the top bar's Voice test says just "Test" on the smallest phones, so the Accent picker fits beside it */
+.vt-short { display: none; }
+@media (max-width: 360px) {
+  .vt-full { display: none; }
+  .vt-short { display: inline; }
+  .top-controls select { max-width: 86px !important; }
+  .top-controls { margin-left: 8px !important; gap: 6px !important; }
+}
 /* the smallest phones: a little tighter */
 @media (max-width: 360px) {
   .creator-credit { gap: 6px !important; padding: 6px 8px !important; }

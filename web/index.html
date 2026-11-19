@@ -27,18 +27,18 @@
       </div>
       <div class="top-controls">
         <button class="btn small" id="helpBtn" title="What to do here: Nova walks you through it" aria-label="Help: show me what to do"><span>Help</span></button>
-        <button class="btn small" id="retakeTest" title="Take the voice test again and update your course">Voice test</button>
+        <button class="btn small" id="retakeTest" title="Take the voice test again and update your course"><span class="vt-full">Voice test</span><span class="vt-short">Test</span></button>
+        <label class="seg" title="The accent you're learning">
+          <span>Accent</span>
+          <select id="accentPick">
+            <option value="us">American</option>
+            <option value="uk">British</option>
+          </select>
+        </label>
         <!-- set once, rarely changed: kept in a menu so the bar stays simple -->
         <details class="settings" id="settings">
           <summary class="btn small" title="Settings" aria-label="Settings"><span class="settings-label">Settings</span></summary>
           <div class="settings-pop">
-            <label class="seg" title="The accent you're learning">
-              <span>Accent</span>
-              <select id="accentPick">
-                <option value="us">American</option>
-                <option value="uk">British</option>
-              </select>
-            </label>
             <label class="seg" title="Used for the vowel mirror; picks the right reference vowels for your voice">
               <span>My voice</span>
               <select id="voiceType">
