@@ -26,6 +26,7 @@ setAccent("us");
   check(lines.tour.watch().includes("British way"), "the tour says British in British mode");
   setAccent("us");
   check(lines.tour.watch().includes("American way"), "and American in American mode");
+  check(lines.tour.compare().includes("American way on the right"), "the comparison line names the accent's side");
 }
 
 // flaws, counts and the course

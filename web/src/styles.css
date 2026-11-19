@@ -419,10 +419,9 @@ input[type="time"] { height: 40px; background: var(--raised); border: 1px solid 
 /* ---------- phone */
 @media (max-width: 720px) {
   .top { padding: 0 12px; gap: 8px; }
-  /* too many controls for a phone's width: they slide sideways instead of widening the page */
+  /* Help, Voice test and the settings gear: they fit, and nothing may clip the settings menu */
   .brand { flex-shrink: 0; }
-  .top-controls { gap: 8px; min-width: 0; margin-left: 12px; overflow-x: auto; scrollbar-width: none; }
-  .top-controls::-webkit-scrollbar { display: none; }
+  .top-controls { gap: 8px; min-width: 0; margin-left: 12px; }
   .top-controls > * { flex-shrink: 0; }
   .top-controls .seg span { display: none; }
   .top-controls select { max-width: 112px; }
@@ -656,3 +655,54 @@ textarea, input { caret-color: var(--accent); }
 .tour-tip .tour-count { margin: 0; font: 400 12px/16px var(--mono); color: var(--muted); }
 .tour-tip .row { gap: 12px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }
+
+/* ------------------------------------------------------------------ Indian vs target, side by side */
+.compare-card .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.cmp-side {
+  display: grid; align-content: start; gap: 6px; padding: 12px 14px; text-align: left; cursor: pointer;
+  border: 1px solid var(--line-strong); border-radius: 12px; background: var(--raised); color: var(--text); font: inherit;
+  transition: border-color 140ms var(--ease), background-color 140ms var(--ease), transform 140ms var(--ease);
+}
+.cmp-side:active { transform: scale(0.98); }
+.cmp-side .cmp-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+.cmp-side .sw { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.cmp-side.habit .sw { background: var(--habit); }
+.cmp-side.target .sw { background: var(--accent); }
+.cmp-side .cmp-what { font-size: 13px; line-height: 18px; color: var(--text-2); }
+.cmp-side .cmp-hear { display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 13px; font-weight: 600; }
+.cmp-side.habit .cmp-hear { color: var(--habit); }
+.cmp-side.target .cmp-hear { color: var(--accent); }
+.cmp-side.habit:hover, .cmp-side.habit[aria-pressed="true"] { border-color: var(--habit); background: rgba(217, 163, 91, 0.1); }
+.cmp-side.target:hover, .cmp-side.target[aria-pressed="true"] { border-color: var(--accent); background: rgba(141, 184, 122, 0.1); }
+.compare-card .cmp-why { margin: 12px 0 0; font-size: 14px; line-height: 21px; color: var(--text-2); }
+.compare-card .cmp-you { margin: 8px 0 0; font-size: 14px; color: var(--text); }
+@media (max-width: 380px) { .compare-card .cmp-grid { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------------------ extras, folded */
+.more-practice { margin: 8px 0 16px; border: 1px solid var(--line); border-radius: 12px; }
+.more-practice > summary { padding: 12px 16px; cursor: pointer; color: var(--text-2); font-size: 14px; list-style-position: inside; }
+.more-practice > summary:hover { color: var(--text); }
+.more-practice[open] > summary { border-bottom: 1px solid var(--line); }
+.more-practice .more-body { padding: 12px 16px 16px; }
+
+/* a step's Go button lands here: the card lights up for a moment */
+.card.flash { animation: card-flash 1.2s var(--ease); }
+@keyframes card-flash { 0%, 40% { box-shadow: 0 0 0 2px var(--accent); } 100% { box-shadow: 0 0 0 2px transparent; } }
+
+/* ------------------------------------------------------------------ settings menu in the top bar */
+.settings { position: relative; }
+.settings > summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.settings > summary::-webkit-details-marker { display: none; }
+.settings[open] > summary { border-color: var(--text-2); }
+.settings-pop {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 25; display: grid; gap: 12px; min-width: 220px;
+  padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--raised); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+.settings-pop .seg { justify-content: space-between; }
+.settings-pop .seg span { display: inline !important; }
+.settings-pop select { max-width: none !important; }
+@media (max-width: 720px) {
+  .settings-label { display: none; }
+  .settings > summary { width: 36px; padding: 0; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .card.flash { animation: none; } .cmp-side:active { transform: none; } }

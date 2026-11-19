@@ -170,6 +170,17 @@ $("retakeTest").prepend(icons.mic());
 $("retakeTest").onclick = () => startTest(true);
 $("helpBtn").prepend(icons.help());
 $("helpBtn").onclick = () => helpTour();
+{
+  // the settings menu: a gear, closed again by a tap anywhere else or Escape
+  const box = $("settings") as HTMLDetailsElement;
+  box.querySelector("summary")!.prepend(icons.settings());
+  document.addEventListener("click", (e) => {
+    if (box.open && !box.contains(e.target as Node)) box.open = false;
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && box.open) box.open = false;
+  });
+}
 
 /** Replace a button's content with an icon and a label. */
 function label(btn: HTMLElement, icon: (() => SVGElement) | null, text: string) {
@@ -254,6 +265,7 @@ function applyMode() {
   }
   // "yours" is set up by showWhatYouSaid()
   renderModes();
+  syncCompare();
 }
 
 const HABIT_WORDS: Record<string, { word: string; sound?: { targets: string[] } }> = habitWords;
@@ -278,23 +290,88 @@ async function sayMode() {
   }
 }
 
-/** One word, both ways, side by side: the model voice (with the mouth moving) and the Indian habit. */
-function compareRow(): HTMLElement | null {
+/**
+ * The difference, in one place: the Indian habit and the target side by side,
+ * each with what the mouth does and a button to hear one word that way. Tapping
+ * a side also switches the 3D mouth to it; "Hear both" plays the habit, then the
+ * target, so the ear catches the difference. Replaces the old "Compare one word"
+ * row, "The usual mistake" card and "From your voice test" card.
+ */
+function compareCard(): HTMLElement {
   const word = HABIT_WORDS[lesson.id]?.word;
-  if (!word) return null;
-  const model = h("button", { class: "btn small" }, icons.listen(), `${accentInfo().name}: ${word}`);
-  model.onclick = () => {
-    mode = { kind: "target", i: 0 };
-    void playWord(word);
-  };
-  const habit = h("button", { class: "btn small habit-btn" }, icons.listen(), `Indian habit: ${word}`);
-  habit.onclick = () => {
-    if (busy) return;
+  const target = lesson.targets[0];
+  const name = accentInfo().name;
+
+  const hearHabit = async () => {
     mode = { kind: "habit" };
     applyMode();
-    void playFile(`audio/habit/${lesson.id}.mp3`);
+    if (word) await playFile(`audio/habit/${lesson.id}.mp3`);
   };
-  return h("div", { class: "compare" }, h("p", { class: "note" }, "Compare one word, both ways:"), h("div", { class: "row" }, model, habit));
+  const hearTarget = async () => {
+    mode = { kind: "target", i: 0 };
+    applyMode();
+    if (word) await playWord(word);
+  };
+
+  const side = (kind: "habit" | "target", title: string, what: string, hear: () => Promise<void>) => {
+    const b = h("button", { class: `cmp-side ${kind}`, "data-side": kind, "aria-pressed": "false", title: `Show and hear the ${title.toLowerCase()}` },
+      h("span", { class: "cmp-title" }, h("span", { class: "sw" }), title),
+      h("span", { class: "cmp-what" }, what),
+      word ? h("span", { class: "cmp-hear" }, icons.listen(), `"${word}"`) : null);
+    b.onclick = () => {
+      if (!busy) void hear();
+    };
+    return b;
+  };
+
+  const both = h("button", { class: "btn small" }, icons.play(), "Hear both, one after the other") as HTMLButtonElement;
+  both.onclick = async () => {
+    if (busy) return;
+    both.disabled = true;
+    await hearHabit();
+    await new Promise((r) => setTimeout(r, 450));
+    await hearTarget();
+    both.disabled = false;
+  };
+
+  const finding = profile?.assessment?.lessons[lesson.id]?.findings[0];
+  return card(`Indian vs ${name}`, "compare-card",
+    h("div", { class: "cmp-grid" },
+      side("habit", "Indian habit", plainLabel(lesson.habit.label), hearHabit),
+      side("target", `${name} way`, plainLabel(target.label), hearTarget)),
+    word ? h("div", { class: "row" }, both) : null,
+    h("p", { class: "cmp-why" }, lesson.mistake),
+    finding ? h("p", { class: "cmp-you" }, h("b", {}, "Your voice test: "), `in "${finding.word}" you said ${finding.habit}.`) : null);
+}
+
+/**
+ * A mouth label in plain words, for the comparison card: the phonetics part is
+ * dropped. "Indian ʈ: tip curled back (retroflex)" → "Tip curled back",
+ * "Alveolar t: tip on the ridge" → "Tip on the ridge". The mouth's own tabs keep the full label.
+ */
+export function plainLabel(label: string): string {
+  const s = label.replace(/^[^:]{1,24}:\s*/, "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+  const out = s ? s[0].toUpperCase() + s.slice(1) : label;
+  return PLAIN[out] ?? out;
+}
+
+/** The few labels that still lean on phonetic symbols, said in plain words. */
+const PLAIN: Record<string, string> = {
+  "Rounded ɔ": 'Lips rounded, like "aw"',
+  "Steady eː": "One steady sound, no glide",
+  "Steady oː": "One steady sound, no glide",
+  "Start at e, glide up to ɪ": 'A glide: starts at "e", slides up to "i"',
+  "Start at o, close to ʊ": 'A glide: starts at "o", slides to "oo"',
+  "Plain vowel": "The vowel alone, no R",
+  "R-coloured vowel": "The vowel with an R sound in it",
+};
+
+/** Light up the side of the comparison card that the mouth is showing. */
+function syncCompare() {
+  document.querySelectorAll<HTMLElement>(".cmp-side").forEach((b) => {
+    const on = (b.dataset.side === "habit" && mode.kind === "habit") || (b.dataset.side === "target" && mode.kind === "target");
+    b.setAttribute("aria-pressed", String(on));
+  });
 }
 function renderModes() {
   const box = $("modes");
@@ -512,7 +589,7 @@ function renderTodayCard() {
   if (!profile || !isToday(lesson)) return;
   const t = profile.today;
   const req = dayRequirements(lesson.id);
-  const step = (done: boolean, text: string, detail?: string, show?: () => void) => {
+  const step = (done: boolean, text: string, detail?: string, show?: () => void, goTo?: string) => {
     const li = h("li", { class: done ? "done" : "" }, h("span", { class: "tick" }, done ? icons.check(12) : null), h("span", {}, text, detail ? h("small", {}, detail) : null));
     if (show) {
       // the mouth has tabs for these, but nobody reads a tab as "do this step"
@@ -520,6 +597,18 @@ function renderTodayCard() {
       b.onclick = () => {
         show();
         document.querySelector(".stage")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      };
+      li.append(b);
+    } else if (goTo) {
+      // straight to the card for this step, lit up for a moment so the eye finds it
+      const b = h("button", { class: "btn small step-go" }, done ? "Again" : "Go", icons.next());
+      b.onclick = () => {
+        const target = document.querySelector<HTMLElement>(goTo);
+        if (!target) return;
+        target.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+        target.classList.remove("flash");
+        void target.offsetWidth;
+        target.classList.add("flash");
       };
       li.append(b);
     }
@@ -546,9 +635,9 @@ function renderTodayCard() {
     h("ol", { class: "steps" },
       step(t.learnedTarget, `Watch the ${accentInfo().name} way`, undefined, watch({ kind: "target", i: 0 })),
       step(t.learnedHabit, "See your Indian habit", undefined, watch({ kind: "habit" })),
-      req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`) : null,
-      step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`),
-      req.sentence ? step((t.sentenceTries ?? 0) >= req.sentence, "Say it in a sentence") : null),
+      req.ear ? step(t.earAnswered >= req.ear, "Train your ear", `${Math.min(t.earAnswered, req.ear)}/${req.ear}`, undefined, ".ear-card") : null,
+      step(t.speakTries >= req.speak, "Say it, scored", `${Math.min(t.speakTries, req.speak)}/${req.speak} words`, undefined, ".scored-card, .record-card"),
+      req.sentence ? step((t.sentenceTries ?? 0) >= req.sentence, "Say it in a sentence", undefined, undefined, ".sentence-card") : null),
     h("div", { class: "row spread" }, finish, howTo)));
 }
 
@@ -589,27 +678,8 @@ function renderPanel() {
   panel.append(reviewSlot);
   renderReviewCard();
 
-  const finding = profile?.assessment?.lessons[lesson.id]?.findings[0];
-  if (finding) {
-    panel.append(card("From your voice test", "mistake",
-      h("p", {}, `In "${finding.word}" you said ${finding.habit}.`),
-      finding.target ? h("p", { class: "ipa-tag", style: "margin-top:4px" }, `/${finding.heard}/ instead of /${finding.target}/`) : null));
-  }
-  panel.append(card("The usual mistake", "mistake", h("p", { style: "margin:0" }, lesson.mistake)));
-  panel.append(card("How to make it", "", h("ol", {}, ...lesson.steps.map((s) => h("li", {}, s)))));
-
-  const slowSel = h("select", { "aria-label": "Speed" }, h("option", { value: "1" }, "Normal"), h("option", { value: "2.5" }, "Slow"), h("option", { value: "5" }, "Very slow"));
-  slowSel.value = String(slow);
-  slowSel.onchange = () => (slow = Number(slowSel.value));
-  panel.append(card("Watch & listen", "",
-    h("div", { class: "chips" }, ...lesson.words.map((w) => {
-      const c = h("button", { class: "chip", title: "Hear it and watch the mouth" }, w, h("span", { class: "ipa" }, `/${(LEXICON[w] ?? []).join("")}/`));
-      c.onclick = () => void playWord(w);
-      return c;
-    })),
-    compareRow(),
-    h("div", { class: "slow" }, "Mouth speed", slowSel),
-    hasVoice() ? null : h("p", { class: "note" }, "This browser has no speech voice, so words animate silently.")));
+  panel.append(compareCard());
+  panel.append(card("How to make it", "how-card", h("ol", {}, ...lesson.steps.map((s) => h("li", {}, s)))));
 
   if (lesson.pairs.length) panel.append(listenCard());
   if (LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(scoredCard());
@@ -619,7 +689,23 @@ function renderPanel() {
   if (lesson.vowel) panel.append(mirrorCard());
   if (!LESSON_CHECKS[lesson.id]?.voiceTested) panel.append(recordCard());
   if (byEar) panel.append(sentenceByEarCard(byEar));
-  panel.append(h("p", { class: "note" }, `Model voice: ${hasVoice() ? voiceName() : "none"}. Drag the 3D view to rotate, scroll to zoom.`));
+
+  // Extras, folded away so the page shows the day's work first
+  const slowSel = h("select", { "aria-label": "Mouth speed" }, h("option", { value: "1" }, "Normal"), h("option", { value: "2.5" }, "Slow"), h("option", { value: "5" }, "Very slow"));
+  slowSel.value = String(slow);
+  slowSel.onchange = () => (slow = Number(slowSel.value));
+  panel.append(h("details", { class: "more-practice" },
+    h("summary", {}, "More practice: all the words, mouth speed"),
+    h("div", { class: "more-body" },
+      h("p", { class: "note", style: "margin-top:0" }, "Tap a word to hear it and watch the mouth."),
+      h("div", { class: "chips" }, ...lesson.words.map((w) => {
+        const c = h("button", { class: "chip", title: "Hear it and watch the mouth" }, w, h("span", { class: "ipa" }, `/${(LEXICON[w] ?? []).join("")}/`));
+        c.onclick = () => void playWord(w);
+        return c;
+      })),
+      h("div", { class: "slow" }, "Mouth speed", slowSel),
+      hasVoice() ? null : h("p", { class: "note" }, "This browser has no speech voice, so words animate silently."),
+      h("p", { class: "note" }, `Model voice: ${hasVoice() ? voiceName() : "none"}. Drag the 3D view to rotate, scroll to zoom.`))));
 }
 
 function listenCard() {
@@ -1579,7 +1665,7 @@ function recordCard() {
     if (url) void new Audio(url).play();
   };
   model.onclick = () => void speak(word, 0.85);
-  return card(`Say it: "${word}"`, "",
+  return card(`Say it: "${word}"`, "record-card",
     h("div", { class: "row" }, rec, mine, model), status,
     h("p", { class: "note" }, "This sound can't be scored automatically yet, so compare by ear."));
 }
@@ -1624,9 +1710,9 @@ function firstDayTour(force = false) {
         { target: today, text: lines.tour.plan() },
         { target: go(0), text: lines.tour.watch() },
         { target: () => document.querySelector<HTMLElement>(".stage"), text: lines.tour.mouth() },
-        { target: go(1), text: lines.tour.habit() },
+        { target: () => document.querySelector<HTMLElement>(".compare-card"), text: lines.tour.compare() },
         { target: () => document.querySelector<HTMLElement>(".ear-card"), text: lines.tour.ear() },
-        { target: () => document.querySelector<HTMLElement>(".scored-card"), text: lines.tour.scored() },
+        { target: () => document.querySelector<HTMLElement>(".scored-card, .record-card"), text: lines.tour.scored() },
         { target: () => document.querySelector<HTMLElement>(".sentence-card"), text: lines.tour.sentence() },
         { target: () => document.getElementById("helpBtn"), text: lines.tour.help() },
         { target: () => document.querySelector<HTMLElement>(".today-card .finish-day"), text: lines.tour.finish() },
