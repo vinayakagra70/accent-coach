@@ -99,15 +99,22 @@ export function showWelcome(opts: {
             : "Read 13 short phrases out loud (about 3 minutes). Accent Coach listens to each sound, finds the habits that make English sound Indian, and builds a day-by-day course around your flaws."),
       picker ? h("h3", { style: "margin-top:0" }, "Which accent do you want to learn?") : null,
       picker,
+      // the buttons come before the tips, so on a phone they're on the first screen
+      h("div", { class: "row welcome-actions" }, start, skip),
+      status,
       h("ul", { class: "ticks" },
         h("li", {}, "Use a quiet room. Headphones help."),
         h("li", {}, "Speak naturally, the way you normally would. Don't perform."),
         h("li", {}, "Recording stops by itself when you pause."),
-        h("li", {}, `Your recordings stay on this ${api.STATIC ? "device" : "laptop"} and aren't saved.`)),
-      status,
-      h("div", { class: "row" }, start, skip),
+        privacyLine() ? h("li", {}, privacyLine()) : null),
     ),
   );
+}
+
+/** Where recordings go, said the same way as the status line (online checking explains itself there). */
+function privacyLine(): string | null {
+  if (!api.STATIC) return "Your recordings stay on this laptop and aren't saved.";
+  return api.listenMode() === "online" ? null : "Your recordings stay on this phone and aren't saved.";
 }
 
 // ------------------------------------------------------------------ the test

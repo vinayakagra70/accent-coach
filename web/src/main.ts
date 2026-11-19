@@ -266,7 +266,39 @@ function applyMode() {
   // "yours" is set up by showWhatYouSaid()
   renderModes();
   syncCompare();
+  $("viewport").dataset.label =
+    mode.kind === "habit" ? "Indian habit" : mode.kind === "target" ? `${accentInfo().name} way` : mode.kind === "mirror" ? "Your voice" : "What you said";
 }
+
+/**
+ * Phones: the mouth sits at the top and scrolls away, so tapping "Indian habit"
+ * further down changed something nobody could see. Once the stage is mostly off
+ * the screen, the mouth shrinks into a corner and keeps playing there; a tap on
+ * it (not a drag) goes back up to the big one.
+ */
+function setupMiniMouth() {
+  const stage = document.querySelector<HTMLElement>(".stage");
+  const view = $("viewport");
+  if (!stage || !("IntersectionObserver" in window)) return;
+  const phone = matchMedia("(max-width: 720px)");
+  let mini = false;
+  const set = (on: boolean) => {
+    if (on === mini) return;
+    mini = on;
+    view.classList.toggle("mini", on);
+  };
+  new IntersectionObserver(([e]) => set(phone.matches && e.intersectionRatio < 0.3), { threshold: [0, 0.3, 0.6, 1] }).observe(stage);
+  phone.addEventListener("change", () => {
+    if (!phone.matches) set(false);
+  });
+  let down: { x: number; y: number } | null = null;
+  view.addEventListener("pointerdown", (e) => (down = mini ? { x: e.clientX, y: e.clientY } : null));
+  view.addEventListener("pointerup", (e) => {
+    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8) stage.scrollIntoView({ behavior: "smooth", block: "start" });
+    down = null;
+  });
+}
+setupMiniMouth();
 
 const HABIT_WORDS: Record<string, { word: string; sound?: { targets: string[] } }> = habitWords;
 
@@ -503,7 +535,19 @@ function toTop() {
   document.querySelector(".layout")?.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/**
+ * "Add to home screen", on the hosted site only, and not before someone has
+ * finished a day: on a first visit it covered the welcome screen.
+ */
+let installOffered = false;
+function maybeInstallHint() {
+  if (installOffered || !api.STATIC || !profile || profile.day < 1) return;
+  installOffered = true;
+  mountInstallHint(document.body);
+}
+
 function renderList() {
+  maybeInstallHint();
   const nav = $("lessonList");
   nav.replaceChildren();
 
@@ -1855,7 +1899,6 @@ void boot();
 if (api.STATIC && "serviceWorker" in navigator && !import.meta.env.DEV) {
   void navigator.serviceWorker.register("./sw.js").catch(() => undefined);
 }
-if (api.STATIC) mountInstallHint(document.body);
 
 // test hook (this computer only): lets the browser tests drive the on-device speech model
 void import("./listen/engine").then(({ engine, isLocalTest }) => {
