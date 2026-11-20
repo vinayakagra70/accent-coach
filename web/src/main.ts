@@ -619,7 +619,7 @@ function renderList() {
   }
 }
 
-const PORTFOLIO = "https://vinayak-ten-lyart.vercel.app/";
+const PORTFOLIO = "https://vinayak-portfolio-orpin.vercel.app/";
 
 // ------------------------------------------------------------------ right panel
 
